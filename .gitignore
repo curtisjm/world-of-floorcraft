@@ -25,5 +25,8 @@ __pycache__/
 *.pyc
 .venv/
 
+# Internal docs
+DESIGN.md
+
 # Data pipeline working files
 data/raw/
