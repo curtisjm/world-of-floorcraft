@@ -87,9 +87,9 @@ function layoutLocal(
   edges: GraphEdge[],
   centerFigureId: number,
   danceSlug: string
-): Node<FigureNodeData>[] {
+): { nodes: Node<FigureNodeData>[]; edges: GraphEdge[] } {
   const centerFig = figures.find((f) => f.id === centerFigureId);
-  if (!centerFig) return [];
+  if (!centerFig) return { nodes: [], edges: [] };
 
   const precedeIds = new Set(
     edges
@@ -105,8 +105,12 @@ function layoutLocal(
   precedeIds.delete(centerFigureId);
   followIds.delete(centerFigureId);
 
+  // Figures that both precede and follow get a node on each side
+  const bothIds = new Set([...precedeIds].filter((id) => followIds.has(id)));
+
   const precedes = figures.filter((f) => precedeIds.has(f.id));
-  const follows = figures.filter((f) => followIds.has(f.id));
+  const follows = figures.filter((f) => followIds.has(f.id) && !bothIds.has(f.id));
+  const bothFigures = figures.filter((f) => bothIds.has(f.id));
 
   const yGap = 60;
   const nodes: Node<FigureNodeData>[] = [];
@@ -118,27 +122,47 @@ function layoutLocal(
     data: makeNodeData(centerFig, danceSlug, { isCenterNode: true, linkToGraph: true }),
   });
 
-  const precedeStartY = -((precedes.length - 1) * yGap) / 2;
-  precedes.forEach((fig, i) => {
+  // Precede-only + both (left side)
+  const leftFigures = [...precedes, ...bothFigures];
+  const precedeStartY = -((leftFigures.length - 1) * yGap) / 2;
+  leftFigures.forEach((fig, i) => {
+    const nodeId = bothIds.has(fig.id) ? `${fig.id}-pre` : String(fig.id);
     nodes.push({
-      id: String(fig.id),
+      id: nodeId,
       type: "figure",
       position: { x: -350, y: precedeStartY + i * yGap },
       data: makeNodeData(fig, danceSlug, { linkToGraph: true }),
     });
   });
 
-  const followStartY = -((follows.length - 1) * yGap) / 2;
-  follows.forEach((fig, i) => {
+  // Follow-only + both (right side)
+  const rightFigures = [...follows, ...bothFigures];
+  const followStartY = -((rightFigures.length - 1) * yGap) / 2;
+  rightFigures.forEach((fig, i) => {
+    const nodeId = bothIds.has(fig.id) ? `${fig.id}-fol` : String(fig.id);
     nodes.push({
-      id: String(fig.id),
+      id: nodeId,
       type: "figure",
       position: { x: 350, y: followStartY + i * yGap },
       data: makeNodeData(fig, danceSlug, { linkToGraph: true }),
     });
   });
 
-  return nodes;
+  // Remap edges so they point to the correct side's node
+  const remappedEdges = edges.map((e) => {
+    const newEdge = { ...e };
+    // Precede edge: source → center. If source is in both, use the -pre node
+    if (e.targetFigureId === centerFigureId && bothIds.has(e.sourceFigureId)) {
+      return { ...newEdge, _sourceNode: `${e.sourceFigureId}-pre` };
+    }
+    // Follow edge: center → target. If target is in both, use the -fol node
+    if (e.sourceFigureId === centerFigureId && bothIds.has(e.targetFigureId)) {
+      return { ...newEdge, _targetNode: `${e.targetFigureId}-fol` };
+    }
+    return newEdge;
+  });
+
+  return { nodes, edges: remappedEdges };
 }
 
 function layoutFull(
@@ -179,11 +203,13 @@ function layoutFull(
   return nodes;
 }
 
-function buildEdges(edges: GraphEdge[]): Edge[] {
+type MappedGraphEdge = GraphEdge & { _sourceNode?: string; _targetNode?: string };
+
+function buildEdges(edges: MappedGraphEdge[]): Edge[] {
   return edges.map((edge) => ({
-    id: `e${edge.id}`,
-    source: String(edge.sourceFigureId),
-    target: String(edge.targetFigureId),
+    id: `e${edge.id}${edge._sourceNode ? "-pre" : ""}${edge._targetNode ? "-fol" : ""}`,
+    source: edge._sourceNode ?? String(edge.sourceFigureId),
+    target: edge._targetNode ?? String(edge.targetFigureId),
     style: {
       stroke: EDGE_COLOR,
       strokeWidth: 1.5,
@@ -228,14 +254,13 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
     [edges, visibleIds]
   );
 
-  const computedNodes = useMemo(() => {
+  const { computedNodes, computedEdges } = useMemo(() => {
     if (centerFigureId != null) {
-      return layoutLocal(filteredFigures, filteredEdges, centerFigureId, danceSlug);
+      const local = layoutLocal(filteredFigures, filteredEdges, centerFigureId, danceSlug);
+      return { computedNodes: local.nodes, computedEdges: buildEdges(local.edges) };
     }
-    return layoutFull(filteredFigures, danceSlug);
+    return { computedNodes: layoutFull(filteredFigures, danceSlug), computedEdges: buildEdges(filteredEdges) };
   }, [filteredFigures, filteredEdges, centerFigureId, danceSlug]);
-
-  const computedEdges = useMemo(() => buildEdges(filteredEdges), [filteredEdges]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(computedNodes);
   const [flowEdges, setEdges, onEdgesChange] = useEdgesState(computedEdges);
