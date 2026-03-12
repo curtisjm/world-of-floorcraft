@@ -1,45 +1,37 @@
+export const dynamic = "force-dynamic";
+
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getDb } from "@/db";
+import { dances, figures } from "@/db/schema";
+import { eq, count } from "drizzle-orm";
 
-const DANCES = [
-  {
-    slug: "waltz",
-    name: "Waltz",
-    timeSignature: "3/4",
-    description: "The classic rise-and-fall dance in triple time",
-  },
-  {
-    slug: "foxtrot",
-    name: "Foxtrot",
-    timeSignature: "4/4",
-    description: "Smooth, progressive movement across the floor",
-  },
-  {
-    slug: "quickstep",
-    name: "Quickstep",
-    timeSignature: "4/4",
-    description: "Light, fast-moving dance with hops and runs",
-  },
-  {
-    slug: "tango",
-    name: "Tango",
-    timeSignature: "2/4",
-    description: "Sharp, staccato movements with dramatic character",
-  },
-  {
-    slug: "viennese-waltz",
-    name: "Viennese Waltz",
-    timeSignature: "3/4",
-    description: "Fast, rotating waltz with continuous turning",
-  },
-];
+const DANCE_DESCRIPTIONS: Record<string, string> = {
+  waltz: "The classic rise-and-fall dance in triple time",
+  foxtrot: "Smooth, progressive movement across the floor",
+  quickstep: "Light, fast-moving dance with hops and runs",
+  tango: "Sharp, staccato movements with dramatic character",
+  "viennese-waltz": "Fast, rotating waltz with continuous turning",
+};
 
-export default function DancesPage() {
+export default async function DancesPage() {
+  const db = getDb();
+  const allDances = await db.select().from(dances);
+
+  // Get figure counts per dance
+  const figureCounts = await db
+    .select({ danceId: figures.danceId, count: count() })
+    .from(figures)
+    .groupBy(figures.danceId);
+
+  const countMap = new Map(figureCounts.map((r) => [r.danceId, r.count]));
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="space-y-8">
@@ -50,16 +42,25 @@ export default function DancesPage() {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {DANCES.map((dance) => (
-            <a key={dance.slug} href={`/dances/${dance.slug}`}>
+          {allDances.map((dance) => (
+            <a key={dance.id} href={`/dances/${dance.name}`}>
               <Card className="hover:border-muted-foreground/50 transition-colors cursor-pointer h-full">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{dance.name}</CardTitle>
+                    <CardTitle className="text-xl">
+                      {dance.displayName}
+                    </CardTitle>
                     <Badge variant="secondary">{dance.timeSignature}</Badge>
                   </div>
-                  <CardDescription>{dance.description}</CardDescription>
+                  <CardDescription>
+                    {DANCE_DESCRIPTIONS[dance.name] ?? ""}
+                  </CardDescription>
                 </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    {countMap.get(dance.id) ?? 0} figures
+                  </p>
+                </CardContent>
               </Card>
             </a>
           ))}

@@ -1,6 +1,10 @@
+import { notFound } from "next/navigation";
+import { eq, asc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { getDb } from "@/db";
+import { dances, figures } from "@/db/schema";
 
 const LEVEL_COLORS: Record<string, string> = {
   student_teacher: "border-bronze text-bronze",
@@ -16,26 +20,26 @@ const LEVEL_LABELS: Record<string, string> = {
   fellow: "Fellow",
 };
 
-// Placeholder data - will be replaced with tRPC queries
-const PLACEHOLDER_FIGURES = [
-  { id: 1, name: "Closed Change (RF)", level: "student_teacher", figureNumber: 1 },
-  { id: 2, name: "Closed Change (LF)", level: "student_teacher", figureNumber: 2 },
-  { id: 3, name: "Natural Turn", level: "student_teacher", figureNumber: 3 },
-  { id: 4, name: "Reverse Turn", level: "student_teacher", figureNumber: 4 },
-  { id: 5, name: "Whisk", level: "associate", figureNumber: 5 },
-  { id: 6, name: "Chassé from PP", level: "associate", figureNumber: 6 },
-];
-
 export default async function DancePage({
   params,
 }: {
   params: Promise<{ dance: string }>;
 }) {
-  const { dance } = await params;
-  const displayName = dance
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  const { dance: danceSlug } = await params;
+  const db = getDb();
+
+  const [dance] = await db
+    .select()
+    .from(dances)
+    .where(eq(dances.name, danceSlug));
+
+  if (!dance) notFound();
+
+  const danceFigures = await db
+    .select()
+    .from(figures)
+    .where(eq(figures.danceId, dance.id))
+    .orderBy(asc(figures.figureNumber), asc(figures.name));
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -43,31 +47,40 @@ export default async function DancePage({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              {displayName}
+              {dance.displayName}
             </h1>
             <p className="text-muted-foreground mt-2">
-              Figures and transitions for the {displayName}
+              {danceFigures.length} figures
             </p>
           </div>
           <Button asChild variant="outline">
-            <a href={`/dances/${dance}/graph`}>View Graph</a>
+            <a href={`/dances/${danceSlug}/graph`}>View Graph</a>
           </Button>
         </div>
 
         <Separator />
 
         <div className="space-y-3">
-          {PLACEHOLDER_FIGURES.map((figure) => (
+          {danceFigures.map((figure) => (
             <a
               key={figure.id}
-              href={`/dances/${dance}/figures/${figure.id}`}
+              href={`/dances/${danceSlug}/figures/${figure.id}`}
               className="flex items-center justify-between p-4 rounded-lg border border-border hover:border-muted-foreground/50 transition-colors"
             >
               <div className="flex items-center gap-4">
-                <span className="text-muted-foreground text-sm font-mono w-6">
-                  {figure.figureNumber}
-                </span>
-                <span className="font-medium">{figure.name}</span>
+                {figure.figureNumber != null && (
+                  <span className="text-muted-foreground text-sm font-mono w-6">
+                    {figure.figureNumber}
+                  </span>
+                )}
+                <div>
+                  <span className="font-medium">{figure.name}</span>
+                  {figure.variantName && (
+                    <span className="text-muted-foreground ml-2 text-sm">
+                      ({figure.variantName})
+                    </span>
+                  )}
+                </div>
               </div>
               <Badge
                 variant="outline"
