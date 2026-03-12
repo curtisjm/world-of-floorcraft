@@ -36,7 +36,7 @@ export const figures = pgTable("figures", {
   danceId: integer("dance_id")
     .references(() => dances.id)
     .notNull(),
-  figureNumber: integer("figure_number").notNull(),
+  figureNumber: integer("figure_number"),
   name: text("name").notNull(),
   variantName: text("variant_name"),
   level: levelEnum("level").notNull(),

@@ -13,7 +13,6 @@ import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { sql } from "drizzle-orm";
 import { parse } from "yaml";
 import * as schema from "../src/db/schema";
 
@@ -354,20 +353,10 @@ async function seed() {
   }
 
   // =========================================================================
-  // WIPE — delete in reverse FK order
+  // WIPE — truncate all tables and reset sequences
   // =========================================================================
   console.log("\nWiping existing data...");
-  await db.delete(schema.figureNotes);
-  await db.delete(schema.routineEntries);
-  await db.delete(schema.routines);
-  await db.delete(schema.figureEdges);
-  await db.delete(schema.figures);
-  await db.delete(schema.dances);
-
-  // Reset sequences so IDs start from 1
-  await db.execute(sql`ALTER SEQUENCE dances_id_seq RESTART WITH 1`);
-  await db.execute(sql`ALTER SEQUENCE figures_id_seq RESTART WITH 1`);
-  await db.execute(sql`ALTER SEQUENCE figure_edges_id_seq RESTART WITH 1`);
+  await neonSql`TRUNCATE figure_notes, routine_entries, routines, figure_edges, figures, dances RESTART IDENTITY CASCADE`;
 
   // =========================================================================
   // INSERT DANCES
@@ -428,8 +417,20 @@ async function seed() {
       })
       .returning();
 
-    const lookupKey = `${fig.dance}:${fig.figure_name}:${fig.variant_name ?? ""}`;
-    figureIdMap.set(lookupKey, inserted.id);
+    // Register multiple lookup keys so edge matching can find this figure
+    // by its base name, variant name, or full key
+    const fullKey = `${fig.dance}:${fig.figure_name}:${fig.variant_name ?? ""}`;
+    figureIdMap.set(fullKey, inserted.id);
+    // Also register by just the base name (if no variant, or as fallback)
+    const baseKey = `${fig.dance}:${fig.figure_name}`;
+    if (!figureIdMap.has(baseKey)) {
+      figureIdMap.set(baseKey, inserted.id);
+    }
+    // Register by variant name too (e.g., "waltz:RF Closed Change")
+    if (fig.variant_name) {
+      const variantKey = `${fig.dance}:${fig.variant_name}`;
+      figureIdMap.set(variantKey, inserted.id);
+    }
 
     // Track names for edge matching (both base name and variant)
     if (!figureNamesByDance.has(fig.dance)) {
@@ -480,9 +481,7 @@ async function seed() {
           }
 
           // Find the target figure's DB id
-          const targetId =
-            figureIdMap.get(`${fig.dance}:${entry.figureName}:`) ??
-            figureIdMap.get(`${fig.dance}:${entry.figureName}:${entry.figureName}`);
+          const targetId = figureIdMap.get(`${fig.dance}:${entry.figureName}`);
           if (!targetId) {
             edgesUnmatched++;
             if (unmatchedExamples.length < 20) {
@@ -523,9 +522,7 @@ async function seed() {
             continue;
           }
 
-          const precedeId =
-            figureIdMap.get(`${fig.dance}:${entry.figureName}:`) ??
-            figureIdMap.get(`${fig.dance}:${entry.figureName}:${entry.figureName}`);
+          const precedeId = figureIdMap.get(`${fig.dance}:${entry.figureName}`);
           if (!precedeId) {
             edgesUnmatched++;
             if (unmatchedExamples.length < 20) {

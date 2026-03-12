@@ -11,7 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.0",
@@ -28,7 +28,7 @@
     "@trpc/server": "^11.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "drizzle-orm": "^0.39.0",
+    "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.475.0",
     "next": "^15.3.0",
     "radix-ui": "^1.4.3",
@@ -52,7 +52,7 @@
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "drizzle-kit": "^0.30.0",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^9.25.0",
     "eslint-config-next": "^15.3.0",
     "postcss": "^8.5.0",
