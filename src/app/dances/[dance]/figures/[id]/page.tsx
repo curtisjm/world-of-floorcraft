@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { eq, or } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -202,12 +203,12 @@ export default async function FigureDetailPage({
           </div>
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <a href={`/dances/${danceSlug}/figures/${figureId}/graph`}>
+              <Link href={`/dances/${danceSlug}/figures/${figureId}/graph`}>
                 Local Graph
-              </a>
+              </Link>
             </Button>
             <Button asChild variant="outline">
-              <a href={`/dances/${danceSlug}`}>Back to {dance?.displayName}</a>
+              <Link href={`/dances/${danceSlug}`}>Back to {dance?.displayName}</Link>
             </Button>
           </div>
         </div>
@@ -289,13 +290,13 @@ export default async function FigureDetailPage({
                     const neighbor = neighborMap.get(edge.sourceFigureId);
                     return (
                       <li key={edge.id} className="flex items-center justify-between text-sm">
-                        <a
+                        <Link
                           href={`/dances/${danceSlug}/figures/${edge.sourceFigureId}`}
                           className="hover:text-foreground text-muted-foreground transition-colors"
                         >
                           {neighbor?.name ?? `Figure #${edge.sourceFigureId}`}
                           {neighbor?.variantName && ` (${neighbor.variantName})`}
-                        </a>
+                        </Link>
                         <div className="flex items-center gap-2">
                           {edge.conditions && (
                             <span className="text-xs text-muted-foreground">
@@ -334,13 +335,13 @@ export default async function FigureDetailPage({
                     const neighbor = neighborMap.get(edge.targetFigureId);
                     return (
                       <li key={edge.id} className="flex items-center justify-between text-sm">
-                        <a
+                        <Link
                           href={`/dances/${danceSlug}/figures/${edge.targetFigureId}`}
                           className="hover:text-foreground text-muted-foreground transition-colors"
                         >
                           {neighbor?.name ?? `Figure #${edge.targetFigureId}`}
                           {neighbor?.variantName && ` (${neighbor.variantName})`}
-                        </a>
+                        </Link>
                         <div className="flex items-center gap-2">
                           {edge.conditions && (
                             <span className="text-xs text-muted-foreground">

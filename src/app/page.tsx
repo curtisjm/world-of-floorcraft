@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -34,10 +35,10 @@ export default function HomePage() {
         </div>
         <div className="flex items-center justify-center gap-4">
           <Button asChild size="lg">
-            <a href="/dances">Browse Dances</a>
+            <Link href="/dances">Browse Dances</Link>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href="/routines">My Routines</a>
+            <Link href="/routines">My Routines</Link>
           </Button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Link from "next/link";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -26,22 +27,22 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col">
             <header className="border-b border-border px-6 py-4">
               <nav className="max-w-7xl mx-auto flex items-center justify-between">
-                <a href="/" className="text-xl font-bold tracking-tight">
+                <Link href="/" className="text-xl font-bold tracking-tight">
                   Figure Graph
-                </a>
+                </Link>
                 <div className="flex items-center gap-6">
-                  <a
+                  <Link
                     href="/dances"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Dances
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/routines"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Routines
-                  </a>
+                  </Link>
                 </div>
               </nav>
             </header>

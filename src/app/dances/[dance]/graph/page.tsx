@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { eq, inArray } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { getDb } from "@/db";
@@ -55,7 +56,7 @@ export default async function DanceGraphPage({
             </p>
           </div>
           <Button asChild variant="outline">
-            <a href={`/dances/${danceSlug}`}>Back to List</a>
+            <Link href={`/dances/${danceSlug}`}>Back to List</Link>
           </Button>
         </div>
 

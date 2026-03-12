@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { eq, asc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,7 @@ export default async function DancePage({
             </p>
           </div>
           <Button asChild variant="outline">
-            <a href={`/dances/${danceSlug}/graph`}>View Graph</a>
+            <Link href={`/dances/${danceSlug}/graph`}>View Graph</Link>
           </Button>
         </div>
 
@@ -62,7 +63,7 @@ export default async function DancePage({
 
         <div className="space-y-3">
           {danceFigures.map((figure) => (
-            <a
+            <Link
               key={figure.id}
               href={`/dances/${danceSlug}/figures/${figure.id}`}
               className="flex items-center justify-between p-4 rounded-lg border border-border hover:border-muted-foreground/50 transition-colors"
@@ -88,7 +89,7 @@ export default async function DancePage({
               >
                 {LEVEL_LABELS[figure.level]}
               </Badge>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

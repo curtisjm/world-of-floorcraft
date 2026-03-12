@@ -8,9 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { getDb } from "@/db";
 import { dances, figures } from "@/db/schema";
-import { eq, count } from "drizzle-orm";
+import { count } from "drizzle-orm";
 
 const DANCE_DESCRIPTIONS: Record<string, string> = {
   waltz: "The classic rise-and-fall dance in triple time",
@@ -43,7 +44,7 @@ export default async function DancesPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {allDances.map((dance) => (
-            <a key={dance.id} href={`/dances/${dance.name}`}>
+            <Link key={dance.id} href={`/dances/${dance.name}`}>
               <Card className="hover:border-muted-foreground/50 transition-colors cursor-pointer h-full">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -62,7 +63,7 @@ export default async function DancesPage() {
                   </p>
                 </CardContent>
               </Card>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

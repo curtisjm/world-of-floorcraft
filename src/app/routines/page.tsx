@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +19,7 @@ export default function RoutinesPage() {
             </p>
           </div>
           <Button asChild>
-            <a href="/routines/new">New Routine</a>
+            <Link href="/routines/new">New Routine</Link>
           </Button>
         </div>
 

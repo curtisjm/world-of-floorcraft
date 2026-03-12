@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -67,7 +68,7 @@ export default function NewRoutinePage() {
 
         <div className="flex justify-end gap-3">
           <Button asChild variant="outline">
-            <a href="/routines">Cancel</a>
+            <Link href="/routines">Cancel</Link>
           </Button>
           <Button disabled>Save Routine</Button>
         </div>
