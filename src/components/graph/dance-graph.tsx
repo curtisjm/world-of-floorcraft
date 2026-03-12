@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import {
   ReactFlow,
   Background,
   Controls,
   MiniMap,
+  Panel,
   useNodesState,
   useEdgesState,
   type Edge,
@@ -16,12 +17,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { FigureNode, type FigureNodeData } from "./figure-node";
 
-const LEVEL_EDGE_COLORS: Record<string, string> = {
-  student_teacher: "#CD7F32",
-  associate: "#CD7F32",
-  licentiate: "#C0C0C0",
-  fellow: "#FFD700",
-};
+const EDGE_COLOR = "#888";
 
 const LEVEL_NODE_COLORS: Record<string, string> = {
   student_teacher: "#CD7F32",
@@ -29,6 +25,21 @@ const LEVEL_NODE_COLORS: Record<string, string> = {
   licentiate: "#C0C0C0",
   fellow: "#FFD700",
 };
+
+type LevelGroup = "bronze" | "silver" | "gold";
+
+const LEVEL_TO_GROUP: Record<string, LevelGroup> = {
+  student_teacher: "bronze",
+  associate: "bronze",
+  licentiate: "silver",
+  fellow: "gold",
+};
+
+const TOGGLE_CONFIG: { key: LevelGroup; label: string; color: string }[] = [
+  { key: "bronze", label: "Bronze", color: "#CD7F32" },
+  { key: "silver", label: "Silver", color: "#C0C0C0" },
+  { key: "gold", label: "Gold", color: "#FFD700" },
+];
 
 export interface GraphFigure {
   id: number;
@@ -53,7 +64,11 @@ interface DanceGraphProps {
   centerFigureId?: number;
 }
 
-function makeNodeData(fig: GraphFigure, danceSlug: string, isCenterNode?: boolean): FigureNodeData {
+function makeNodeData(
+  fig: GraphFigure,
+  danceSlug: string,
+  opts?: { isCenterNode?: boolean; linkToGraph?: boolean }
+): FigureNodeData {
   const label = fig.variantName
     ? `${fig.name} (${fig.variantName})`
     : fig.name;
@@ -62,14 +77,11 @@ function makeNodeData(fig: GraphFigure, danceSlug: string, isCenterNode?: boolea
     level: fig.level,
     danceSlug,
     figureId: fig.id,
-    isCenterNode,
+    isCenterNode: opts?.isCenterNode,
+    linkToGraph: opts?.linkToGraph,
   };
 }
 
-/**
- * Local graph layout: center figure in the middle,
- * precedes stacked on the left, follows stacked on the right.
- */
 function layoutLocal(
   figures: GraphFigure[],
   edges: GraphEdge[],
@@ -90,7 +102,6 @@ function layoutLocal(
       .map((e) => e.targetFigureId)
   );
 
-  // Remove center from precede/follow sets (self-loops)
   precedeIds.delete(centerFigureId);
   followIds.delete(centerFigureId);
 
@@ -100,42 +111,36 @@ function layoutLocal(
   const yGap = 60;
   const nodes: Node<FigureNodeData>[] = [];
 
-  // Center node
   nodes.push({
     id: String(centerFig.id),
     type: "figure",
     position: { x: 0, y: 0 },
-    data: makeNodeData(centerFig, danceSlug, true),
+    data: makeNodeData(centerFig, danceSlug, { isCenterNode: true, linkToGraph: true }),
   });
 
-  // Precedes on the left
   const precedeStartY = -((precedes.length - 1) * yGap) / 2;
   precedes.forEach((fig, i) => {
     nodes.push({
       id: String(fig.id),
       type: "figure",
       position: { x: -350, y: precedeStartY + i * yGap },
-      data: makeNodeData(fig, danceSlug),
+      data: makeNodeData(fig, danceSlug, { linkToGraph: true }),
     });
   });
 
-  // Follows on the right
   const followStartY = -((follows.length - 1) * yGap) / 2;
   follows.forEach((fig, i) => {
     nodes.push({
       id: String(fig.id),
       type: "figure",
       position: { x: 350, y: followStartY + i * yGap },
-      data: makeNodeData(fig, danceSlug),
+      data: makeNodeData(fig, danceSlug, { linkToGraph: true }),
     });
   });
 
   return nodes;
 }
 
-/**
- * Full dance graph layout: group figures by level in rows.
- */
 function layoutFull(
   figures: GraphFigure[],
   danceSlug: string
@@ -180,13 +185,13 @@ function buildEdges(edges: GraphEdge[]): Edge[] {
     source: String(edge.sourceFigureId),
     target: String(edge.targetFigureId),
     style: {
-      stroke: LEVEL_EDGE_COLORS[edge.level] ?? "#666",
+      stroke: EDGE_COLOR,
       strokeWidth: 1.5,
-      opacity: 0.5,
+      opacity: 0.4,
     },
     markerEnd: {
       type: MarkerType.ArrowClosed,
-      color: LEVEL_EDGE_COLORS[edge.level] ?? "#666",
+      color: EDGE_COLOR,
       width: 15,
       height: 15,
     },
@@ -198,17 +203,45 @@ const nodeTypes: NodeTypes = {
 };
 
 export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceGraphProps) {
-  const initialNodes = useMemo(() => {
+  const [enabledLevels, setEnabledLevels] = useState<Record<LevelGroup, boolean>>({
+    bronze: true,
+    silver: true,
+    gold: true,
+  });
+
+  const toggleLevel = useCallback((group: LevelGroup) => {
+    setEnabledLevels((prev) => ({ ...prev, [group]: !prev[group] }));
+  }, []);
+
+  const filteredFigures = useMemo(
+    () => figures.filter((f) => enabledLevels[LEVEL_TO_GROUP[f.level] ?? "bronze"]),
+    [figures, enabledLevels]
+  );
+
+  const visibleIds = useMemo(
+    () => new Set(filteredFigures.map((f) => f.id)),
+    [filteredFigures]
+  );
+
+  const filteredEdges = useMemo(
+    () => edges.filter((e) => visibleIds.has(e.sourceFigureId) && visibleIds.has(e.targetFigureId)),
+    [edges, visibleIds]
+  );
+
+  const computedNodes = useMemo(() => {
     if (centerFigureId != null) {
-      return layoutLocal(figures, edges, centerFigureId, danceSlug);
+      return layoutLocal(filteredFigures, filteredEdges, centerFigureId, danceSlug);
     }
-    return layoutFull(figures, danceSlug);
-  }, [figures, edges, centerFigureId, danceSlug]);
+    return layoutFull(filteredFigures, danceSlug);
+  }, [filteredFigures, filteredEdges, centerFigureId, danceSlug]);
 
-  const initialEdges = useMemo(() => buildEdges(edges), [edges]);
+  const computedEdges = useMemo(() => buildEdges(filteredEdges), [filteredEdges]);
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [flowEdges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(computedNodes);
+  const [flowEdges, setEdges, onEdgesChange] = useEdgesState(computedEdges);
+
+  useEffect(() => { setNodes(computedNodes); }, [computedNodes, setNodes]);
+  useEffect(() => { setEdges(computedEdges); }, [computedEdges, setEdges]);
 
   return (
     <div className="h-[calc(100vh-200px)] min-h-[500px] rounded-lg border border-border overflow-hidden">
@@ -236,6 +269,23 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
           className="!bg-card !border-border"
           maskColor="rgba(0,0,0,0.7)"
         />
+        <Panel position="top-right" className="flex gap-2">
+          {TOGGLE_CONFIG.map(({ key, label, color }) => (
+            <button
+              key={key}
+              onClick={() => toggleLevel(key)}
+              className="px-3 py-1.5 rounded-md text-xs font-medium border-2 transition-all"
+              style={{
+                borderColor: color,
+                backgroundColor: enabledLevels[key] ? color : "transparent",
+                color: enabledLevels[key] ? "#000" : color,
+                opacity: enabledLevels[key] ? 1 : 0.5,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </Panel>
       </ReactFlow>
     </div>
   );

@@ -15,18 +15,22 @@ export type FigureNodeData = {
   danceSlug: string;
   figureId: number;
   isCenterNode?: boolean;
+  linkToGraph?: boolean;
 };
 
 export type FigureNode = Node<FigureNodeData, "figure">;
 
 export function FigureNode({ data }: NodeProps<FigureNode>) {
   const borderColor = LEVEL_BORDER_COLORS[data.level] ?? "#666";
+  const href = data.linkToGraph
+    ? `/dances/${data.danceSlug}/figures/${data.figureId}/graph`
+    : `/dances/${data.danceSlug}/figures/${data.figureId}`;
 
   return (
     <>
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground !w-2 !h-2" />
       <a
-        href={`/dances/${data.danceSlug}/figures/${data.figureId}`}
+        href={href}
         className="block px-4 py-2.5 rounded-lg bg-card border-2 hover:brightness-125 transition-all cursor-pointer text-center"
         style={{
           borderColor,
