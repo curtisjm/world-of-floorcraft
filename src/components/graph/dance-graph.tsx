@@ -112,8 +112,59 @@ function layoutLocal(
   const follows = figures.filter((f) => followIds.has(f.id) && !bothIds.has(f.id));
   const bothFigures = figures.filter((f) => bothIds.has(f.id));
 
-  const yGap = 60;
+  const LEVEL_ORDER = ["student_teacher", "associate", "licentiate", "fellow"];
+  const yGap = 55;
+  const groupGap = 30; // extra gap between level groups
   const nodes: Node<FigureNodeData>[] = [];
+
+  // Sort figures by level order, then by name
+  function sortByLevel(figs: GraphFigure[]): GraphFigure[] {
+    return [...figs].sort((a, b) => {
+      const la = LEVEL_ORDER.indexOf(a.level);
+      const lb = LEVEL_ORDER.indexOf(b.level);
+      if (la !== lb) return la - lb;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  // Stack figures vertically with extra gaps between level groups
+  function stackFigures(
+    figs: GraphFigure[],
+    xPos: number,
+    idSuffix?: string,
+  ) {
+    const sorted = sortByLevel(figs);
+    // Calculate total height including group gaps
+    let totalHeight = 0;
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0) {
+        totalHeight += yGap;
+        if (LEVEL_TO_GROUP[sorted[i].level] !== LEVEL_TO_GROUP[sorted[i - 1].level]) {
+          totalHeight += groupGap;
+        }
+      }
+    }
+
+    let y = -totalHeight / 2;
+    for (let i = 0; i < sorted.length; i++) {
+      const fig = sorted[i];
+      if (i > 0) {
+        y += yGap;
+        if (LEVEL_TO_GROUP[fig.level] !== LEVEL_TO_GROUP[sorted[i - 1].level]) {
+          y += groupGap;
+        }
+      }
+      const nodeId = idSuffix
+        ? (bothIds.has(fig.id) ? `${fig.id}-${idSuffix}` : String(fig.id))
+        : String(fig.id);
+      nodes.push({
+        id: nodeId,
+        type: "figure",
+        position: { x: xPos, y },
+        data: makeNodeData(fig, danceSlug, { linkToGraph: true }),
+      });
+    }
+  }
 
   nodes.push({
     id: String(centerFig.id),
@@ -122,31 +173,11 @@ function layoutLocal(
     data: makeNodeData(centerFig, danceSlug, { isCenterNode: true, linkToGraph: true }),
   });
 
-  // Precede-only + both (left side)
   const leftFigures = [...precedes, ...bothFigures];
-  const precedeStartY = -((leftFigures.length - 1) * yGap) / 2;
-  leftFigures.forEach((fig, i) => {
-    const nodeId = bothIds.has(fig.id) ? `${fig.id}-pre` : String(fig.id);
-    nodes.push({
-      id: nodeId,
-      type: "figure",
-      position: { x: -350, y: precedeStartY + i * yGap },
-      data: makeNodeData(fig, danceSlug, { linkToGraph: true }),
-    });
-  });
-
-  // Follow-only + both (right side)
   const rightFigures = [...follows, ...bothFigures];
-  const followStartY = -((rightFigures.length - 1) * yGap) / 2;
-  rightFigures.forEach((fig, i) => {
-    const nodeId = bothIds.has(fig.id) ? `${fig.id}-fol` : String(fig.id);
-    nodes.push({
-      id: nodeId,
-      type: "figure",
-      position: { x: 350, y: followStartY + i * yGap },
-      data: makeNodeData(fig, danceSlug, { linkToGraph: true }),
-    });
-  });
+
+  stackFigures(leftFigures, -400, "pre");
+  stackFigures(rightFigures, 400, "fol");
 
   // Remap edges so they point to the correct side's node
   const remappedEdges = edges.map((e) => {
