@@ -166,8 +166,8 @@ export default async function FigureDetailPage({
   const precedeEdges = edges.filter((e) => e.targetFigureId === figureId);
   const followEdges = edges.filter((e) => e.sourceFigureId === figureId);
 
-  const manSteps = figure.manSteps as Step[] | null;
-  const ladySteps = figure.ladySteps as Step[] | null;
+  const leaderSteps = figure.leaderSteps as Step[] | null;
+  const followerSteps = figure.followerSteps as Step[] | null;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -216,21 +216,21 @@ export default async function FigureDetailPage({
         <Separator />
 
         {/* Step charts */}
-        {(manSteps || ladySteps) && (
-          <Tabs defaultValue="man">
+        {(leaderSteps || followerSteps) && (
+          <Tabs defaultValue="leader">
             <TabsList>
-              <TabsTrigger value="man">Man&apos;s Steps</TabsTrigger>
-              <TabsTrigger value="lady">Lady&apos;s Steps</TabsTrigger>
+              <TabsTrigger value="leader">Leader&apos;s Steps</TabsTrigger>
+              <TabsTrigger value="follower">Follower&apos;s Steps</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="man" className="mt-6 space-y-4">
-              {manSteps && manSteps.length > 0 ? (
+            <TabsContent value="leader" className="mt-6 space-y-4">
+              {leaderSteps && leaderSteps.length > 0 ? (
                 <>
-                  <StepTable steps={manSteps} />
+                  <StepTable steps={leaderSteps} />
                   <TechDetails
-                    footwork={figure.manFootwork}
-                    cbm={figure.manCbm}
-                    sway={figure.manSway}
+                    footwork={figure.leaderFootwork}
+                    cbm={figure.leaderCbm}
+                    sway={figure.leaderSway}
                   />
                 </>
               ) : (
@@ -240,14 +240,14 @@ export default async function FigureDetailPage({
               )}
             </TabsContent>
 
-            <TabsContent value="lady" className="mt-6 space-y-4">
-              {ladySteps && ladySteps.length > 0 ? (
+            <TabsContent value="follower" className="mt-6 space-y-4">
+              {followerSteps && followerSteps.length > 0 ? (
                 <>
-                  <StepTable steps={ladySteps} />
+                  <StepTable steps={followerSteps} />
                   <TechDetails
-                    footwork={figure.ladyFootwork}
-                    cbm={figure.ladyCbm}
-                    sway={figure.ladySway}
+                    footwork={figure.followerFootwork}
+                    cbm={figure.followerCbm}
+                    sway={figure.followerSway}
                   />
                 </>
               ) : (

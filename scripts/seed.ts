@@ -47,8 +47,8 @@ interface RawFigure {
   figure_number: number;
   figure_name: string;
   variant_name: string | null;
-  man: RawPartner | null;
-  lady: RawPartner | null;
+  leader: RawPartner | null;
+  follower: RawPartner | null;
   timing: string | null;
   beat_value: string | null;
   notes: string[] | null;
@@ -403,14 +403,14 @@ async function seed() {
         name: fig.figure_name,
         variantName: fig.variant_name,
         level: fig.level,
-        manSteps: fig.man?.steps ?? null,
-        ladySteps: fig.lady?.steps ?? null,
-        manFootwork: fig.man?.footwork ?? null,
-        ladyFootwork: fig.lady?.footwork ?? null,
-        manCbm: fig.man?.cbm ?? null,
-        ladyCbm: fig.lady?.cbm ?? null,
-        manSway: fig.man?.sway ?? null,
-        ladySway: fig.lady?.sway ?? null,
+        leaderSteps: fig.leader?.steps ?? null,
+        followerSteps: fig.follower?.steps ?? null,
+        leaderFootwork: fig.leader?.footwork ?? null,
+        followerFootwork: fig.follower?.footwork ?? null,
+        leaderCbm: fig.leader?.cbm ?? null,
+        followerCbm: fig.follower?.cbm ?? null,
+        leaderSway: fig.leader?.sway ?? null,
+        followerSway: fig.follower?.sway ?? null,
         timing: fig.timing,
         beatValue: fig.beat_value,
         notes: fig.notes,
