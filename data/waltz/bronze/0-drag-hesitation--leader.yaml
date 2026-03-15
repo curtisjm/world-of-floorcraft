@@ -1,0 +1,66 @@
+_source_pdf_page: 68
+beat_value: null
+dance: waltz
+figure_name: Drag Hesitation
+figure_number: null
+follow:
+  associate:
+  - 4-6 of Natural Turn — Back Whisk — Back Lock — Closed or Open Impetus — underturned Outside Spin turning ⅛.
+  fellow: []
+  licentiate: []
+follower:
+  beat_value: null
+  cbm: on 1
+  footwork: 1 TH; 2 T; 3 T (both feet), then TH (LF)
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise e/o 2
+    step_number: 1
+  - alignment: Pointing between W and DW
+    amount_of_turn: just over ⅛ between 1-2
+    feet_position: LF to side
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: just under ⅛ between 2-3
+    feet_position: RF closes to LF
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  sway: Nil
+  timing: null
+level: student_teacher
+leader:
+  beat_value: null
+  cbm: on 1
+  footwork: 1 H; 2 T; 3 T (both feet) then TH (RF)
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 2
+    step_number: 1
+  - alignment: Backing wall
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF closes to RF without weight
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  sway: Nil
+  timing: null
+notes:
+- The following step is taken back with Follower OP. May also be commenced DC or DW.
+- The Follower gets a slight foot swivel between 2-3 and her body will turn slightly less than ⅛.
+precede:
+  associate:
+  - RF Closed Change — Reverse Turn — 4-6 Reverse Turn after Natural Spin Turn or Closed Impetus — Hesitation Change — Double
+    Reverse Spin — Wing
+  fellow: []
+  licentiate: []
+timing: null
+variant_name: Leader

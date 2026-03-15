@@ -1,0 +1,104 @@
+_source_pdf_page: 54
+beat_value: null
+dance: tango
+figure_name: Rock Turn
+figure_number: 5
+follow:
+  associate:
+  - As for Closed Promenade
+  fellow: []
+  licentiate: []
+follower:
+  amount_of_turn: ¼ to R between 1-3, ¼ to L between 4-6
+  cbm: on 1 (slight) and 5
+  footwork: BH; H; IE or BH; H; H; IE of BH; Whole foot
+  steps:
+  - alignment: DW
+    amount_of_turn: null
+    feet_position: LF back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing centre
+    amount_of_turn: null
+    feet_position: RF fwd and slightly R/forwards
+    rise_and_fall: null
+    step_number: 2
+  - alignment: DW against the LOD
+    amount_of_turn: null
+    feet_position: LF back and slightly L/forwards, L side leading
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF fwd, small step, R side leading
+    rise_and_fall: null
+    step_number: 4
+  - alignment: To centre
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 6
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF closes to RF slightly fwd
+    rise_and_fall: null
+    step_number: 7
+  sway: null
+  timing: SQQS&QS
+level: student_teacher
+leader:
+  amount_of_turn: ¼ to R between 1-3, ¼ to L between 4-6
+  cbm: on 1 (slight) and 5
+  footwork: H; IE or BH; H; IE or BH; BH; IE of foot; Whole foot
+  steps:
+  - alignment: DW
+    amount_of_turn: null
+    feet_position: RF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing centre
+    amount_of_turn: null
+    feet_position: LF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: DW against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight forward to RF R side leading
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF back small step L side leading
+    rise_and_fall: null
+    step_number: 4
+  - alignment: To centre
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Pointing DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 6
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF closes to LF slightly back
+    rise_and_fall: null
+    step_number: 7
+  sway: null
+  timing: SQQS&QS
+notes: []
+precede:
+  associate:
+  - Walk on LF — Progressive Side Step — Natural Promenade Turn omitting the placing of LF to side without weight and not
+    turning Follower to PP, then dancing from step 2 of Rock Turn
+  fellow: []
+  licentiate: []
+timing: SQQS&QS
+variant_name: null

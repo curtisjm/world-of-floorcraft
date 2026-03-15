@@ -1,0 +1,76 @@
+_source_pdf_page: 68
+beat_value: null
+dance: quickstep
+figure_name: Change of Direction
+figure_number: null
+follow:
+  associate:
+  - Chase Reverse Turn — Progressive Chase to R. At corner — Cross Chase
+  fellow: []
+  licentiate: []
+follower:
+  beat_value: null
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 T iE of TH; 3 iE of T (RF); 4 T
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 1-3
+    feet_position: LF diag back L side leading
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF closes to LF slightly back without weight
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: SSRS
+  timing: SSSS
+level: student_teacher
+leader:
+  beat_value: null
+  cbm: on 1 and 4
+  footwork: 1 H; 2 iE of TH; 3 iE of T (LF); 4 H
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DW R toe pointing towards LOD
+    amount_of_turn: ⅛ between 1-3
+    feet_position: RF diag fwd R side leading
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF closes to RF slightly back without weight
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: SSLS
+  timing: SSSS
+notes:
+- Up to ⅛ turn may be made when the figure is danced at a corner.
+precede:
+  associate:
+  - Heel Pivot
+  - Reverse Pivot
+  - Double Reverse Spin
+  fellow: []
+  licentiate: []
+timing: SSSS
+variant_name: Leader

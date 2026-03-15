@@ -1,0 +1,61 @@
+_source_pdf_page: 69
+beat_value: null
+dance: waltz
+figure_name: The Fallaway Whisk
+figure_number: null
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1
+  footwork: 1 HT; 2 TH; 3 TH
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Backing DC against LOD
+    amount_of_turn: ⅜ between 1-2 Body turns to R
+    feet_position: LF to side
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing DC against LOD
+    amount_of_turn: ¼ between 2-3 Body continues to turn R
+    feet_position: RF crossed ready behind LF in Fallaway
+    rise_and_fall: Lower on 3
+    step_number: 3
+  sway: SSL
+level: student_teacher
+leader:
+  cbm: on 1
+  footwork: 1 TH; 2 TH; 3 TH
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn R
+    feet_position: LF back
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Pointing DC
+    amount_of_turn: ⅜ between 1-2 Body turns to R
+    feet_position: RF to side and slightly back
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: Body continues to turn R
+    feet_position: LF crossed ready behind RF in Fallaway
+    rise_and_fall: Lower on 3
+    step_number: 3
+  sway: SSR
+notes:
+- Some Men prefer to use the Footwork of 'T' on step 2. Both are correct. A Back Whisk, with normal Whisk rise, may be used
+  instead of the Fallaway Whisk.
+- The Follower's head may be turned to the L or R on step 3. Both are correct.
+precede:
+  associate: []
+  fellow:
+  - As for Back Whisk
+  licentiate: []
+timing: null
+variant_name: null

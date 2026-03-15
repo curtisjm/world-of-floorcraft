@@ -1,0 +1,63 @@
+_source_pdf_page: 30
+beat_value: null
+dance: foxtrot
+figure_name: Hover Feather
+figure_number: 12
+follow:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Feather Step
+follower:
+  cbm: on 3
+  footwork: 1 TH; 2 TH; 3 H
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF diag back, R side leading
+    rise_and_fall: Rise e/o Brush step Up
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: Up NFR Lower e/o 2
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 3
+  sway: RSS
+level: licentiate
+leader:
+  cbm: on 3
+  footwork: 1 T 2 TH; 3 H
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF diag fwd preparing to step OP on following
+    rise_and_fall: Rise e/o preceding Heel Pull
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Up Lower e/o 2
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 3
+  sway: LSS
+notes:
+- The diagonal preparation of LF is made slightly to R on preceding Heel Pull. The footwork of the Heel Pull will be:- 1 TH;
+  2 IE; HE of foot, whole foot, then 1 of RF, slight pressure on Ball of LF.
+- Body will overrun slightly on the ball of L F at the end of the Brush step. The Follower will rise from the ball of L F
+  at the end of the Brush step. The L heel does not touch the floor.
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - Heel Pull — 1-2 Hover Telemark counted SS
+timing: QQS
+variant_name: Taken after a Heel Pull

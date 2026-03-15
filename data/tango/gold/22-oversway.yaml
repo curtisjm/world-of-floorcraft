@@ -1,0 +1,82 @@
+_source_pdf_page: 63
+beat_value: null
+dance: tango
+figure_name: Oversway
+figure_number: 22
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1. Body turns more on 4
+  footwork: BH; Whole foot; BH; IE of B or LF
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: L toe pointing down LOD
+    amount_of_turn: null
+    feet_position: L heel closes to R heel
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down then along LOD. End backing wall
+    amount_of_turn: null
+    feet_position: RF fwd and sideways
+    rise_and_fall: null
+    step_number: 3
+  - alignment: L toe pointing back against LOD
+    amount_of_turn: null
+    feet_position: Position held. R knee flexes
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: fellow
+leader:
+  cbm: on 1. Body turns slightly more on 4
+  footwork: H; BH; IE of B; H (LF) and IE of B of RF
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down line along LOD, L toe pointing between waist and DW
+    amount_of_turn: null
+    feet_position: LF back and sideways
+    rise_and_fall: null
+    step_number: 3
+  - alignment: R toe pointing DW against LOD
+    amount_of_turn: null
+    feet_position: Position held. L knee flexes
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes:
+- The Footwork of step 3 is given as IE of B to indicate that the Heel lowers the line.
+- As for Open Reverse Turn Follower outside.
+- ENDINGS
+- 1 Transfer weight to RF and place LF to side in PP without weight, QQ
+- 2 Close RF to LF and place LF to side in PP without weight, & S
+- 3 Chase to R, RLR, cross LF behind RF in PP into Whisk, RF fwd and across in PP and CBMP, place LF to side in PP without
+  weight, Q&QSQQ or Q&QQQS
+- 4 Chase and Whisk as no. 3 above, 2-3 Promenade Link, Q&QSQQ or Q&QQQS
+- 5 Chase and Whisk as no. 3 above then close RF to LF and place LF to side in PP without weight, Q&QSQS
+- 6 Chase to R, RL, to complete turn, then close LF to RF to side in PP without weight, QQQQ, QQQQ&QQ or QQQQ&QQQ
+- 7 Spin to R, RL, then continue as no. 3 above, QQQ&QSQQ or QQQ&QQS — no. 4 above, QQQ&QSQQ or QQQ&QQQS — no. 5 above, QQQ&QSQS
+- 'DROP OVERSWAY: This advanced method of dancing the Oversway is to dance steps 1-3 and hold the position, keeping quite
+  still, body tilted slightly to L, Follower to R with her head to R, QQS. Keep the feet in place and change abruptly to R
+  away, lowering into L knee also lowering R shoulder and turning head slightly to R, Follower to L, S.'
+precede:
+  associate: []
+  fellow:
+  - As for Open Reverse Turn, Leader outside
+  licentiate: []
+timing: QQSS
+variant_name: null

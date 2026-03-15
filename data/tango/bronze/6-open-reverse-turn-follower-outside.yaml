@@ -1,0 +1,98 @@
+_source_pdf_page: 54
+beat_value: null
+dance: tango
+figure_name: Open Reverse Turn, Follower Outside
+figure_number: 6
+follow:
+  associate:
+  - Walk on RF — Progressive Side Step — Progressive Link — Back Corté — LF Rock — any Promenade figure, see 'Methods of preceding
+    any Promenade figure' page 99. See also description of Open Finish page 100
+  fellow:
+  - Fallaway Four Step — Five Step — Contra Check
+  licentiate:
+  - Four Step — Outside Swivel — Four Step Change — Brush Tap
+follower:
+  amount_of_turn: ⅛ to L
+  cbm: on 1 and 4
+  footwork: BH; BH; H; H; IE of BH; Whole foot
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Pointing down LOD
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP OP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF closes to RF slightly
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+  timing: QQS&QS
+level: student_teacher
+leader:
+  amount_of_turn: ⅛ to L
+  cbm: on 1 and 4
+  footwork: H; BH; BH; BH; IE of foot; Whole foot
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Pointing DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF back to LF slightly
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+  timing: QQS&QS
+notes: []
+precede:
+  associate:
+  - Walk on RF — Closed or Open Promenade or any Closed or Open Finish ended DC
+  fellow:
+  - Fallaway Reverse and Slip Pivot
+  licentiate:
+  - Reverse Promenade Link — Outside Swivel ended DC — Four Step Change — Promenade Tap ended DC
+timing: QQS&QS
+variant_name: null

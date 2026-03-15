@@ -1,0 +1,62 @@
+_source_pdf_page: 47
+beat_value: null
+dance: quickstep
+figure_name: CROSS SWIVEL
+figure_number: 23
+follow:
+  associate: []
+  fellow:
+  - The Heel Pull or RF back — Running Finish — Fishtail — LF back with Follower OP, TH, S, into Tipsy to R.
+  licentiate: []
+follower:
+  cbm: on 1 and 3
+  footwork: 1 TH; 2 H then IE of T; 3 T
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: Com to turn L ¼ between 1-2
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: Pressure to R of LF, slightly fwd without weight
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 3
+  sway: SRS
+  timing: SSS
+level: fellow
+leader:
+  cbm: on 1 and 3
+  footwork: 1 H; Pressure on T of LF with foot flat and pressure on IE of T of RF; 3 H
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: Com to turn L ¼ between 1-2
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF closes (or nearly closes) to LF, back without weight
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 3
+  sway: SLS
+  timing: SSS
+notes:
+- The Heel of RF can stay in contact with the floor until the turn is completed.
+precede:
+  associate: []
+  fellow:
+  - Reverse Pivot — Double Reverse Spin.
+  licentiate: []
+timing: SSS
+variant_name: null

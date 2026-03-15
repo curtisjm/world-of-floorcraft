@@ -1,0 +1,63 @@
+_source_pdf_page: 48
+beat_value: null
+dance: quickstep
+figure_name: Rumba Cross
+figure_number: 25
+follow:
+  associate: []
+  fellow:
+  - 5-11 Running Right Turn — RF fwd, S, into Tipsy to L — Rumba Cross
+  licentiate: []
+follower:
+  cbm: Nil
+  footwork: 1 T; 2 T; 3 TH
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Slight turn to R at end of step
+    feet_position: RF back long step
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing wall
+    amount_of_turn: ⅛ to R between 1-2
+    feet_position: LF crosses in front of RF
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing LOD End backing LOD
+    amount_of_turn: ¼ between 2-3 (Continued turn is on 3)
+    feet_position: RF fwd between partner's feet backing LOD
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SLS
+  timing: QQS
+level: fellow
+leader:
+  cbm: Nil
+  footwork: 1 H T; 2 T; 3 TH
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Slight turn to R at end of step
+    feet_position: LF fwd long step
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Facing wall
+    amount_of_turn: ⅛ to R between 1-2
+    feet_position: RF crosses behind LF
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing LOD End facing LOD
+    amount_of_turn: ¼ between 2-3 (body turns less). Com to turn ⅛ on 3 (as action commences)
+    feet_position: LF to side across LOD slightly back. End with RF free
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SLS
+  timing: QQS
+notes:
+- Figure may be used at the beginning of step 1 of the Rumba Cross. The Rumba Cross may be danced twice.
+precede:
+  associate: []
+  fellow:
+  - RF fwd down LOD, S, after Natural Pivot Turn or Rumba Cross. At corner — 1-5 Natural Turn, a sway to L would be used on
+    step 5
+  licentiate: []
+timing: null
+variant_name: LEADER

@@ -1,0 +1,70 @@
+_source_pdf_page: 59
+beat_value: null
+dance: tango
+figure_name: Back Open Promenade
+figure_number: 16
+follow:
+  associate: []
+  fellow: []
+  licentiate:
+  - Four Step Reverse Outside Swivel — Four Step Change — Brush Tap
+  - Fallaway Four Step — Five Step
+follower:
+  cbm: 'Nil. TIMING: SQQS'
+  footwork: H; H; BH; BH
+  steps:
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: RF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Pointing DC
+    amount_of_turn: null
+    feet_position: RF back and slightly fwd
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: licentiate
+leader:
+  cbm: 'on 2. TIMING: SQQS'
+  footwork: H; H; BH; BH
+  steps:
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: LF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF back and slightly back
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes: []
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Closed Promenade
+timing: SQQS
+variant_name: null

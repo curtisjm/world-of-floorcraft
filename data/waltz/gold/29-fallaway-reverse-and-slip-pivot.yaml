@@ -1,0 +1,81 @@
+_source_pdf_page: 22
+dance: waltz
+figure_name: Fallaway Reverse and Slip Pivot
+figure_number: 29
+follow:
+  associate: []
+  fellow:
+  - Whisk
+  - Double Reverse Spin
+  - Progressive Chasse to R
+  - Closed or Open Telemark
+  - Contra Check
+  - This figure may be danced into a corner, commencing DW or LOD to follow with a Reverse figure DC or LOD of new LOD.
+  licentiate: []
+follower:
+  beat_value: 1, 1, ½, ½ or 1, ½, ½, 1
+  cbm: on 3 and 4
+  footwork: 1 TH; 2 T; 3 T; 4 TH
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing DC Moving down LOD
+    amount_of_turn: null
+    feet_position: LF back in Fallaway
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing DC End step Pivot foot in CBMP
+    amount_of_turn: ⅛ to L on 3 (Pivot)
+    feet_position: RF back in CBMP, heel of Pivot foot in contact with LF
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: To centre End backing LOD or DW
+    amount_of_turn: ¼ or ⅛ on 4 (pivot)
+    feet_position: LF fwd in CBMP. RF held in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: Nil
+  timing: 1, 2, 3 & OR 1, 2 & 3
+level: fellow
+leader:
+  beat_value: 1, 1, ½, ½ or 1, ½, ½, 1
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 THT
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DW Moving down LOD
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF back in Fallaway
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 2-3 body turns less
+    feet_position: LF back in CBMP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: To centre, toe turned out and facing LOD or DW
+    amount_of_turn: ⅛ between 3-4 ¼ or ⅛ on 4 (pivot)
+    feet_position: RF back. LF held in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: Nil
+  timing: 1, 2, 3 & OR 1, 2 & 3
+notes: []
+precede:
+  associate: []
+  fellow:
+  - 4-6 Reverse Turn
+  - Hesitation Change
+  - Double Reverse Spin
+  - Reverse Pivot
+  - Wing
+  - Closed Wing
+  licentiate: []
+variant_name: null

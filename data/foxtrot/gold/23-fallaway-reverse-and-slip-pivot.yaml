@@ -1,0 +1,92 @@
+_source_pdf_page: 37
+beat_value: 2, 1, 1, 2; 2, 1, 1, 1; 2, 1, ½, ½, 1; 2, 1, ½, ½, 1; 2, 1, ½, ½, 1, 1; ½, ½, ½, ½
+dance: foxtrot
+figure_name: Fallaway Reverse and Slip Pivot
+figure_number: 23
+follow:
+  associate: []
+  fellow:
+  - Change of Direction
+  - Hover Telemark
+  - Reverse Wave
+  - Fallaway Reverse and Slip Pivot
+  - At corner — Basic Weave
+  - Open Telemark
+  licentiate: []
+follower:
+  cbm: on 3 and 4.
+  footwork: 1 TH; 2 TH; 3 T; 3 T; 4 TH.
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Facing DW (Moving down LOD)
+    amount_of_turn: null
+    feet_position: LF back in Fallaway, L side leading
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing DC, end facing centre
+    amount_of_turn: ⅛ to L on 3 (Pivot)
+    feet_position: RF fwd in CBMP, end R heel facing centre near R hip of Leader
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: To centre, end facing LOD or DW
+    amount_of_turn: ½ or ⅜ to L on 4 (Pivot)
+    feet_position: LF fwd in CBMP, RF held in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: Nil
+level: fellow
+leader:
+  cbm: on 1 and 4.
+  footwork: '1 HT; 2 TH; 3 T; 4 TH; 5 TH. TIMING: SQQS. SQQQL. SQ&Q. SQ&Q. SQ&QQ. QQQQ. BEAT VALUE: 2, 1, 1, 2; 2, 1, 1, 1;
+    2, 1, ½, ½, 1; 2, 1, ½, ½, 1; 2, 1, ½, ½, 1, 1; ½, ½, ½, ½.'
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DW (Moving down LOD)
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF back in Fallaway, R side leading
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ to L Body turns ⅛
+    feet_position: LF back in Fallaway
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: To centre, be turned in, end facing LOD or DW
+    amount_of_turn: ¾ to R, be turned ⅜ to or ⅛ (Pivot)
+    feet_position: RF fwd, LF held in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: Nil
+notes:
+- When the RF moves on step 4 it should be pressed firmly into the floor. Note the footwork on step 2 If the R heel lowers,
+  the weight is likely to move too far back.
+- A compact position in the Fallaway is easier if the Follower keeps her head turned to L.
+precede:
+  associate: []
+  fellow:
+  - Feather Step
+  - Feather Finish
+  - Feather Ending
+  - Hover Feather
+  - Top Spin
+  - Natural Telemark
+  - Hover Cross
+  - Natural Twist Turn
+  - Natural Zig-Zag
+  - Natural Weave from PP
+  - Natural Hover Telemark
+  - At corner — Reverse Turn
+  - Natural Weave
+  - Basic Weave
+  - Reverse from PP
+  licentiate: []
+timing: SQQS. SQQQL. SQ&Q. SQ&Q. QQQQ
+variant_name: null

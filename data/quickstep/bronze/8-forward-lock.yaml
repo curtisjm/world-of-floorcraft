@@ -1,0 +1,62 @@
+_source_pdf_page: 41
+beat_value: null
+dance: quickstep
+figure_name: Forward Lock
+figure_number: 8
+follow:
+  associate:
+  - Any Natural figure
+  fellow:
+  - Tipsy to L onto 2-12 VR DC or 2-3 Back Lock down LOD. At corner
+  - LF back with Follower OP, TH, S, into Six Quick Run
+  licentiate:
+  - Quick Open Reverse
+  - Fishtail. At corner
+  - LF back with Follower OP, TH, S, into Four Quick Run or 2-12 VR
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+  timing: null
+level: student_teacher
+leader:
+  cbm: on 1 (slight) and 5
+  footwork: 1 HT; 2 T; 3 T; 4 TH; 5 H
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF crosses behind LF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF diag fwd
+    rise_and_fall: Up Lower e/o 4
+    step_number: 4
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 5
+  sway: Nil
+  timing: SQQSS
+notes:
+- Although the figure travels DW throughout, the body should be facing between wall and DW.
+precede:
+  associate:
+  - Any figure ending with the RF forward OP
+  fellow: []
+  licentiate: []
+timing: SQQSS
+variant_name: null

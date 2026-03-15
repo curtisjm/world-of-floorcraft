@@ -1,0 +1,62 @@
+_source_pdf_page: 60
+beat_value: null
+dance: tango
+figure_name: Outside Swivel Method 2
+figure_number: 17
+follow:
+  associate: []
+  fellow: []
+  licentiate:
+  - If ended DW — as for Closed Promenade
+  - If ended DC — any Reverse Turn Step
+  - Overturned Four Step
+  - Overaway — Fallaway Reverse and Step Pivot — Five Step
+follower:
+  cbm: on 1 and 2. ⅛ to R on 1, ⅛ to L between 2-3
+  footwork: HB (Foot flat) and IE of B and LF; HB (Foot flat); IE of B
+  steps:
+  - alignment: Against LOD. End facing centre
+    amount_of_turn: null
+    feet_position: RF fwd in PP OP, LF closes slightly back without weight. End in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DC Pointing to centre
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF placed to side small step
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+level: licentiate
+leader:
+  cbm: ⅛ to L
+  footwork: BH with pressure on B of RF; H; IE of B
+  steps:
+  - alignment: Against LOD. End facing DC
+    amount_of_turn: null
+    feet_position: LF back in CBMP, RF moves leftwards in front of LF without weight
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Pointing DC
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF placed to side small step without weight
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+notes: []
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - Open Promenade or any Open Finish ended DW — any Promenade or any Closed Finish — 1-2 Four Step
+timing: SQQ
+variant_name: Turning to Left after an Open Finish which has ended DW

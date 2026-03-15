@@ -1,0 +1,75 @@
+_source_pdf_page: 45
+beat_value: null
+dance: quickstep
+figure_name: Quick Open Reverse
+figure_number: 17
+follow:
+  associate: []
+  fellow:
+  - Hover Corté.
+  licentiate:
+  - Progressive Chase — Reverse Pivot (after step 3) — Four Quick Run.
+follower:
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 T; 3 TH; 4 H
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Pointing to LOD
+    amount_of_turn: ⅛ between 1-2. Slight body turn
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing LOD
+    amount_of_turn: Slight body turn
+    feet_position: RF fwd in CBMP
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Facing LOD
+    amount_of_turn: —
+    feet_position: LF fwd
+    rise_and_fall: —
+    step_number: 4
+  sway: SRRS
+level: licentiate
+leader:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 T
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF back in CBMP
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Backing LOD
+    amount_of_turn: —
+    feet_position: RF back
+    rise_and_fall: —
+    step_number: 4
+  sway: SLLS
+notes:
+- If commenced DC turn ⅛ between 1-2. A Reverse Pivot may be used on step 4.
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - Progressive Chase — Forward Lock — Tipple Chassé — Running Finish — Running Right Turn — Four Quick Run — V6 — Closed
+    Telemark.
+  - Double Reverse Spin — Reverse Pivot — Underturned Tipple Chassé to R — Forward Lock.
+  - Reverse Pivot may be danced fwd 1-5 Natural Turn at side of room into 2-5 Forward Lock.
+  - Tipsy to R into 2-3 Forward Lock.
+timing: SQQS
+variant_name: null

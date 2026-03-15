@@ -1,0 +1,66 @@
+_source_pdf_page: 21
+beat_value: null
+dance: waltz
+figure_name: Closed Wing
+figure_number: 27
+follow:
+  associate: []
+  fellow:
+  - Any Reverse figure taking step 1 in CBMP, OP on L side. If ended DW
+  - Whisk
+  licentiate: []
+follower:
+  cbm: Nil. SLIGHT SWAY to L on 2 and 3
+  footwork: 1 TH; 2 T; 3 TH
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: —
+    feet_position: LF back in CBMP
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: —
+    feet_position: RF to side and slightly back (small step)
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing DW against LOD
+    amount_of_turn: Slight body turn to L
+    feet_position: LF fwd in CBMP, OP on R side
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: null
+level: fellow
+leader:
+  cbm: Nil
+  footwork: 1 H; 2 and 3 Whole foot, and pressure on IE of T of LF
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: —
+    feet_position: RF fwd in CBMP, OP on L side
+    rise_and_fall: —
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: Slight body turn to L on 2 and 3
+    feet_position: LF crosses close to RF, toe turned in
+    rise_and_fall: Slight rise on 2 and 3 NFR
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: —
+    feet_position: RF fwd in CBMP, OP on L side, without weight
+    rise_and_fall: —
+    step_number: 3
+  sway: Nil
+notes:
+- The Follower should keep her head turned well to the L on step 3, and keep her poise back.
+precede:
+  associate: []
+  fellow:
+  - Closed from PP
+  - Outside Change
+  - Basic Weave
+  - Weave from PP
+  - Closed Telemark
+  - Turning Lock
+  licentiate: []
+timing: null
+variant_name: null

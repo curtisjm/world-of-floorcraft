@@ -1,0 +1,72 @@
+_source_pdf_page: 31
+beat_value: null
+dance: foxtrot
+figure_name: Hover Telemark to PP
+figure_number: 13
+follow:
+  associate: []
+  fellow:
+  - Natural Zig-Zag from PP. At corner — Curved Feather to Back Feather (commencing in PP)
+  licentiate:
+  - Overturned Natural Weave (commencing in PP)
+  - Feather Ending
+  - Weave from PP
+follower:
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 T (LF) then IE of T of RF; 3 TH; 4 H.
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: ¼ between 1-2
+    feet_position: LF to side RF brushes towards LF
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Pointing DC Moving DC
+    amount_of_turn: ⅛ or ¼ or no turn Body turns less
+    feet_position: RF to side in PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Pointing DC centre Moving DC
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: SRSS
+level: licentiate
+leader:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T (RF) then IE of T of LF; 3 TH; 4 H.
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: ¼ between 1-2
+    feet_position: RF to side LF brushes towards RF
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Pointing DC Body facing LOD
+    amount_of_turn: ⅛ between 2-3 Body turns less
+    feet_position: LF fwd in PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Pointing DC Body facing LOD
+    amount_of_turn: null
+    feet_position: RF fwd in PP and across in PP
+    rise_and_fall: null
+    step_number: 4
+  sway: SLSS
+notes: []
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Hover Telemark
+timing: SQQS
+variant_name: null

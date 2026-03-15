@@ -1,0 +1,38 @@
+_source_pdf_page: 45
+beat_value: null
+dance: quickstep
+figure_name: Double Reverse Spin
+figure_number: 16
+follow:
+  associate:
+  - Chassé Reverse Turn — Progressive Chassé to R — Double Reverse Spin.
+  fellow:
+  - Cross Swivel — LF fwd, H, S, into Tipsy to R.
+  licentiate:
+  - Quick Open Reverse — Closed Telemark.
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Natural Turn with Hesitation — Reverse Pivot — Double Reverse Spin.
+    rise_and_fall: null
+    step_number: 1
+  sway: null
+notes:
+- Technical details of the Double Reverse Spin are given in the Waltz charts Figure 13.
+- When danced in Quickstep the count is SSQQ.
+precede:
+  associate:
+  - Natural Turn with Hesitation — Reverse Pivot — Double Reverse Spin.
+  fellow: []
+  licentiate: []
+timing: null
+variant_name: null

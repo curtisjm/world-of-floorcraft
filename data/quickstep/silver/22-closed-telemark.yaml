@@ -1,0 +1,25 @@
+_source_pdf_page: 47
+beat_value: null
+dance: quickstep
+figure_name: CLOSED TELEMARK
+figure_number: 22
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower: null
+level: licentiate
+leader: null
+notes:
+- 'Technical details of the Closed Telemark are given in the Waltz charts, Figure 18. When danced in Foxtrot the timing will
+  be: SSSS, SQQS or QQSS (after a Reverse Pivot).'
+precede:
+  associate: []
+  fellow:
+  - Any figure commencing with RF fwd.  At corner — LF back with Follower OP, TH, S, into Four Quick Run as step 1 of Six
+    Quick Run
+  - At corner — LF back with Follower OP, TH, S, into Six Quick Run.
+  licentiate:
+  - Reverse Pivot — Double Reverse Spin.
+timing: null
+variant_name: null

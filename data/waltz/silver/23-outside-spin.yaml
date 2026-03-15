@@ -1,0 +1,66 @@
+_source_pdf_page: 19
+beat_value: null
+dance: waltz
+figure_name: Outside Spin
+figure_number: 23
+follow:
+  associate: []
+  fellow:
+  - If ended backing LOD — Turning Lock to R.
+  licentiate:
+  - As for Natural Spin Turn.
+follower:
+  cbm: on 1
+  footwork: 1 THT; 2 T; 3 TH.
+  steps:
+  - alignment: Facing DC against LOD ¾ be turned in.
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd in CBMP OP
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing against LOD Facing wall
+    amount_of_turn: ⅜ between 1-2
+    feet_position: LF closes to RF
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing against LOD End backing DW
+    amount_of_turn: ⅜ between 2-3 ¼ on 3
+    feet_position: RF fwd ending in RF back
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: Nil
+level: licentiate
+leader:
+  cbm: on 1 and 2
+  footwork: 1 THT; 2 HT; 3 TH.
+  steps:
+  - alignment: DC against LOD ¾ be turned in.
+    amount_of_turn: ¾ to R on 1 (pivot)
+    feet_position: LF back in CBMP OP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing against LOD Cont to turn.
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP OP
+    rise_and_fall: Rise e/o 2
+    step_number: 2
+  - alignment: Facing DC End Facing DW
+    amount_of_turn: ⅛ between 2-3 ¼ on 3
+    feet_position: LF to side ending in L side back
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: Nil
+notes:
+- 'The Outside Spin may be underturned to back DC. Amounts of turn would be: LEADER: ⅝ from backing DW: ⅝ on 1, ⅛ between
+  2-3. FOLLOWER: ⅜ from facing DW and ⅛ on 1: ⅛ on step 2, ⅛ between 2-3. LEADER: ⅜ from facing DW to backing DC: ⅝ on 1,
+  ⅛ between 2-3. FOLLOWER: ⅛ from facing DW against LOD: ⅛ between 1-2, ⅛ between 2-3. ⅛ from facing DW against LOD to backing
+  DC: ⅛ between 1-2, ⅜ between 2-3. When the Outside Spin is underturned, the foot position of step 3 will be ''side and slightly
+  back'' (Leader) and ''diag. fwd'' (Follower) as in step 6 Natural Spin Turn and step 3 Closed Impetus.'
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - Reverse Corté turning ¼ after underturned Natural Spin Turn or Closed Impetus at side of room — Back Lock — Progressive
+    Chasse to R — Cross Hesitation.
+timing: null
+variant_name: null

@@ -1,0 +1,58 @@
+_source_pdf_page: 25
+dance: foxtrot
+figure_name: Three Step
+figure_number: 2
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  beat_value: null
+  cbm: on 3
+  footwork: 1 TH; 2 TH; 3 T
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: LF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: Up NFR. Lower e/o
+    step_number: 2
+  sway: RRS
+  timing: QQS
+level: student_teacher
+leader:
+  beat_value: null
+  cbm: on 3
+  footwork: 1 HT; 2 TH; 3 T
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: RF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 2
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: RF fwd
+    rise_and_fall: null
+    step_number: 3
+  sway: LLS
+  timing: S S S
+notes:
+- The Three Step may also be used on steps 1 and 2.
+- As an alternative to the alignment used in steps 1 and 2. When danced in this direction it may be ended facing DW or curved
+  to L to end facing LOD.
+- Although not mentioned above, the figure could be danced with a slight R side lead on steps 1 and 2.
+precede:
+  associate: []
+  fellow: []
+  licentiate: []
+variant_name: null

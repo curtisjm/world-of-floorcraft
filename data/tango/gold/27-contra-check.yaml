@@ -1,0 +1,59 @@
+_source_pdf_page: 65
+beat_value: null
+dance: tango
+figure_name: Contra Check
+figure_number: 27
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1
+  footwork: 1 B; 2 BH; 3 B LF with foot flat and IE of B of RF
+  steps:
+  - alignment: DW feet backing almost LOD
+    amount_of_turn: null
+    feet_position: RF back in CBMP slightly flexing the knees
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DC against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight fwd to LF
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF placed in side without weight in PP
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+level: fellow
+leader:
+  cbm: on 1
+  footwork: 1 B (Flat); 2 BH; 3 IE of B of LF
+  steps:
+  - alignment: DW pointing almost down LOD
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP slightly flexing the knee
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DC against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight back to RF
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF placed in side without weight
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+notes:
+- Promenade F — Closed Finish — Promenade Link — Outside Swivel ended DW — Brush Tap — Fallaway Reverse and Slip Pivot.
+- 'Follow: F Any Promenade figure.'
+precede:
+  associate: []
+  fellow: []
+  licentiate: []
+timing: SQQ
+variant_name: null

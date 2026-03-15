@@ -1,0 +1,48 @@
+_source_pdf_page: 21
+beat_value: null
+dance: waltz
+figure_name: LEFT WHISK - Precedes and Follows
+figure_number: 25
+follow:
+  associate: []
+  fellow:
+  - Using on both feet for approximately ⅜ turn to R whilst Follower runs round Leader R) R) L (12&3), follow with
+  - Back Whisk
+  - underturned Outside Spin
+  - Closed or Open Impetus. Release LF and step back LF into Outside Change or Back Whisk
+  licentiate: []
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+level: fellow
+leader:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+notes:
+- Turn may be made to L between 2-3 to end in PP moving DC.
+- 'Taking Left Whisk on 1st beat: Dance Natural Spin Turn and 1-4 Turning Lock. End with LF to side pointing DW — then — 1.
+  Cross RF behind LF into Left Whisk 2. Replace weight to LF, Follower RF fwd 3. RF to side and slightly fwd pointing DW against
+  LOD, Follower in line 1. LF fwd into Contra Check DW against LOD. Continue with steps 2-3 Contra Check turning ⅛ to L.'
+precede:
+  associate: []
+  fellow:
+  - Whisk
+  - Outside Change ended in PP
+  - Back Whisk
+  - Basic Weave ended in PP
+  - Weave from PP ended in PP
+  - Open Telemark
+  - Open Impetus
+  - Turning Lock ended in PP
+  - Contra Check
+  - Turning Lock to R. If commenced with RF back on step 1 — L) Reverse Turn
+  - Natural Spin Turn
+  - Closed Impetus
+  - underturned Outside Spin
+  licentiate: []
+timing: null
+variant_name: null

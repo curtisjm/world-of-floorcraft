@@ -1,0 +1,120 @@
+_source_pdf_page: 34
+beat_value: null
+dance: foxtrot
+figure_name: Weave from PP
+figure_number: 18
+follow:
+  associate: []
+  fellow:
+  - At corner
+  - Fallaway Reverse and Slip Pivot
+  licentiate:
+  - Three Step
+  - Change of Direction
+  - Hover Telemark
+  - Reverse Wave
+follower:
+  cbm: on 1, 4 and 8
+  footwork: 1 HT; 2 T; 3 T; 4 T; 5 T; 6 TH; 7 TH; 8 T
+  steps:
+  - alignment: Pointing to centre (Moving DC)
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd and back in PP and CBMP
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: ¼ between 1-2
+    feet_position: RF to side and slightly back
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Pointing to LOD
+    amount_of_turn: ¾ between 2-3 Body turns less
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Up
+    step_number: 3
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP OP
+    rise_and_fall: Up
+    step_number: 4
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Backing wall
+    amount_of_turn: ¾ between 5-6
+    feet_position: RF fwd
+    rise_and_fall: Up
+    step_number: 6
+  - alignment: null
+    amount_of_turn: ¼ between 6-7
+    feet_position: LF to side
+    rise_and_fall: Up NFR Lower e/o 7
+    step_number: 7
+  - alignment: Backing DW
+    amount_of_turn: Body turns
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 8
+  sway: SWAY SSRRLLS
+level: licentiate
+leader:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 T; 4 T; 5 T; 6 T; 7 TH; 8 H
+  steps:
+  - alignment: Pointing DC Body facing LOD
+    amount_of_turn: null
+    feet_position: LF fwd in PP and CBMP
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Pointing DC
+    amount_of_turn: Com to turn L ¾ between 1-2
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: Up Up
+    step_number: 3
+  - alignment: Backing LOD
+    amount_of_turn: ¼ between 3-4
+    feet_position: LF back in CBMP OP
+    rise_and_fall: Up
+    step_number: 4
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Pointing DW
+    amount_of_turn: ¾ between 5-6 Body turns less
+    feet_position: LF back and slightly fwd
+    rise_and_fall: Up
+    step_number: 6
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP OP
+    rise_and_fall: Up Lower e/o 7
+    step_number: 7
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 8
+  sway: SWAY SSLRSRRS TIMING SQQQQQQS
+notes:
+- On step 4 the Footwork of TH may be used. The Rise on 5 will then be 'Up NFR'
+- Alternative alignments for the Weave from PP may be found in the Waltz charts. Figure 17.
+- 'There are five important alignments of the Reverse Wave: (a) Facing LOD ¼ between 1-3; ¾ between 4-6, ¾ between 7-8 (or
+  less at a corner). (b) Facing LOD ¼ between 1-2; ⅛ between 2-3; ¾ between DW of new LOD, ½ between 6-7. (c) Facing DW ¼
+  between 1-3, then continue as in alignment (a). (d) Facing DC ⅛ between 2-3, then starting as in alignment (b). (e) Facing
+  DW to new LOD ¼ between 1-2; ⅜ between 2-3; ¼ between 7-8. Alignment (b) (d) and (e) are used round a corner.'
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - Open Telemark
+timing: SQQQQQS
+variant_name: LEADER

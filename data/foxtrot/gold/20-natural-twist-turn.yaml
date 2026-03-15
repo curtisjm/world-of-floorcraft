@@ -1,0 +1,89 @@
+_source_pdf_page: 35
+beat_value: 2, ½, ½, ¼, 1, 1, 2
+dance: foxtrot
+figure_name: Natural Twist Turn
+figure_number: 20
+follow:
+  associate: []
+  fellow:
+  - As for Natural Telemark plus — after step 5 continue into — 3-8 Natural Weave — 3-7 Closed Impetus and Feather Finish
+    — 3-8 Open Impetus — see next page
+  licentiate: []
+follower:
+  cbm: on 1, 4 and 6
+  footwork: TH; 2 T; 3 T; 4 T; 5 T and iE of T of RF; 6 TH; 7 TH; 8 T
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn R
+    feet_position: LF back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: ⅜ between 1-2
+    feet_position: RF closes to LF (Heel Turn)
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing almost DW
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: ⅛ between 2-4 ⅛ between 4-5
+    feet_position: RF diag back, L side leading RF fwd in CBMP.
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Backing DC
+    amount_of_turn: Body turn slightly more
+    feet_position: LF to side RF brushes to LF
+    rise_and_fall: Rise on 5
+    step_number: 5
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Complete figure with ¾ Hover Feather
+    rise_and_fall: null
+    step_number: 6 7 8
+  sway: SLLSRSS
+level: fellow
+leader:
+  cbm: on 1 and 6
+  footwork: HT; 2 TH; 3 T; 4 Twist on T of RF and H of LF with feet flat. End with weight on inside edge of T of LF. 5 T.
+    6 TH; 7 TH; 8 H
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: ⅜ between 1-2
+    feet_position: LF to side
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: RF crosses behind LF slightly to R of LF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DC
+    amount_of_turn: ⅜ on 4-5 Body turns slightly more
+    feet_position: LF diag fwd End as in Heel Pull
+    rise_and_fall: Rise on 5
+    step_number: 4-5
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Complete figure with ¾ Hover Feather
+    rise_and_fall: null
+    step_number: 6 7 8
+  sway: SRLSS
+notes:
+- There is no upward wing (rise) on the first 3 steps.
+- Note the overturn of Body on 5
+- Note overturn of Body on 5.
+precede:
+  associate: []
+  fellow:
+  - As for Natural Turn
+  licentiate: []
+timing: SQQ&SQQS
+variant_name: null

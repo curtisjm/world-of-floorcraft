@@ -1,0 +1,31 @@
+_source_pdf_page: 58
+beat_value: null
+dance: tango
+figure_name: Natural Promenade Turn following the Fallaway Promenade
+figure_number: 13
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  cbm: null
+  footwork: null
+  notes:
+  - 'alignment or direction: 1 DW pointing LOD; 2 Facing DW; 3 DW; 4 Backing LOD to end facing C'
+  steps: []
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  notes:
+  - 'alignment or direction: 1 DW Pointing to W; 2 To Wall; 3 Backing DW; 4 Down LOD end facing LOD'
+  steps: []
+  sway: null
+notes: []
+precede:
+  associate: []
+  fellow: []
+  licentiate: []
+timing: null
+variant_name: null

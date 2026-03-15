@@ -1,0 +1,74 @@
+_source_pdf_page: 62
+beat_value: ½, ¼, ¼, 1
+dance: tango
+figure_name: Brush Tap
+figure_number: 20
+follow:
+  associate: null
+  fellow:
+  - Fallaway Four Step — Overway — Fallaway Reverse and Slip Pivot — Contra Check
+  licentiate:
+  - Walk on LF — Progressive Link — Back Corté — LF Rock — Four Step — Four Step Change. If ended DC — Walk on LF — Any Reverse
+    Turn — Reverse Outside Swivel
+follower:
+  cbm: on 1
+  footwork: BH; Whole foot; Foot slightly off the floor; IE of B
+  steps:
+  - alignment: DW
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: LF to side
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF brushes to LF without weight
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF placed to side small step without weight
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: licentiate
+leader:
+  cbm: on 1
+  footwork: H; BH; Foot slightly off the floor; IE of B
+  steps:
+  - alignment: DW
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: RF to side
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: LF brushes to RF without weight
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: LF placed to side small step without weight
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes:
+- When the LF is placed on step 4 the L knee should veer inwards.
+- This figure may be danced without turn.
+precede:
+  associate: null
+  fellow: null
+  licentiate:
+  - As for Progressive Side Step
+  - Back Open Promenade
+timing: QQ&S
+variant_name: null

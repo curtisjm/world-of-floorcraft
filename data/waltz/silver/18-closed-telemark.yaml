@@ -1,0 +1,72 @@
+_source_pdf_page: 17
+beat_value: null
+dance: waltz
+figure_name: Closed Telemark
+figure_number: 18
+follow:
+  associate: []
+  fellow:
+  - Closed Wing
+  licentiate:
+  - Any Natural Figure
+follower:
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 HT; 3 TH; 4 T
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise slightly e/o 1 NFR
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: ⅜ between 1-2
+    feet_position: LF closes to RF (Heel Turn)
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: ⅜ between 2-3. Body turns less
+    feet_position: RF to side and slightly back
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: SRSS
+level: licentiate
+leader:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 H
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Almost backing LOD
+    amount_of_turn: Beg to turn L between 1-2
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Pointing DW
+    amount_of_turn: ¼ to ⅜ between 1-3. Body turns less
+    feet_position: LF to side and slightly back
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: SLSP
+notes: []
+precede:
+  associate: []
+  fellow:
+  - Closed Wing
+  licentiate:
+  - RF Closed Change
+  - 4-6 Reverse Turn after underturned Natural Spin Turn or Closed Impetus
+timing: null
+variant_name: null

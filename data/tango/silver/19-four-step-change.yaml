@@ -1,0 +1,76 @@
+_source_pdf_page: 61
+beat_value: ½, ½, ½, ½ or ½, ¼, ¼, 1.
+dance: tango
+figure_name: Four Step Change
+figure_number: 19
+follow:
+  associate: []
+  fellow:
+  - Oversway — Fallaway Reverse and Slip Pivot — Five Step
+  licentiate:
+  - Walk on LF — any Reverse Turn — Four Step — Reverse Outside Swivel. At corner — Brush Tap
+follower:
+  cbm: null
+  footwork: BH; Whole foot; Whole foot; BH
+  steps:
+  - alignment: DW
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF closes to LF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DW against LOD
+    amount_of_turn: null
+    feet_position: LF fwd very small step
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: licentiate
+leader:
+  cbm: null
+  footwork: H; BH; Whole foot; BH
+  steps:
+  - alignment: DW
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF closes to RF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DW against LOD
+    amount_of_turn: null
+    feet_position: RF back very small step
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes:
+- 'AMOUNT OF TURN: ¼ to L between 1-2.'
+- 'CBM on 1. TIMING: QQQ& or QQ&S. BEAT VALUE: ½, ½, ½, ½ or ½, ¼, ¼, 1.'
+- Note — The LF could close slightly forward on step 3.
+- 'AMOUNT OF TURN: ¼ to L between 1-2.'
+- 'CBM on 2. TIMING: QQQ& or QQ&S. BEAT VALUE: ½, ½, ½, ½ or ½, ¼, ¼, 1.'
+- Note — The RF could close slightly back on step 3.
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Progressive Side Step — Back Open Promenade
+timing: QQQ& or QQ&S
+variant_name: null

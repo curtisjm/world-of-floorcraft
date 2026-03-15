@@ -1,0 +1,43 @@
+_source_pdf_page: 17
+beat_value: null
+dance: waltz
+figure_name: Open Telemark and Cross Hesitation
+figure_number: 19
+follow:
+  associate: []
+  fellow: []
+  licentiate:
+  - 4-6 Natural Turn
+  - Outside Change
+  - Back Whisk
+  - Back Lock
+  - Outside Spin
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+level: licentiate
+leader:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+notes: []
+precede:
+  associate: []
+  fellow:
+  - Turning Lock to R
+  - Contra Check
+  licentiate:
+  - Whisk
+  - Outside Change ended in PP
+  - Back Whisk
+  - Basic Weave ended in PP
+  - Weave from PP ended in PP
+  - Open Telemark
+  - Open Impetus
+  - Turning Lock to R
+  - Contra Check
+timing: null
+variant_name: Cross Hesitation Precede

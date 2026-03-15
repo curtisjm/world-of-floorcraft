@@ -1,0 +1,62 @@
+_source_pdf_page: 49
+dance: quickstep
+figure_name: Tipsy to Left
+figure_number: 26
+follow:
+  associate: []
+  fellow:
+  - 2-5 Back Lock — 2-8 Tipple Chassé — 2-12 V6 — Tipsy to R
+  licentiate: []
+follower:
+  beat_value: ½, ½, 1
+  cbm: Nil
+  footwork: 1 T; 2 T; 3 IE of T and IE of T of LF
+  steps:
+  - alignment: According to preceding figure
+    amount_of_turn: Nil or up to ⅛ to R
+    feet_position: RF to side, small step
+    rise_and_fall: Slight rise on 1 and
+    step_number: 1
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Move LF halfway towards RF
+    rise_and_fall: Lower e/o 2
+    step_number: 2
+  - alignment: null
+    amount_of_turn: null
+    feet_position: RF to side (small step)
+    rise_and_fall: Down with sharp flexing of the knees
+    step_number: 3
+  sway: SRR or SSL
+  timing: Q & Q
+level: fellow
+leader:
+  beat_value: ½, ½, 1
+  cbm: Nil
+  footwork: 1 T; 2 T; 3 IE of T and IE of T of RF
+  steps:
+  - alignment: According to preceding figure
+    amount_of_turn: Nil or up to ⅛ to R
+    feet_position: LF to side, small step
+    rise_and_fall: Slight rise on 1 and
+    step_number: 1
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Move RF halfway towards LF
+    rise_and_fall: Lower e/o 2
+    step_number: 2
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF to side (small step)
+    rise_and_fall: Down with sharp flexing of the knees
+    step_number: 3
+  sway: SLL or SSR
+  timing: Q & Q
+notes:
+- Precede with a step forward on RF, Off in L or —
+precede:
+  associate: []
+  fellow:
+  - Any figure which leaves the RF free to move forward — 1-4 Tipple Chassé to R
+  licentiate: []
+variant_name: (cont)

@@ -1,0 +1,43 @@
+_source_pdf_page: 42
+beat_value: null
+dance: quickstep
+figure_name: Progressive Chassé to Right
+figure_number: 12
+follow:
+  associate:
+  - Closed Impetus
+  - Back Lock
+  - Tipple Chassé to R
+  - Running Finish
+  fellow:
+  - Tipsy to R. When ended DC
+  - Six Quick Run
+  licentiate:
+  - When ended DC or LOD
+  - Four Quick Run
+  - 6-12 Vik
+follower:
+  cbm: null
+  footwork: null
+  notes: null
+  steps: null
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  notes: null
+  steps: null
+  sway: null
+notes:
+- Technical details of the Progressive Chassé to R are given in the Waltz charts, Figure 16. When danced in Quickstep it is
+  counted — SQQQS.
+precede:
+  associate:
+  - Natural Turn with Hesitation
+  - Reverse Pivot
+  - Double Reverse Spin
+  fellow: []
+  licentiate: []
+timing: SQQQS
+variant_name: null

@@ -1,0 +1,25 @@
+_source_pdf_page: 52
+beat_value: null
+dance: tango
+figure_name: Open Finish
+figure_number: 1
+follow: null
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+notes: []
+precede:
+  associate:
+  - Any Promenade figure having placed LF to side without weight leading follower to turn to PP count 4.
+  fellow: []
+  licentiate: []
+timing: null
+variant_name: Side into

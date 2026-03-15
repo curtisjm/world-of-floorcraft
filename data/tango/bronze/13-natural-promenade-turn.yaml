@@ -1,0 +1,81 @@
+_source_pdf_page: 58
+beat_value: null
+dance: tango
+figure_name: Natural Promenade Turn
+figure_number: 13
+follow:
+  associate:
+  - Any Promenade figure — 2-7 Rock Turn
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 3
+  footwork: H; H; H; BH then IE of B or RF
+  notes:
+  - 'TIMING: SQQS'
+  - 'AMOUNT OF TURN: ¼ to R.'
+  - When 2-7 Rock Turn follows the Promenade Turn the placing of the RF to side on step 4 will be omitted.
+  steps:
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: RF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Pointing LOD
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF fwd between partner's feet
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing DW of new LOD. End facing DC
+    amount_of_turn: null
+    feet_position: LF to side and slightly back. RF placed to side without weight in PP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: associate
+leader:
+  cbm: on 4
+  footwork: H; H; BHB; H then IE of B or LF
+  notes:
+  - 'TIMING: SQQS'
+  - 'AMOUNT OF TURN: ¼ to R. If the Promenade Turn is danced along the side of the room ¼ is still used but the following
+    Promenade would be taken to the centre or at slight body turn to the L. When the Promenade Turn is danced at a side of
+    RF to enable the following Promenade to be taken DC. When the Promenade Turn is followed by the Rock Turn the 4th step
+    (the Promenade Turn will become the 1st step of the Rock Turn) is omitted. If danced along the side of the room into a
+    Rock Turn the Rock Turn will be commenced ⅛ to R and if the normal amount of turn is used, will end facing DC. It is however
+    better to turn to R on the Rock Turn and end facing DW.'
+  steps:
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: LF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DW
+    amount_of_turn: null
+    feet_position: RF fwd in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: LF to side and slightly back
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DW or new LOD. End facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP. LF to side without weight in PP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes: []
+precede:
+  associate:
+  - As for Closed Promenade
+  fellow: []
+  licentiate: []
+timing: SQQS
+variant_name: null

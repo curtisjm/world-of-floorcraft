@@ -1,0 +1,76 @@
+_source_pdf_page: 59
+beat_value: null
+dance: tango
+figure_name: Four Step
+figure_number: 15
+follow:
+  associate: []
+  fellow: []
+  licentiate:
+  - Any Promenade figure
+follower:
+  cbm: 'on 1 and 3. TIMING: QQQQ'
+  footwork: BH; Whole foot; HB (Foot flat); BH
+  steps:
+  - alignment: To wall
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Pointing DC against the LOD
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 2
+  - alignment: DC against LOD
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF closes to RF slightly back in PP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: licentiate
+leader:
+  cbm: 'on 1. TIMING: QQQQ'
+  footwork: H; BH; BH; BH
+  steps:
+  - alignment: To wall
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DC against the LOD
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: DC against the LOD
+    amount_of_turn: null
+    feet_position: LF forward in PP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF closes to LF slightly back in PP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes:
+- If the Four Step is commenced facing DW the direction of the first step will be DW. The Leader could then make no turn between
+  1-2 and end facing DW, or turn to L between 2-3 to end facing wall. If commenced facing DC to move to centre.
+- When facing DW near a corner, Leader could turn ¼ to L between 1-2 to end facing DW of new LOD to follow with a Promenade
+  figure moving DC, or he could turn ⅛ to L between 1-2 to face wall to follow with a Promenade figure moving DW of new LOD.
+- The Four Step could be commenced DC and turn:— 1. ⅛ to L to end facing DW against LOD. 2. ⅛ to L to end facing wall. 3.
+  ⅛ to L to end facing DW.
+- The Outside Swivel could be danced after 1-2 Four Step.
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Progressive Side Step
+timing: QQQQ
+variant_name: null

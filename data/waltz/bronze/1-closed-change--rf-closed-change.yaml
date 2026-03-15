@@ -1,0 +1,23 @@
+_source_pdf_page: 7
+beat_value: null
+dance: waltz
+figure_name: Closed Change
+figure_number: 1
+follow:
+  associate:
+  - Any Reverse figure
+  fellow: []
+  licentiate: []
+follower: null
+level: student_teacher
+leader: null
+notes: []
+precede:
+  associate:
+  - Natural Turn — 4-6 Natural Turn after Back Lock or Progressive Chassé to R
+  fellow:
+  - Any Reverse figure
+  licentiate:
+  - Outside Spin taken after Open Impetus and Cross Hesitation making a full turn to end facing DC
+timing: null
+variant_name: RF Closed Change

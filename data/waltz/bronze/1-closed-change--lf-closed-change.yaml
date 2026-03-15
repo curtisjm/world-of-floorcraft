@@ -1,0 +1,23 @@
+_source_pdf_page: 7
+beat_value: null
+dance: waltz
+figure_name: Closed Change
+figure_number: 1
+follow:
+  associate:
+  - Any Natural figure
+  fellow: []
+  licentiate: []
+follower: null
+level: student_teacher
+leader: null
+notes: []
+precede:
+  associate:
+  - Reverse Turn — 4-6 Reverse Turn after Natural Spin Turn — Double Reverse Spin
+  fellow: []
+  licentiate:
+  - At corner — 4-6 Reverse Turn can be used after underturned Natural Spin Turn or Closed Impetus — 4-6 Reverse Turn after
+    underturned Outside Spin
+timing: null
+variant_name: LF Closed Change

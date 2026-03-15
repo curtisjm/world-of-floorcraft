@@ -1,0 +1,50 @@
+_source_pdf_page: 52
+beat_value: null
+dance: tango
+figure_name: Open Finish
+figure_number: 1
+follow: null
+follower:
+  cbm: null
+  footwork: IE of BH; B (but will always become BH)
+  steps:
+  - alignment: Backing between wall and DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Between wall and DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 2
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: IE of foot; H
+  steps:
+  - alignment: Pointing between wall and DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Between wall and DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 2
+  sway: null
+notes:
+- An Open Finish may be danced at any time instead of a Closed Finish and the technique of the last 2 steps will be:-
+- 'AMOUNT OF TURN: Slightly less turn to L will be made on a figure where changing a Closed to an Open Finish. The LF or RF
+  although normal turn will be made when following with a curve or turn to L. e.g. Walk on LF or Outside Swivel when following.
+  (See also Promenade Figures and Promenade Figure 1.)'
+- Other Alignments and Directions may be used.
+- 'FOLLOWS: Follow by moving forward & to side. When stepping forward on an Open Finish, step 1 will not be taken in CBMP.'
+- 'Forward A: Progressive Link Step — Progressive Link. When ended DC — any Reverse Turn.'
+- 'L: Four Step — Reverse Outside Swivel — Four Step Change — Brush Tap.'
+- 'F: Fallaway Four Step — Oversway — Fallaway Reverse and Slip Pivot — Five Steps.'
+precede: null
+timing: null
+variant_name: null

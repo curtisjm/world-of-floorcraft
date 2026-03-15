@@ -1,0 +1,33 @@
+_source_pdf_page: 64
+beat_value: null
+dance: tango
+figure_name: The Chase
+figure_number: 24
+follow:
+  associate: null
+  fellow: []
+  licentiate: null
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+level: fellow
+leader:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+notes:
+- Note that the Chasses below will turn to R — the amount according to the alignment of the following steps.
+- 1  Chase on 1 R, turn LF behind RF in step which LF fwd and across in PP and CBMP. Place LF to side in PP without weight,
+  Q&QSQQ or Q&QQQQS.
+- 2  Chasse and Whisk as no. 2 above, steps 2-3 of Promenade Link, Q&QSQQ or Q&QQQQS.
+- 3  Chasse and Whisk as no. 2 above, close RF to LF and place LF to side in PP without weight, Q&QS&S.
+- 4  Chasse to R, RLR, Progressive Link, Q&QQQ — could be danced at corner.
+precede:
+  associate: null
+  fellow: []
+  licentiate: null
+timing: null
+variant_name: Alternative Endings After Step 5

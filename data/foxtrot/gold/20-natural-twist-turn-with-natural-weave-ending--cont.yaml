@@ -1,0 +1,71 @@
+_source_pdf_page: 35
+beat_value: null
+dance: foxtrot
+figure_name: Natural Twist Turn with Natural Weave Ending
+figure_number: 20
+follow:
+  associate: []
+  fellow:
+  - As for Natural Weave
+  licentiate: []
+follower:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: As for Natural Twist Turn
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: QQQQQS SQSQ
+    step_number: 7-12
+  - alignment: null
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: null
+    step_number: 1-4
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF to side and slightly back — backing LOD
+    rise_and_fall: S
+    step_number: 5
+  - alignment: null
+    amount_of_turn: Continue with 3-8 of Natural Weave
+    feet_position: RF diag fwd — Facing DC
+    rise_and_fall: Q
+    step_number: 6
+  - alignment: null
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: QQQQQS
+    step_number: 7-12
+  sway: null
+level: fellow
+leader:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: As for Natural Twist Turn
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: SQ&
+    step_number: 1-3
+  - alignment: Twist on both feet with the RF fwd in CBMP and slightly to the side — facing LOD LF to side and slightly back
+      — backing LOD
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: QS
+    step_number: 4 5
+  - alignment: null
+    amount_of_turn: Continue with 3-8 of Natural Weave
+    feet_position: RF diag fwd
+    rise_and_fall: Q
+    step_number: 6
+  sway: null
+notes:
+- The Sway will be omitted on step 5 of this figure.
+precede:
+  associate: []
+  fellow:
+  - As for Natural Twist Turn
+  licentiate: []
+timing: null
+variant_name: cont

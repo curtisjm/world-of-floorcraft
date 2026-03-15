@@ -1,0 +1,44 @@
+_source_pdf_page: 42
+beat_value: null
+dance: quickstep
+figure_name: Reverse Pivot
+figure_number: 11
+follow:
+  associate:
+  - Chassé Reverse Turn
+  - Progressive Chassé to R
+  - Double Reverse Spin
+  fellow:
+  - Cross Swivel
+  - Tipsy to R (after a step fwd on LF)
+  licentiate:
+  - 1-3 Quick Open Reverse
+  - Four Quick Run
+  - Running Finish
+follower:
+  cbm: null
+  footwork: null
+  notes: null
+  steps: null
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  notes: null
+  steps: null
+  sway: null
+notes:
+- Technical details of the Reverse Pivot are given in the Waltz charts Figure 14. When danced in Quickstep it is counted S
+  or A.
+precede:
+  associate:
+  - Quarter Turn to R
+  - Natural Spin Turn
+  - Chassé Reverse Turn
+  - Natural Turn
+  - 1-3 Quick Open Reverse
+  fellow: []
+  licentiate: []
+timing: null
+variant_name: null

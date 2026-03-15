@@ -1,0 +1,63 @@
+_source_pdf_page: 42
+beat_value: null
+dance: quickstep
+figure_name: Back Lock
+figure_number: 10
+follow:
+  associate:
+  - Closed Impetus
+  - Tipple Chassé to R
+  - Running Finish
+  fellow:
+  - Tipsy to R
+  licentiate: []
+follower:
+  cbm: null
+  footwork: null
+  notes: null
+  steps: null
+  sway: null
+level: associate
+leader:
+  cbm: on 1 (slight) and 5
+  footwork: 1 TH; 2 T; 3 T; 4 TH; 5 T
+  notes:
+  - The step on 5 is taken later on the R Foot Rise on step 1. The Footwork would be THT, but L Heel must not rise abruptly.
+    The Follower must release the toe of the LF from the floor at it commences to move, and then the floor is risen from step
+    1.
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: NFR to rise e/o 1
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF crosses in front of RF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF diag back
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back to CBMP
+    rise_and_fall: null
+    step_number: 5
+  sway: Nil
+notes:
+- Both feet should be backing between wall and DW throughout.
+precede:
+  associate:
+  - Progressive Chassé to R
+  fellow: []
+  licentiate: []
+timing: SQQQS
+variant_name: null

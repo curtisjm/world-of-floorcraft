@@ -1,0 +1,84 @@
+_source_pdf_page: 10
+dance: waltz
+figure_name: Closed Impetus
+figure_number: 7
+follow:
+  associate:
+  - 4-6 Reverse Turn
+  - Reverse Corté
+  - Reverse Pivot
+  fellow:
+  - RF back into Left Whisk
+  - Hover Corté
+  licentiate:
+  - At corner
+  - Turning Lock
+follower:
+  beat_value: null
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 H
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn R ⅛ between 1-2
+    feet_position: RF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF to side
+    rise_and_fall: Rise e/o 2
+    step_number: 2
+  - alignment: Facing DC against LOD
+    amount_of_turn: null
+    feet_position: RF closes to LF, having brushed to LF
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Facing DC against the LOD
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 4
+  sway: SRSS
+  timing: null
+level: associate
+leader:
+  beat_value: null
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 HT; 3 TH; 4 T
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn R ⅛ between 1-2
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF closes to RF (Heel turn)
+    rise_and_fall: Rise e/o 2
+    step_number: 2
+  - alignment: Backing DC against the LOD
+    amount_of_turn: null
+    feet_position: LF fwd and slightly back
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Backing DC against the LOD
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 4
+  sway: SLSS
+  timing: null
+notes:
+- 'Precede: A  At corner — Begun from Natural or Begun with an underturned Natural Spin Turn or Closed Impetus at side of
+  room — Back Lock — Progressing to corner.'
+- L) Cross Hesitation turned to L to back DW
+precede:
+  associate:
+  - At corner
+  - Begun from Natural or Begun with an underturned Natural Spin Turn or Closed Impetus at side of room
+  - Back Lock
+  - Progressing to corner
+  fellow: []
+  licentiate:
+  - Cross Hesitation turned to L to back DW
+variant_name: null

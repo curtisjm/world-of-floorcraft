@@ -1,0 +1,92 @@
+_source_pdf_page: 40
+beat_value: null
+dance: quickstep
+figure_name: Progressive Chassé
+figure_number: 6
+follow:
+  associate:
+  - Forward Lock — any figure commencing with RF fwd
+  - Heel Pivot 1-3 into LF Whisk. At corner — LF back with Follower OP, TH, S, into Four Quick Run or 2-12 V6
+  - Tipsy to R into 2-3 V6 DC or 2-5 Back Lock down LOD. At corner — LF back with Follower OP, TH, S, into Six Quick Run
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1 and 5
+  footwork: 1 HT; 2 T; 3 T; 4 TH; 5 T
+  notes:
+  - If commenced facing LOD turn ⅛ between 1-2 (Body turns less).
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Backing wall
+    amount_of_turn: ⅛ between 2-3. Body turns less
+    feet_position: RF to side
+    rise_and_fall: Com to rise on 2 and 3
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 2-3. Body turns less
+    feet_position: LF closes to RF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side, and slightly back
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 5
+  sway: Nil
+  timing: SQQS
+level: student_teacher
+leader:
+  cbm: on 1 and 5
+  footwork: 1 TH; 2 T; 3 T; 4 TH; 5 H
+  notes:
+  - If commenced backing LOD turn ⅛ between 1-2 (Body turns less). Position of body on 2-5 should be facing between wall and
+    DW.
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Pointing DW
+    amount_of_turn: ⅛ between 1-2. Body turns less
+    feet_position: LF to side
+    rise_and_fall: Rise. Com to rise on 2 and 3
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: Slight body turn
+    feet_position: RF closes to LF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF to side, and slightly fwd
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 5
+  sway: Nil
+  timing: SQQS
+notes:
+- If commenced backing LOD turn ⅛ between 1-2 (Body turns less). Position of body on 2-5 should be facing between wall and
+  DW.
+- If commenced facing LOD turn ⅛ between 1-2 (Body turns less).
+precede:
+  associate:
+  - Quarter Turn to R — Natural Spin Turn — Chassé Reverse Turn — Closed Impetus
+  - Quick Open Reverse
+  fellow: []
+  licentiate: []
+timing: SQQS
+variant_name: Leader

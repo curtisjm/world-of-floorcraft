@@ -1,0 +1,74 @@
+_source_pdf_page: 24
+beat_value: null
+dance: foxtrot
+figure_name: Feather Step
+figure_number: 1
+follow:
+  associate:
+  - Three Step — Reverse Turn — 1-4 Reverse Turn check and Basic Weave — Change of Direction
+  fellow:
+  - Fallaway Reverse and Slip Pivot — Bounce Fallaway with Weave Ending
+  licentiate:
+  - Closed or Open Telemark — Hover Telemark — Reverse Wave — check back after step 3 of Feather Step into Top Spin or Outside
+    Swivel
+follower:
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 T; 3 TH; 4 H
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: LF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF back R side
+    rise_and_fall: Up. NFR.
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: LF back in CBMP, backing OP
+    rise_and_fall: Up NFR. Lower e/o 3
+    step_number: 3
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 4
+  sway: SLLS
+level: student_teacher
+leader:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 H
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: RF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: LF fwd preparing to step OP L side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 4
+  sway: SRRS
+notes:
+- The Feather Step may also be danced DW or DC.
+precede:
+  associate:
+  - Natural Turn — Change of Direction
+  fellow: []
+  licentiate:
+  - Closed Telemark — Hover Telemark — Reverse Wave
+timing: SQQS
+variant_name: null

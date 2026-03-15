@@ -1,0 +1,70 @@
+_source_pdf_page: 50
+beat_value: null
+dance: quickstep
+figure_name: Hover Corté
+figure_number: 27
+follow:
+  associate: []
+  fellow:
+  - Tipple Chassé to R — Running Finish — Tipsy. At corner — Four Quick Run — Zig Zag — Six Quick Run
+  licentiate: []
+follower:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 H
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L 1/4 between 1 & 2. Cont to turn 1/4 on 2
+    feet_position: LF fwd
+    rise_and_fall: Com to rise e/o 1 Cont to rise on 2
+    step_number: 1
+  - alignment: Facing centre and pointing DC against LOD
+    amount_of_turn: null
+    feet_position: RF to side LF brushes towards RF
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DC against LOD
+    amount_of_turn: —
+    feet_position: LF diag fwd
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Facing DC against LOD
+    amount_of_turn: —
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: —
+    step_number: 4
+  sway: 'SWAY: SLSS. TIMING: SSSS'
+level: fellow
+leader:
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 T; 3 TH; 4 T
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Pointing DW
+    amount_of_turn: 1/8 to L. Body turns 1/2. Cont to turn body on 2
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Backing DC against LOD
+    amount_of_turn: —
+    feet_position: Transfer weight to RF, still to side, LF back
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Backing DC against LOD
+    amount_of_turn: —
+    feet_position: LF back in CBMP
+    rise_and_fall: —
+    step_number: 4
+  sway: 'SWAY: SRSS. TIMING: SSSS'
+notes:
+- It is commended backing DC either to R turn could be made.
+precede:
+  associate: []
+  fellow:
+  - Quarter Turn to R — Natural Spin Turn — Chassé Reverse Turn — Closed Impetus — Quick Open Reverse
+  licentiate: []
+timing: null
+variant_name: null

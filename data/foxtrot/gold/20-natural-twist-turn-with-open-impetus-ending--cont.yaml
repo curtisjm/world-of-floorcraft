@@ -1,0 +1,59 @@
+_source_pdf_page: 35
+beat_value: null
+dance: foxtrot
+figure_name: Natural Twist Turn with Open Impetus Ending
+figure_number: 20
+follow:
+  associate: []
+  fellow:
+  - As for Open Impetus
+  licentiate: []
+follower:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: As for Natural Twist Turn
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: SQSQQ
+    step_number: 1-5
+  - alignment: null
+    amount_of_turn: null
+    feet_position: RF to side in PP — Pointing to centre (Moving DC)
+    rise_and_fall: Q
+    step_number: 6
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP — Pointing to centre (Moving DC)
+    rise_and_fall: S
+    step_number: 7
+  sway: null
+level: fellow
+leader:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: As for Natural Twist Turn
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: SQ&QQ
+    step_number: 1-5
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF diag fwd in PP L side leading — pointing DC Body facing LOD
+    rise_and_fall: Q
+    step_number: 6
+  - alignment: null
+    amount_of_turn: null
+    feet_position: RF fwd and across in CBMP — pointing DC Body facing LOD
+    rise_and_fall: S
+    step_number: 7
+  sway: null
+notes: []
+precede:
+  associate: []
+  fellow:
+  - As for Natural Twist Turn
+  licentiate: []
+timing: null
+variant_name: cont

@@ -1,0 +1,66 @@
+_source_pdf_page: 9
+beat_value: null
+dance: waltz
+figure_name: Whisk
+figure_number: 5
+follow:
+  associate:
+  - Chassé from PP
+  fellow:
+  - Left Whisk — Chassé from PP moving DC to follow with Closed Wing
+  licentiate:
+  - Weave from PP (steps 1-2 moving to centre after Whisk turned to face DC or steps 1-3 after Whisk turned to face LOD) —
+    Cross Hesitation — Wing
+follower:
+  cbm: null
+  footwork: null
+  notes: null
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: Com to turn L ⅛ between 1-2
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: LF diag back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing centre
+    amount_of_turn: ⅛ to R between 2-3
+    feet_position: RF crosses behind LF in PP
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+level: licentiate
+leader:
+  cbm: null
+  footwork: null
+  notes: All other technical details the same as the above Whisk.
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: Com to turn L ⅛ between 1-2
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing centre
+    amount_of_turn: null
+    feet_position: LF crosses behind RF in PP
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+notes: []
+precede:
+  associate:
+  - Reverse Turn — 4-6 Reverse Turn after Natural Spin Turn — Double Reverse Spin
+  fellow:
+  - Closed Wing facing DW — Fallaway Reverse and Slip Pivot
+  licentiate:
+  - Reverse Pivot. At corner — 4-6 Reverse Turn after underturned Natural Spin Turn or Closed Impetus — Hesitation Change
+timing: null
+variant_name: (cont)

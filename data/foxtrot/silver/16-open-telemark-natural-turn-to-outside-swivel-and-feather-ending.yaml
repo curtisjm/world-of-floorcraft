@@ -1,0 +1,147 @@
+_source_pdf_page: 32
+beat_value: null
+dance: foxtrot
+figure_name: Open Telemark, Natural Turn to Outside Swivel and Feather Ending
+figure_number: 16
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1, 4, 7, 8 and 11
+  footwork: 1 TH; 2 HT; 3 TH; 4 TH; 5 T; 6 TH; 7 TH; 8 TH; 9 T; 10 TH; 11 T
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Facing DW against LOD
+    amount_of_turn: ⅜ between 1-2
+    feet_position: LF closes to RF (Heel Turn)
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing DW against LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: RF to side and slightly back in PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Backing DW against LOD. Turning with partner
+    amount_of_turn: Com to turn R
+    feet_position: LF back in PP and CBMP
+    rise_and_fall: Rise e/o 4
+    step_number: 4
+  - alignment: Facing LOD
+    amount_of_turn: ⅜ between 4-5
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Facing DW
+    amount_of_turn: ⅛ between 5-6
+    feet_position: LF fwd
+    rise_and_fall: Up. Lower e/o 6
+    step_number: 6
+  - alignment: DW. Toe turned in. End facing DC
+    amount_of_turn: ¼ to R on 7
+    feet_position: RF fwd in CBMP, OP. L heel swivels to L to R on 7. Follow — L Toe turned in to R. Follow — Natural Turn
+      to Outside Feather to PP — Natural Zig-Zag from PP. Back Feather from PP — Natural Zig-Zag from PP
+    rise_and_fall: null
+    step_number: 7
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF back in PP and CBMP
+    rise_and_fall: Rise e/o 8
+    step_number: 8
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF to side and slightly back in PP
+    rise_and_fall: Up
+    step_number: 9
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: Up. Lower e/o 10
+    step_number: 10
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 11
+  sway: SRSLLLLRSRS
+level: licentiate
+leader:
+  cbm: on 1, 4, 7, 8 and 11
+  footwork: 1 HT; 2 T; 3 TH; 4 HT; 5 T; 6 TH; 7 TH with pressure on T of RF; 8 HT; 9 T; 10 TH; 11 H
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing DW against LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF sideagg to PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Facing DW against LOD. Turning with partner
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: Rise e/o 4
+    step_number: 4
+  - alignment: Backing LOD
+    amount_of_turn: ⅜ between 4-5
+    feet_position: LF to side
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 5-6
+    feet_position: RF back R side leading
+    rise_and_fall: Up. Lower e/o 6
+    step_number: 6
+  - alignment: DW Toe turned in. End facing DC
+    amount_of_turn: ¼ to R on 7
+    feet_position: LF back in CBMP, OP. Toes in front without weight. End in PP
+    rise_and_fall: null
+    step_number: 7
+  - alignment: Facing DC (Across dance centre)
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: Rise e/o 8
+    step_number: 8
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd, preparing to step OP
+    rise_and_fall: Up
+    step_number: 9
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Up. Lower e/o 10
+    step_number: 10
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 11
+  sway: SLSSSSSRRRS
+notes:
+- The RF commences to pivot on step 7 in such case the alignment of the Weave from PP may be in the Closed Ending used to
+  return to the Heel of the Weave at the bottom of a wall or in a corner when the Top Spin, ½ turn to R is made on step 7
+  and 8-10 will be taken DC and may be danced following this underturned Outside Swivel. Leader using the Heel in contact
+  with the floor and the Natural Turn Outside Swivel is entire step 8-11 will be taken DC of new LOD. Follow as for Feather.
+- The Outside Swivel (steps 7-8) could be danced by checking QP on any Feather Movement taken DC and turning to to R. Follow
+  — L — Feather Ending — Natural Turn to Outside Swivel and Feather Ending — Natural Telemark — Natural Twist Turn to Natural
+  Feather to PP — Natural Zig-Zag from PP. Back Feather from PP — Natural Zig-Zag from PP
+- The Outside Swivel (steps 7-8) could also be danced by checking QP on any Feather taken DW without turn and followed as
+  in the previous paragraph.
+precede:
+  associate: []
+  fellow: []
+  licentiate: []
+timing: SQQSQQSQQSQS
+variant_name: null

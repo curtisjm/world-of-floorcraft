@@ -1,0 +1,66 @@
+_source_pdf_page: 41
+beat_value: null
+dance: quickstep
+figure_name: Chassé Reverse Turn
+figure_number: 7
+follow:
+  associate:
+  - Progressive Chassé
+  - Reverse Pivot
+  fellow:
+  - Hover Corté
+  licentiate:
+  - Four Quick Run
+follower:
+  cbm: on 1
+  footwork: 1 TH; 2 T; 3 TH
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Pointing to LOD
+    amount_of_turn: ⅛ between 1-2
+    feet_position: LF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing LOD
+    amount_of_turn: Body completes turn
+    feet_position: RF closes to LF
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SRR
+  timing: SQQ
+level: student_teacher
+leader:
+  cbm: on 1
+  footwork: 1 TH; 2 T; 3 TH
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF closes to RF
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SLL
+  timing: SQQ
+notes: []
+precede:
+  associate:
+  - Natural Turn with Hesitation
+  - Reverse Pivot
+  - Double Reverse Spin
+  fellow: []
+  licentiate: []
+timing: SQQ
+variant_name: null

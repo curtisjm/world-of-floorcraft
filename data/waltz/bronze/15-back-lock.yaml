@@ -1,0 +1,32 @@
+_source_pdf_page: 15
+beat_value: null
+dance: waltz
+figure_name: Back Lock
+figure_number: 15
+follow: null
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+notes:
+- 'Technical details of the Back Lock are given in the Quickstep charts Figure 10. When danced in the Waltz it has a TIME
+  VALUE: 1, 2 & 3, 1; BEAT VALUE: 1, ¾, ¼, 1.'
+precede:
+  associate:
+  - Reverse Corté after underturned Natural Spin Turn or Closed Impetus at side of room and ended backing DW — Progressive
+    Chassé to R
+  - Cross Hesitation (turned to L on step 2)
+  - Hover Corté as alignment Reverse Corté above
+  fellow:
+  - 4-6 Natural Turn — Closed Impetus. At corner — Back Whisk with turn
+  - Back Whisk — Open Impetus — underturned Outside Spin
+  licentiate: []
+timing: null
+variant_name: null

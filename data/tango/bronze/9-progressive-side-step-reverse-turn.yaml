@@ -1,0 +1,131 @@
+_source_pdf_page: 56
+beat_value: ½ to L
+dance: tango
+figure_name: Progressive Side Step Reverse Turn
+figure_number: 9
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1, 3 and 8
+  footwork: BH; IE of foot; BH; IE of BH; H; IE of BH; H; H; IE of BH; Whole foot
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DC against LOD
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Almost against LOD
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Against LOD
+    amount_of_turn: null
+    feet_position: LF back L side leading
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: Transfer weight fwd to RF R side leading
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight back to LF L side leading
+    rise_and_fall: null
+    step_number: 6
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF fwd small step R side leading
+    rise_and_fall: null
+    step_number: 7
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 8
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 9
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF closes to RF slightly back
+    rise_and_fall: null
+    step_number: 10
+  sway: null
+level: associate
+leader:
+  cbm: on 1, 3 and 8
+  footwork: H; IE of foot; H; H; IE of BH; H; IE of BH; H; IE of foot; Whole foot
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing DC against LOD
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Almost against LOD
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Against LOD
+    amount_of_turn: null
+    feet_position: RF fwd R side leading
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: Transfer weight back to LF R side leading
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight fwd to RF R side leading
+    rise_and_fall: null
+    step_number: 6
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF back small step L side leading
+    rise_and_fall: null
+    step_number: 7
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 8
+  - alignment: Pointing DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 9
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF closes to LF slightly back
+    rise_and_fall: null
+    step_number: 10
+  sway: null
+notes:
+- After steps 1-4 the following endings may be used:—
+- 1 Progressive Link.
+- 2 Rock on LF, Rock on RF, Back Corté QQS, QQS, SQQS.
+precede:
+  associate:
+  - As for Open Reverse Turn Follower Outside
+  fellow: []
+  licentiate: []
+timing: QQSQQSQQS
+variant_name: null

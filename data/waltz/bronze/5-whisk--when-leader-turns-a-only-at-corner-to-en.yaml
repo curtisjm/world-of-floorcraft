@@ -1,0 +1,44 @@
+_source_pdf_page: 9
+beat_value: null
+dance: waltz
+figure_name: Whisk
+figure_number: 5
+follow: {}
+follower:
+  cbm: null
+  footwork: null
+  notes: All other technical details remains as above. Follower does not turn. For 'Precedes' and 'Follows' see page 15.
+  steps:
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF back L side leading
+    rise_and_fall: null
+    step_number: 2
+  sway: null
+level: student_teacher
+leader:
+  cbm: null
+  footwork: null
+  notes: All other technical details remains as above. Follower does not turn.
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: Com to turn L ⅛ between 1-2
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: RF diag fwd R side leading
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DW of new LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF crosses behind RF in PP
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+notes: []
+precede: {}
+timing: null
+variant_name: When leader turns ¼ 'A' only at corner to end facing DW of new LOD 'L' and 'F', also at side of room to end
+  facing DC

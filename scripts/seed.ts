@@ -5,18 +5,18 @@
  *   pnpm db:seed              # full wipe + reseed
  *   pnpm db:seed -- --dry-run # parse and report without writing to DB
  *
- * Reads all .yaml files from data/extracted/, inserts dances and figures,
- * then builds directed edges from precede/follow data.
+ * Reads all .yaml files from data/{dance}/{level}/*.yaml, inserts dances
+ * and figures, then builds directed edges from precede/follow data.
  */
 
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { parse } from "yaml";
 import * as schema from "../src/db/schema";
 
-const DATA_DIR = join(__dirname, "..", "data", "extracted");
+const DATA_DIR = join(__dirname, "..", "data");
 
 const dryRun = process.argv.includes("--dry-run");
 
@@ -291,27 +291,39 @@ async function seed() {
   const neonSql = neon(databaseUrl);
   const db = drizzle(neonSql, { schema });
 
-  // Load YAML files
-  let files: string[];
-  try {
-    files = readdirSync(DATA_DIR).filter((f) => f.endsWith(".yaml"));
-  } catch {
-    console.log("No extracted YAML files found in", DATA_DIR);
-    files = [];
+  // Load YAML files from data/{dance}/{level}/*.yaml
+  function collectYamlFiles(dir: string): string[] {
+    const results: string[] = [];
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (entry === "extracted") continue; // skip backup directory
+      try {
+        if (statSync(full).isDirectory()) {
+          results.push(...collectYamlFiles(full));
+        } else if (entry.endsWith(".yaml")) {
+          results.push(full);
+        }
+      } catch { /* skip unreadable entries */ }
+    }
+    return results;
   }
+
+  const files = collectYamlFiles(DATA_DIR);
 
   if (files.length === 0) {
     console.log("No YAML files to seed from. Run extraction first.");
     return;
   }
 
-  // Parse all figures
+  // Parse all figures (each file is a single figure object)
   const allRawFigures: RawFigure[] = [];
   for (const file of files) {
-    const content = readFileSync(join(DATA_DIR, file), "utf-8");
-    const parsed = parse(content) as RawFigure[];
+    const content = readFileSync(file, "utf-8");
+    const parsed = parse(content);
     if (Array.isArray(parsed)) {
       allRawFigures.push(...parsed);
+    } else if (parsed && typeof parsed === "object") {
+      allRawFigures.push(parsed as RawFigure);
     }
   }
 

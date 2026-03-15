@@ -1,0 +1,74 @@
+_source_pdf_page: 58
+beat_value: null
+dance: tango
+figure_name: Promenade Link
+figure_number: 14
+follow:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Closed Promenade
+follower:
+  cbm: on 2
+  footwork: H; HB (Foot flat); IE of B
+  notes:
+  - 'TIMING: SQQ'
+  - 'AMOUNT OF TURN: ⅛ to L.'
+  - When 2-7 Rock Turn follows, Follower's alignment will be "moving DC, pointing to centre" on steps 1 and 2. She will turn
+    to back DC on step 3.
+  steps:
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: RF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing wall
+    amount_of_turn: null
+    feet_position: RF placed to side small step without weight
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+level: licentiate
+leader:
+  cbm: on 2
+  footwork: H; HB (Foot flat); IE of B
+  notes:
+  - 'TIMING: SQQ'
+  - 'AMOUNT OF TURN: ⅛ to R.'
+  - (a) When danced facing the LOD and moving DC. (Reverse Promenade Link) Leader turns ⅛ to L, between 2-3. Follow with a
+    Reverse figure. When alignment (b) is used the RF will point DC on the 2nd step and foot body faces DC on 3. When the
+    Promenade Link is turned to the L it is known as the Reverse Promenade Link.
+  steps:
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: LF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing wall
+    amount_of_turn: null
+    feet_position: LF placed to side small step without weight
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+notes:
+- When alignment (b) is used and moving towards LOD and DC, pointing to centre on no turn, Follower turns ¼ to L, to commence
+  facing the LOD and moving DC on 2. (Reverse Promenade Link) Leader turns ⅛ to L between 2-3. Follow with a Reverse figure.
+  When alignment (b) is used the RF will point DC on the 2nd step and foot body faces DC on 3. When the Promenade Link is
+  turned to the L it is known as the Reverse Promenade Link.
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Closed Promenade
+timing: SQQ
+variant_name: null

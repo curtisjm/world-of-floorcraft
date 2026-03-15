@@ -1,0 +1,60 @@
+_source_pdf_page: 57
+beat_value: null
+dance: tango
+figure_name: Rock Back on LF
+figure_number: 11
+follow:
+  associate:
+  - Closed or Open Finish — RF Rock
+  fellow: []
+  licentiate: []
+follower:
+  cbm: Nil
+  footwork: H IE of BH H
+  steps:
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF fwd R side leading
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight back to LF L side leading
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF fwd small step R side leading
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+level: associate
+leader:
+  cbm: Nil
+  footwork: IE of BH H IE of BH
+  steps:
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF back L side leading
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight fwd to RF R side leading
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF back small step L side leading
+    rise_and_fall: null
+    step_number: 3
+  sway: null
+notes:
+- When following an Open Finish the LF Rock will be danced in CBMP with Follower outside and up to ¼ turn to R may be made.
+precede:
+  associate:
+  - As for Back Corté
+  fellow: []
+  licentiate: []
+timing: QQS
+variant_name: null

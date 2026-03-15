@@ -1,0 +1,59 @@
+_source_pdf_page: 35
+beat_value: null
+dance: foxtrot
+figure_name: Natural Twist Turn with Closed Impetus and Feather Finish Ending
+figure_number: 20
+follow:
+  associate: []
+  fellow:
+  - As for Closed Impetus and Feather Finish
+  licentiate: []
+follower:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: null
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: null
+    step_number: 3-10
+  - alignment: As for Natural Twist Turn
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: SQSQQ
+    step_number: 1-5
+  - alignment: null
+    amount_of_turn: null
+    feet_position: RF diag fwd having brushed to LF — Facing DC across LOD
+    rise_and_fall: Q
+    step_number: 6
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF fwd into Feather Finish
+    rise_and_fall: SQQS
+    step_number: 7-10
+  sway: null
+level: fellow
+leader:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: As for Natural Twist Turn LF to side and slightly back — backing DC
+    amount_of_turn: null
+    feet_position: null
+    rise_and_fall: SQ&QQ Q
+    step_number: 1-5
+  - alignment: null
+    amount_of_turn: null
+    feet_position: RF back into Feather Finish
+    rise_and_fall: SQQS
+    step_number: 6
+  sway: null
+notes: []
+precede:
+  associate: []
+  fellow:
+  - As for Natural Twist Turn
+  licentiate: []
+timing: null
+variant_name: cont

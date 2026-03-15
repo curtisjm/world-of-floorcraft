@@ -1,0 +1,80 @@
+_source_pdf_page: 27
+beat_value: null
+dance: foxtrot
+figure_name: Change of Direction
+figure_number: 7
+follow:
+  associate:
+  - Feather Step
+  - At corner
+  - Natural Weave
+  fellow: []
+  licentiate:
+  - Natural Weave (side of room)
+follower:
+  cbm: on 1 and 3
+  footwork: 1 TH; 2 T IE of TH, then IE of T of RF; 3 T
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DW End backing DC
+    amount_of_turn: ¼ between 1-2
+    feet_position: LF diag back, L side leading, LF then closing to RF slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 3
+  sway: SRS
+level: associate
+leader:
+  cbm: on 1 and 3
+  footwork: 1 H; 2 IE of TH, then IE of T of LF; 3 H
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DW R Toe pointing towards LOD End facing DC
+    amount_of_turn: ¼ between 1-2
+    feet_position: RF diag fwd R side leading, RF and close to LF, then diag fwd without weight
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 3
+  sway: SWAY SLS
+notes:
+- At a corner, ⅛ or ⅓ turn may be made
+precede:
+  associate:
+  - Three Step
+  - At corner
+  - Natural Weave
+  - Natural Turn
+  - Change of Direction
+  - Impetus and Feather Finish
+  fellow:
+  - Natural Zig-Zag from PP
+  - Fallaway Reverse and Slip Pivot
+  - Bounce Fallaway with Weave Ending
+  - At corner
+  - Natural Twist Turn
+  - Natural Hover Telemark
+  licentiate:
+  - Feather Ending
+  - Top Spin
+  - Natural Weave
+  - At corner
+  - Hover Feather
+  - Natural Telemark
+timing: SSS
+variant_name: null

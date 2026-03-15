@@ -1,0 +1,84 @@
+_source_pdf_page: 40
+beat_value: null
+dance: quickstep
+figure_name: Natural Pivot Turn
+figure_number: 4
+follow:
+  associate:
+  - Any Natural figure
+  - Four Quick Run — 2-12 V6
+  - Six Quick Run — Hover Corté
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 T; 3 TH; 4 HTH
+  notes:
+  - Last step held in CBMP for the pivoting action on step 4, but CBM will be used on the Footwork. Although step 3 Natural
+    Spin Turn is described as TH, the Heel is kept in contact with the floor.
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: Com to turn R
+    feet_position: LF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Pointing to LOD
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing LOD
+    amount_of_turn: Body turns less
+    feet_position: LF closes to RF
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Facing LOD
+    amount_of_turn: Up to ⅜ to R on 4 (Pivoting action)
+    feet_position: RF fwd
+    rise_and_fall: null
+    step_number: 4
+  sway: SLLS
+  timing: SQQS
+level: student_teacher
+leader:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 THT
+  notes:
+  - ⅛ is the maximum turn on a pivot. If danced at a corner, turn ⅛ on the pivot to face new LOD.
+  - 'Footwork: Although footwork on step 4 is described as THT, the Heel is in contact with the floor, and the ball of the
+    foot.'
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: ⅛ between 1-2
+    feet_position: LF to side
+    rise_and_fall: Rise
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: RF closes to LF
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  - alignment: Down LOD toe
+    amount_of_turn: Up to ⅜ to R on 4 (Pivot)
+    feet_position: LF back
+    rise_and_fall: null
+    step_number: 4
+  sway: SRRS
+  timing: SQQS
+notes:
+- ⅛ is the maximum turn on a pivot. If danced at a corner, turn ⅛ on the pivot to face new LOD.
+- 'Footwork: Although footwork on step 4 is described as THT, the Heel is in contact with the floor, and the ball of the foot.'
+- Last step held in CBMP for the pivoting action on step 4, but CBM will be used on the Footwork. Although step 3 Natural
+  Spin Turn is described as TH, the Heel is kept in contact with the floor.
+precede:
+  associate:
+  - As for Natural Turn
+  fellow: []
+  licentiate: []
+timing: SQQS
+variant_name: Leader

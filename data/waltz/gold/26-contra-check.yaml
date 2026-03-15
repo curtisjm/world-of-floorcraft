@@ -1,0 +1,68 @@
+_source_pdf_page: 21
+beat_value: null
+dance: waltz
+figure_name: Contra Check
+figure_number: 26
+follow:
+  associate: []
+  fellow:
+  - Chase from PP
+  - Weave from PP
+  - Cross Hesitation
+  - Wing
+  - Left Whisk
+  licentiate: []
+follower:
+  cbm: on 1
+  footwork: 1 T; 3 T; 3 TH
+  steps:
+  - alignment: DW feet backing almost to LOD
+    amount_of_turn: Body turns to L
+    feet_position: RF back in CBMP
+    rise_and_fall: Down, with knees slightly flexed
+    step_number: 1
+  - alignment: Facing DC against LOD
+    amount_of_turn: Body turns to R
+    feet_position: Transfer weight fwd to LF
+    rise_and_fall: Rise e/o 3
+    step_number: 2
+  - alignment: Backing DC (Moving along LOD)
+    amount_of_turn: ¼ to R Between 2-3
+    feet_position: RF to side
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: Nil
+level: fellow
+leader:
+  cbm: on 1
+  footwork: 1 H or Ball Flat; 2 T; 3 TH
+  steps:
+  - alignment: DW Pointing almost to LOD
+    amount_of_turn: Body turn to L
+    feet_position: LF fwd in CBMP
+    rise_and_fall: Down, with knees slightly flexed
+    step_number: 1
+  - alignment: Backing DC against LOD
+    amount_of_turn: Body turns to R
+    feet_position: Transfer weight back to RF
+    rise_and_fall: Rise e/o 2
+    step_number: 2
+  - alignment: Facing DW (Moving along LOD)
+    amount_of_turn: —
+    feet_position: LF to side
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: Nil
+notes:
+- Some dancers prefer to step forward with the foot flat on step 1.
+precede:
+  associate: []
+  fellow:
+  - Reverse Turn
+  - Hesitation Change
+  - Double Reverse Spin
+  - Reverse Pivot
+  - Turning Lock to Left Whisk amalgamations as given in Left Whisk notes below
+  licentiate: []
+timing: null
+variant_name: null

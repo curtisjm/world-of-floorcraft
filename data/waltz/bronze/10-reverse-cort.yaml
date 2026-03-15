@@ -1,0 +1,58 @@
+_source_pdf_page: 12
+beat_value: null
+dance: waltz
+figure_name: Reverse Corté
+figure_number: 10
+follow: null
+follower:
+  cbm: on 1
+  footwork: 1 HT; 2 T; 3 TH
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing centre
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Facing DC against LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF closes to RF
+    rise_and_fall: Lower e/o 3
+    step_number: 3
+  sway: SLL
+level: associate
+leader:
+  cbm: on 1
+  footwork: 1 TH; 2 H(LF); 3 THRF
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise on 2
+    step_number: 1
+  - alignment: Backing DC against LOD
+    amount_of_turn: ⅛ between 1-2
+    feet_position: LF closes to RF without weight
+    rise_and_fall: null
+    step_number: 2
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Position held
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  sway: 'Note — On step 2 Turn may be made on ball of RF with foot flat. Footwork would then be: 1 THT; 2 H; 3 THRF'
+notes:
+- 'On step 2 Turn may be made on ball of RF with foot flat. Footwork would then be: 1 THT; 2 H; 3 THRF'
+- 'On step 2 Turn may be made on ball of RF with foot flat. Footwork would then be: 1 THT; 2 H; 3 THRF'
+- Note that the Follower commences to rise slightly earlier than the Leader
+- 'When alignments (b), (c), (d), are used, the Follower will turn:'
+- (b) Just over ¼ to L between 1-2, just under ¼ to L between 2-3.
+- (c) ⅛ to L between 1-2, ⅛ to L between 2-3.
+- (d) ⅛ to L between 1-2, ⅛ to L between 2-3.
+precede: null
+timing: null
+variant_name: null

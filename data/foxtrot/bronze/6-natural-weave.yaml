@@ -1,0 +1,134 @@
+_source_pdf_page: 27
+beat_value: null
+dance: foxtrot
+figure_name: Natural Weave
+figure_number: 6
+follow:
+  associate:
+  - Feather Step
+  - Natural Weave
+  - Basic Weave
+  - At corner
+  - Closed Impetus and Feather Finish
+  fellow:
+  - Natural Zig-Zag from PP
+  - Fallaway Reverse and Slip Pivot
+  - Bounce Fallaway with Weave Ending
+  - At corner
+  - Natural Twist Turn
+  - Natural Hover Telemark
+  licentiate:
+  - Feather Ending
+  - Top Spin
+  - Natural Weave
+  - At corner
+  - Hover Feather
+  - Natural Telemark
+follower:
+  cbm: on 1, 5 and 8
+  footwork: 1 TH; 2 H T; 3 T; 4 T; 5 T; 6 TH; 7 TH; 8 T
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn R
+    feet_position: LF back
+    rise_and_fall: Rise slightly e/o 1 NFR
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: ¼ between 1-2
+    feet_position: RF closes to LF (Heel Turn)
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd preparing to step OP to side
+    rise_and_fall: Up
+    step_number: 3
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP
+    rise_and_fall: Up
+    step_number: 4
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Backing DW
+    amount_of_turn: ¼ between 5-6
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 6
+  - alignment: Backing DC
+    amount_of_turn: Slight turn to L Body turns less
+    feet_position: LF back in CBMP
+    rise_and_fall: Up NFR Lower PP
+    step_number: 7
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 8
+  sway: SLSRSLRS
+level: associate
+leader:
+  cbm: on 1, 5 and 8
+  footwork: 1 H; 2 T; 3 T; 4 T; 5 T; 6 T; 7 TH; 8 H
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing almost DC
+    amount_of_turn: Just under ¼ between 1-2
+    feet_position: LF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: Slight turn to R between 2-3
+    feet_position: RF back, R side leading
+    rise_and_fall: Up
+    step_number: 3
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: Up
+    step_number: 4
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Pointing DW
+    amount_of_turn: ¼ between 5-6
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Up
+    step_number: 6
+  - alignment: Facing DW
+    amount_of_turn: Body turns less
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Up Lower e/o 7
+    step_number: 7
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 8
+  sway: SRSLSRLS
+notes:
+- The amount of turn between steps 2-3 is most important although less turn may be made between 1-2. The footwork of TH may
+  be used on step 4. Rise will then be 'Up NFR' on step 3
+precede:
+  associate:
+  - Three Step
+  - Natural Turn
+  - Change of Direction
+  fellow:
+  - Natural Twist Turn to end with steps 3-8 Natural Weave
+  - As for Reverse Turn
+  licentiate:
+  - Natural Turn and Change of Direction (side of room)
+  - Closed Telemark
+  - Hover Telemark
+timing: SQQQQQS
+variant_name: null

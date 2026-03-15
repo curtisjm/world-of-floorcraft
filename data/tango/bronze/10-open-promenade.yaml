@@ -1,0 +1,75 @@
+_source_pdf_page: 56
+beat_value: Just under ¼ to L between 2-3
+dance: tango
+figure_name: Open Promenade
+figure_number: 10
+follow:
+  associate:
+  - Follow by moving forward, back or to side. Forward into:—
+  fellow: []
+  licentiate: []
+follower:
+  cbm: Nil
+  footwork: H; H; IE of BH; B
+  steps:
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: RF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing between wall and DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Between wall and DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: associate
+leader:
+  cbm: Nil
+  footwork: H; H; IE of foot; H
+  steps:
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: LF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Pointing between wall and DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Between wall and DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP OP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes:
+- Walk on LF — Progressive Side Step — Progressive Link — When ended DC — any Waltz Turn.
+- Four Step — Reverse Outside Swivel — Four Step Change — Brush Tap.
+- Promenade — Fallaway Reverse and Slip Pivot — Five Step.
+- Back Corté, step 1 in CBMP with Follower OP, using CBM on 1 and 2 — LF Rock in CBMP with Follower OP, no turn or up to ⅛
+  to R.
+- Outside Swivel.
+precede:
+  associate:
+  - As for Closed Promenade
+  fellow: []
+  licentiate: []
+timing: SQQS
+variant_name: null

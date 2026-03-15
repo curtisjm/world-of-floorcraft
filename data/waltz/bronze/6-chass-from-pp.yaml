@@ -1,0 +1,93 @@
+_source_pdf_page: 10
+dance: waltz
+figure_name: Chassé from PP
+figure_number: 6
+follow:
+  associate:
+  - Any Natural figure
+  fellow:
+  - Closed Wing
+  licentiate: []
+follower:
+  beat_value: 1, ½, ½, 1, 1
+  cbm: on 1 and 5
+  footwork: 1 HT; 2 T; 3 T; 4 TH; 5 T
+  steps:
+  - alignment: Facing DC (Moving along LOD)
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Backing wall
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF closes to RF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 5
+  sway: Nil
+  timing: 1 2 & 3 1
+level: student_teacher
+leader:
+  beat_value: 1, ½, ½, 1, 1
+  cbm: on 1 (slight) and 5
+  footwork: 1 HT; 2 T; 3 T; 4 TH; 5 H
+  steps:
+  - alignment: Facing DW (Moving along LOD)
+    amount_of_turn: null
+    feet_position: RF fwd and across in CBMP and PP
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF closes to LF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP OP
+    rise_and_fall: null
+    step_number: 5
+  sway: Nil
+  timing: 1 2 & 3 1
+notes: null
+precede:
+  associate:
+  - A Whisk
+  - Outside Change ended in PP
+  - Back Whisk
+  - Basic Weave ended in PP
+  fellow:
+  - At Corner
+  - Open Impetus (at corner)
+  - Open Impetus (side of room)
+  - Contra Check
+  - Turning Lock to R
+  licentiate:
+  - Open Telemark
+  - Weave from PP ended in PP
+  - Turning Lock ended in PP
+variant_name: null

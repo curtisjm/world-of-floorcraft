@@ -1,0 +1,72 @@
+_source_pdf_page: 62
+beat_value: null
+dance: tango
+figure_name: Fallaway Four Step
+figure_number: 21
+follow:
+  associate: null
+  fellow:
+  - Any Promenade figure
+  licentiate: null
+follower:
+  cbm: Nil
+  footwork: BH; BH; BH; BH
+  steps:
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: To wall backing DW against LOD
+    amount_of_turn: null
+    feet_position: LF to side and slightly back in Fallaway
+    rise_and_fall: null
+    step_number: 2
+  - alignment: To wall backing DW
+    amount_of_turn: null
+    feet_position: RF back in CBMP and Fallaway
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DC of new LOD
+    amount_of_turn: null
+    feet_position: LF closes to RF slightly back in PP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: fellow
+leader:
+  cbm: on 1
+  footwork: H; BH; BH; BH
+  steps:
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: To wall backing DW against LOD
+    amount_of_turn: null
+    feet_position: RF to side and slightly back in Fallaway
+    rise_and_fall: null
+    step_number: 2
+  - alignment: To wall backing DW against LOD
+    amount_of_turn: null
+    feet_position: LF back in CBMP and Fallaway
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DW of new LOD
+    amount_of_turn: null
+    feet_position: RF closes to LF slightly back in PP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes:
+- This figure can also be danced at side of room. At a corner the Leader can turn ¼ from DW, Follower making no turn to end
+  in alignment as chart.
+precede:
+  associate: null
+  fellow:
+  - As for Progressive Side Step
+  - Back Open Promenade
+  licentiate: null
+timing: QQQQ
+variant_name: null

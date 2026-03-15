@@ -1,0 +1,78 @@
+_source_pdf_page: 14
+beat_value: 1, ⅜, ⅛, ⅜
+dance: waltz
+figure_name: DOUBLE REVERSE SPIN
+figure_number: 13
+follow:
+  associate:
+  - If ended DW — LF Closed Change — Whisk
+  - If ended LOD — Double Reverse Spin — 1-3 Reverse Turn into Basic Weave.
+  - If ended DC — Any Reverse Figure — Progressive Chassé to R.
+  fellow:
+  - Contra Check — Fallaway Reverse and Slip Pivot.
+  licentiate:
+  - Closed or Open Telemark.
+follower:
+  cbm: on 1
+  footwork: 1 TH; 2 HT; 3 T; 4 TH
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise slightly e/o 1
+    step_number: 1
+  - alignment: Facing LOD
+    amount_of_turn: ⅜ between 1-2
+    feet_position: LF closes to RF (Small Turn)
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Backing wall
+    amount_of_turn: ⅜ between 2-3
+    feet_position: RF back (Backing wall slightly back)
+    rise_and_fall: Up
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: ⅜ between 3-4
+    feet_position: LF closes to front of RF
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  sway: Nil
+level: associate
+leader:
+  cbm: on 1
+  footwork: 1 HT; 2 T; 3 T (LF) then TH (RF)
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: ⅜ between 1-2
+    feet_position: RF closes to LF
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: ⅜ between 2-3
+    feet_position: LF closes to RF (small step)
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: Nil
+notes:
+- The Double Reverse Spin may be commenced DC, DW or LOD
+- 'Amount of Turn into step between ⅛ and a whole turn, divided at follows:— (a) ⅛; ⅛ between 1-2; ⅛ between 2-3 or: ⅛ between
+  1-2; ⅜ between 2-3. (b) or across in chart. (c) Complete turn: ⅜ between 1-2; ⅛ between 2-3.'
+- 'When alignments (a) and (c) are used the Follower turns:— (a) ⅜ between 1-2; ⅜ between 2-3 or: ⅜ between 1-2; ⅜ between
+  2-3; ⅜ between 3-4. (c) ⅜ between 1-2; ⅜ between 2-3; ⅜ between 3-4.'
+precede:
+  associate:
+  - If commenced DC — RF Closed Change — 4-6 Reverse Turn after underturned Natural Spin Turn or Closed Impetus — Hesitation
+    Change — Reverse Pivot. If commenced LOD — 4-6 Reverse Turn after Natural Spin Turn or Closed Impetus — Hesitation Change
+    or Left Whisk.
+  - If commenced DW — Reverse Turn — 4-6 Reverse Turn after Natural Spin Turn — Reverse Pivot.
+  fellow: []
+  licentiate:
+  - Wing
+  - Closed Wing — Fallaway Reverse and Slip Pivot.
+timing: 1, 2 & 3
+variant_name: null

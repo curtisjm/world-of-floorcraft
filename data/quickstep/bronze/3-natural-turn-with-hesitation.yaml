@@ -1,0 +1,41 @@
+_source_pdf_page: 39
+beat_value: null
+dance: quickstep
+figure_name: Natural Turn with Hesitation
+figure_number: 3
+follow:
+  associate:
+  - Chassé Reverse Turn
+  - Progressive Chassé to R
+  - Double Reverse Spin
+  fellow: []
+  licentiate: []
+follower:
+  cbm: null
+  footwork: null
+  notes:
+  - A sway to L, Follower to R on steps 5-6 is optional.
+  steps: []
+  sway: null
+  timing: SQQSSS
+level: student_teacher
+leader:
+  cbm: null
+  footwork: null
+  notes:
+  - This may be danced along the side of the room or at a corner. Feet Positions are as Hesitation Chassé to Waltz. Figures
+    as for Natural Turn.
+  steps: []
+  sway: null
+  timing: SQQSSS
+notes:
+- This may be danced along the side of the room or at a corner. Feet Positions are as Hesitation Chassé to Waltz. Figures
+  as for Natural Turn.
+- A sway to L, Follower to R on steps 5-6 is optional.
+precede:
+  associate:
+  - As for Natural Turn
+  fellow: []
+  licentiate: []
+timing: SQQSSS
+variant_name: null

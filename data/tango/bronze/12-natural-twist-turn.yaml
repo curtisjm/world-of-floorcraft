@@ -1,0 +1,92 @@
+_source_pdf_page: 57
+beat_value: null
+dance: tango
+figure_name: Natural Twist Turn
+figure_number: 12
+follow:
+  associate:
+  - Any Promenade figure — Back Corté — LF Rock
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 3 and 5
+  footwork: H H H H HB BH & IE of B of RF
+  steps:
+  - alignment: Along LOD Pointing DC
+    amount_of_turn: null
+    feet_position: RF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Pointing down LOD
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF fwd between partner's feet
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Down LOD pointing DW
+    amount_of_turn: null
+    feet_position: LF fwd preparing to step under partner L side leading
+    rise_and_fall: null
+    step_number: 4
+  - alignment: To wall
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF to side small step in PP
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+level: associate
+leader:
+  cbm: on 2
+  footwork: H H BH B Com on B of RF, H of LF End of whole of RF, IE of B of LF
+  steps:
+  - alignment: Along LOD Pointing DW
+    amount_of_turn: null
+    feet_position: LF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD Pointing DW
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF to side
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF closes behind LF
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Towards the alignment of 6
+    amount_of_turn: null
+    feet_position: Com to twist to R allowing feet to unscrew
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: Feet almost closed weight on RF in B of RF
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+notes:
+- ¾ to R could be made to end facing LOD. The following Promenade could turn from DC to R to DC. — ⅜ to R could be made at
+  the side of the room to end facing DC. Following the steps of a Promenade and ending with Back Corté or LF Rock Leader will
+  turn a further ⅛ to face partner.
+precede:
+  associate:
+  - As for Closed Promenade
+  fellow: []
+  licentiate: []
+timing: SQQSQQ
+variant_name: null

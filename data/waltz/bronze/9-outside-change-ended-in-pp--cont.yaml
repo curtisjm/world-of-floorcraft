@@ -1,0 +1,48 @@
+_source_pdf_page: 12
+beat_value: null
+dance: waltz
+figure_name: Outside Change Ended in PP
+figure_number: 9
+follow:
+  associate:
+  - Chase from PP
+  fellow:
+  - Left Whisk
+  licentiate:
+  - Cross Hesitation — Wing (The foot position of step 3 Outside Change will be the same as the Open Telemark relevant to
+    the follow to be used)
+follower:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF side in PP
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF to side in PP
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Moving along LOD
+    amount_of_turn: Body turns less
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes: []
+precede: null
+timing: null
+variant_name: cont

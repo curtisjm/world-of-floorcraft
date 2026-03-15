@@ -1,0 +1,88 @@
+_source_pdf_page: 23
+beat_value: null
+dance: waltz
+figure_name: Hover Corté
+figure_number: 30
+follow:
+  associate: []
+  fellow:
+  - Outside Change
+  - Back Whisk
+  - Outside Spin
+  licentiate: []
+follower:
+  cbm: on 1 and 7
+  footwork: 1 HT; 2 T; 3-5 T;RF T; 6 TH; 7 H
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing centre
+    amount_of_turn: ⅛ between 1-2. Cont to turn ⅛ on 2-5
+    feet_position: RF to side
+    rise_and_fall: Cont to rise on 2-5
+    step_number: 2
+  - alignment: Towards alignment of 6
+    amount_of_turn: Cont to turn ⅛ between 3-5
+    feet_position: LF brushes towards RF
+    rise_and_fall: null
+    step_number: 3-4
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF brushes to RF
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Facing DC against LOD
+    amount_of_turn: null
+    feet_position: LF drag fwd
+    rise_and_fall: Up. Lower e/o 6
+    step_number: 6
+  - alignment: Facing DC against LOD
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 7
+  sway: SLL1LSS
+level: fellow
+leader:
+  cbm: on 1 and 7
+  footwork: 1 TH; 2-5 T and pressure on IE T RF; 6 TH; 7 T
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L. NFR
+    feet_position: RF back
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Pointing DW
+    amount_of_turn: ⅛ between 1-2. Body turns less. Com to turn body on 2
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Cont to rise on 2-5
+    step_number: 2
+  - alignment: Towards alignment of 6
+    amount_of_turn: Body com to turn ⅛ between 3-5
+    feet_position: RF brushes towards alignment of 6
+    rise_and_fall: null
+    step_number: 3-5
+  - alignment: Backing DC against LOD
+    amount_of_turn: null
+    feet_position: Transfer weight to RF side and slightly back
+    rise_and_fall: Up. Lower e/o 6
+    step_number: 6
+  - alignment: Backing DC against LOD
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 7
+  sway: SRRRSS
+notes: []
+precede:
+  associate: []
+  fellow:
+  - Natural Spin Turn
+  - Closed Impetus
+  - underturned Outside Spin
+  licentiate: []
+timing: null
+variant_name: cont

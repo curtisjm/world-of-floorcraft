@@ -1,0 +1,69 @@
+_source_pdf_page: 13
+beat_value: null
+dance: waltz
+figure_name: Back Whisk
+figure_number: 11
+follow:
+  associate:
+  - As for Whisk
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1
+  footwork: 1 HT; 2 T; 3 TH
+  steps:
+  - alignment: Facing DC against the LOD
+    amount_of_turn: Com to turn to R
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing centre
+    amount_of_turn: ⅛ between 1-2
+    feet_position: LF to side
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: ⅛ between 2-3
+    feet_position: RF crosses behind LF in PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SRR
+level: associate
+leader:
+  cbm: on 1 (slight)
+  footwork: 1 TH; 2 T; 3 TH
+  notes:
+  - Note — It is permissible for the leader to commence to draw the LF back with the Toe or Heel in contact with the floor
+    when moving back to cross behind RF on step 3
+  steps:
+  - alignment: Backing DC against LOD
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing DC against the LOD
+    amount_of_turn: null
+    feet_position: RF diag back
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF crosses behind RF in PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SLL
+notes:
+- Note — It is permissible for the leader to commence to draw the LF back with the Toe or Heel in contact with the floor when
+  moving back to cross behind RF on step 3
+- Note* — If the Back Whisk is turned to R, the Foot Position for Leader on step 2 will be 'Side & slightly back'. Leader
+  may turn ⅛ or ⅛ between 1-2, Body turns less. Body completes turn on 1. Follower will turn ⅛ or ⅛ between 1-2, ⅛ between
+  2-3
+precede:
+  associate:
+  - Reverse Corté. At corner — Back Lock — Progressive Chassé to R*
+  fellow:
+  - Hover Corté
+  licentiate:
+  - 1-3 Natural Turn (step 1 of Back Whisk taken in line) — Cross Hesitation
+timing: null
+variant_name: null

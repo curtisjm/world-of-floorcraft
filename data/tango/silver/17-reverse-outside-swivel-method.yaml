@@ -1,0 +1,81 @@
+_source_pdf_page: 60
+beat_value: null
+dance: tango
+figure_name: Reverse Outside Swivel Method
+figure_number: 17
+follow:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Closed Promenade
+follower:
+  cbm: on 1, 3 and 4. ⅛ to L between 1-3, ⅛ to R on 3, ⅛ to L between 4-5
+  footwork: BH; Whole foot; HB (Foot flat) and IE of B of LF; HB (Foot flat); IE of B
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Pointing down LOD
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 2
+  - alignment: DC. End facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP, LF closes slightly back without weight in PP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: To wall pointing DW
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Backing wall
+    amount_of_turn: null
+    feet_position: RF placed to side small step without weight
+    rise_and_fall: null
+    step_number: 5
+  sway: null
+level: licentiate
+leader:
+  cbm: on 1. ⅛ to L between 1-3, ⅛ between 3-4
+  footwork: H; BH; BH with pressure on B of RF; H; IE of B
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side
+    rise_and_fall: null
+    step_number: 2
+  - alignment: DC. End facing DW against LOD
+    amount_of_turn: null
+    feet_position: LF back in CBMP, RF moves leftwards in front of LF without weight in PP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Pointing to wall
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Facing wall
+    amount_of_turn: null
+    feet_position: LF placed to side small step without weight
+    rise_and_fall: null
+    step_number: 5
+  sway: null
+notes:
+- On step 3 above, more turn could be made so that the LF moves back DC with L toe pointing to wall. Follow OQSQQ
+- There is a sharp Foot Swivel on RF as the LF moves DC on step 3. Follower will turn only ⅛ to R on step 3
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - As for Open Reverse Turn
+timing: QQSQQ
+variant_name: null

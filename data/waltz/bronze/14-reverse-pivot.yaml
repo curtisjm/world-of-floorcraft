@@ -1,0 +1,51 @@
+_source_pdf_page: 15
+beat_value: null
+dance: waltz
+figure_name: Reverse Pivot
+figure_number: 14
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1
+  footwork: 1 TH
+  steps:
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Commence facing LOD
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DC
+    amount_of_turn: Up to ½ to L (Pivot)
+    feet_position: LF fwd in CBMP (small step) RF held in CBMP
+    rise_and_fall: null
+    step_number: 1
+  sway: Nil
+level: associate
+leader:
+  cbm: on 1
+  footwork: 1 TH
+  steps:
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Commence backing LOD
+    rise_and_fall: null
+    step_number: 1
+  - alignment: DC toe turned in
+    amount_of_turn: Up to ½ to L (Pivot)
+    feet_position: LF back in CBMP (small step) RF held in CBMP
+    rise_and_fall: null
+    step_number: 1
+  sway: Nil
+notes:
+- If the Reverse Pivot is commenced backing DC the alignment for the Pivot (Leader) would be 'To centre, toe turned in'. Note
+  also that this step is in CBMP owing to the body turning strongly to L as the RF steps back.
+precede:
+  associate:
+  - 1-3 Reverse Turn — Natural Spin Turn — Closed Impetus
+  - Underturned Outside Spin
+  fellow: []
+  licentiate: []
+timing: '&'
+variant_name: null

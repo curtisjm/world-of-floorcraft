@@ -1,0 +1,26 @@
+_source_pdf_page: 52
+beat_value: null
+dance: tango
+figure_name: Open Finish
+figure_number: 1
+follow: null
+follower:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+level: associate
+leader:
+  cbm: null
+  footwork: null
+  steps: []
+  sway: null
+notes: []
+precede:
+  associate:
+  - Back Corté, step 1 in CBMP with Follower OP - LF Back in CBMP with Follower OP, no turn or up to ¼ to R.
+  fellow: []
+  licentiate:
+  - Outside Swivel
+timing: null
+variant_name: Back into

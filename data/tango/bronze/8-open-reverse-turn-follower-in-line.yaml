@@ -1,0 +1,89 @@
+_source_pdf_page: 55
+beat_value: null
+dance: tango
+figure_name: Open Reverse Turn, Follower in Line
+figure_number: 8
+follow:
+  associate:
+  - As for Open Reverse Turn, Follower Outside
+  fellow: []
+  licentiate: []
+follower:
+  cbm: 'on 1 and 4. TIMING: QQSQQS. AMOUNT OF TURN: ¼ to L'
+  footwork: BH; Whole foot; H; H; IE of BH; Whole foot
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Toe pointing down LOD
+    amount_of_turn: null
+    feet_position: L Heel closes to R Heel
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF fwd R side leading
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF closes to RF slightly fwd
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+level: associate
+leader:
+  cbm: 'on 1 and 4. TIMING: QQSQQS. AMOUNT OF TURN: ¼ to L'
+  footwork: H; BH; IE of BH; BH; IE of foot; Whole foot
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF back L side leading
+    rise_and_fall: null
+    step_number: 3
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Pointing DW
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF closes to LF slightly fwd
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+notes: null
+precede:
+  associate:
+  - As for Open Reverse Turn, Follower Outside
+  fellow: []
+  licentiate: []
+timing: QQSQQS
+variant_name: null

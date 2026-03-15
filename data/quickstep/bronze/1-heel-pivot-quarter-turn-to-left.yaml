@@ -1,0 +1,76 @@
+_source_pdf_page: 66
+beat_value: null
+dance: quickstep
+figure_name: Heel Pivot (Quarter Turn to Left)
+figure_number: 1
+follow:
+  associate:
+  - Any Natural figure — Cross Chassé — Change of Direction. If Heel Pivot is ended DC rather underturned Natural Spin Turn
+    or Closed Impetus — Chassé Reverse Turn can follow
+  fellow:
+  - Cross Swivel — Tipsy to R
+  licentiate:
+  - From DC as above — Quick Open Reverse — Closed Telemark
+follower:
+  cbm: on 1 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 T
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing wall
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF closes to RF
+    rise_and_fall: Up e/o 2
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 2-3
+    feet_position: RF closes to RF
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 4
+  sway: SLLS
+  timing: SQQS
+level: student_teacher
+leader:
+  cbm: on 1 and 4
+  footwork: 1 TH; 2 H; 3 H(RF) with pressure on T of LF; 4 H
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Slight rise between 1 and 2 NFR
+    step_number: 1
+  - alignment: Towards alignment of 3
+    amount_of_turn: Cont to turn on R heel (Heel Pivot)
+    feet_position: LF closes towards RF
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: ¼ between 1-3
+    feet_position: LF closes to RF slightly fwd without weight
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 4
+  sway: SRRS
+  timing: SQQS
+notes:
+- ¼ turn may be made on this figure
+precede:
+  associate:
+  - Quarter Turn to R — Natural Spin Turn — Chassé Reverse Turn — Closed Impetus
+  fellow: []
+  licentiate:
+  - 1-3 Quick Open Reverse
+timing: SQQS
+variant_name: null

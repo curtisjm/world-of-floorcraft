@@ -1,0 +1,77 @@
+_source_pdf_page: 22
+dance: waltz
+figure_name: Turning Lock to Right
+figure_number: 28
+follow:
+  associate: []
+  fellow:
+  - Chassé from PP
+  - Weave from PP
+  - Cross Hesitation
+  - Wing
+  - Left Whisk
+  licentiate: []
+follower:
+  beat_value: ½, ½, 1, 1
+  cbm: Nil
+  footwork: 1 T; 2 T; 3 T; 4 TH
+  steps:
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF fwd L side leading
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Backing centre
+    amount_of_turn: ⅛ to R between 1-2
+    feet_position: RF crosses loosely behind LF
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF back and slightly (toe small step, between 2-3
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Pointing to Centre facing DC towards LF
+    amount_of_turn: ⅛ between 3-4 Body turns less
+    feet_position: RF back. PP foot turned out
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  sway: RRSS or LLSS
+  timing: 1 & 2 3
+level: fellow
+leader:
+  beat_value: ½, ½, 1, 1
+  cbm: Nil
+  footwork: 1 T; 2 T; 3 T; 4 TH
+  steps:
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: RF back R side leading
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing centre
+    amount_of_turn: ⅛ to R between 1-2
+    feet_position: LF crosses loosely in front of RF
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: ⅛ between 2-3
+    feet_position: RF fwd and small step, slightly (toe small step, between 2-3
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Pointing DC side facing LOD
+    amount_of_turn: Slight body turn to R
+    feet_position: LF diag. fwd. left side leading
+    rise_and_fall: Up. Lower e/o 4
+    step_number: 4
+  sway: LLSS or RLSS
+  timing: 1 & 2 3
+notes:
+- Note — The LF (RF Follower) of preceding Natural Spin Turn, but brush towards when moving into step 4 of Turning Lock to
+  R.
+precede:
+  associate: []
+  fellow:
+  - Overturned Natural Spin Turn — underturned Outside Spin, both ended backing LOD
+  licentiate: []
+variant_name: null

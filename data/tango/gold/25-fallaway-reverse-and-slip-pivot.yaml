@@ -1,0 +1,73 @@
+_source_pdf_page: 64
+beat_value: null
+dance: tango
+figure_name: Fallaway Reverse and Slip Pivot
+figure_number: 25
+follow:
+  associate: null
+  fellow:
+  - If ended LOD — Any Reverse Turn — overturned Four Step
+  - Reverse Outside Swivel — Fallaway Four Step — Fallaway Reverse and Slip Pivot
+  - If ended DC — overturned Five Step. If ended DW — Progressive Link — Four Step — Four Step — Change — Brush Tap — Five
+    Step Swivel — Centre to Face
+  licentiate: null
+follower:
+  cbm: on 3 and 4
+  footwork: 1 BH; 2 IE of BH; 3 B; 4 BH
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DC, moving down LOD
+    amount_of_turn: null
+    feet_position: LF back in Fallaway, L side leading
+    rise_and_fall: null
+    step_number: 2
+  - alignment: DC to end facing centre
+    amount_of_turn: null
+    feet_position: RF back in CBMP and Fallaway, a small step), LF held in CBMP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: To centre to end LOD or DW
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP, RF held in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+level: fellow
+leader:
+  cbm: on 1 and 4
+  footwork: 1 H; 2 IE of BH; 3 BH; 4 BHB
+  steps:
+  - alignment: DC
+    amount_of_turn: null
+    feet_position: LF fwd in CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DW, moving down LOD
+    amount_of_turn: null
+    feet_position: RF back in Fallaway, R foot back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Down LOD
+    amount_of_turn: null
+    feet_position: LF back in CBMP and Fallaway, Partner LF held in CBMP
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Move Backward in End LOD or DW
+    amount_of_turn: null
+    feet_position: RF back, LF held in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: null
+notes:
+- This figure may be danced into a corner, commencing DW or LOD to follow with a Reverse figure DC or new LOD.
+precede:
+  associate: null
+  fellow:
+  - As for Open Reverse Turn, Follower Outside
+  licentiate: null
+timing: QQQQ
+variant_name: null

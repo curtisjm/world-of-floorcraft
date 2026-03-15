@@ -1,0 +1,141 @@
+_source_pdf_page: 34
+beat_value: null
+dance: foxtrot
+figure_name: Reverse Wave
+figure_number: 19
+follow:
+  associate: []
+  fellow:
+  - At corner
+  - Curved Feather
+  - Fallaway Reverse and Slip Pivot
+  - Bounce Fallaway with Weave Ending
+  licentiate:
+  - Feather
+  - Basic Weave after step 4
+  - Closed or Open Impetus after step 6
+  - Hover Feather after step 8
+follower:
+  cbm: on 1, 4, 7 and 9
+  footwork: 1 HT; 2 T; 3 TH; 4 T; 5 T; 6 TH; 7 TH; 8 T; 9 T
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise slightly e/o 1 NFR
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: ¼ between 1-2
+    feet_position: LF back close to RF (Heel Turn)
+    rise_and_fall: Com to rise on 2
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Curving towards LOD
+    amount_of_turn: ¼ between 4-6
+    feet_position: RF fwd
+    rise_and_fall: Rise e/o 5
+    step_number: 5
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: Up Lower e/o 6
+    step_number: 6
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd
+    rise_and_fall: null
+    step_number: 7
+  - alignment: Backing DC
+    amount_of_turn: ¼ between 7-8
+    feet_position: LF to side
+    rise_and_fall: null
+    step_number: 8
+  - alignment: Backing DC
+    amount_of_turn: Body turn to L
+    feet_position: RF back brushed to LF
+    rise_and_fall: null
+    step_number: 9
+  sway: SWAY SSRLRSLLS
+level: licentiate
+leader:
+  cbm: on 1, 4, 7 and 9
+  footwork: 1 HT; 2 T; 3 TH; 4 TH; 5 T; 6 TH; 7 TH; 8 H IE of foot whole foot then IE of LF; 9 H
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing wall
+    amount_of_turn: ¾ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Pointing DW
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF to side
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise e/o 4
+    step_number: 4
+  - alignment: Curving towards LOD
+    amount_of_turn: ¼ between 4-6
+    feet_position: LF back
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: Up Lower e/o 6
+    step_number: 6
+  - alignment: null
+    amount_of_turn: Com to turn R
+    feet_position: LF back
+    rise_and_fall: null
+    step_number: 7
+  - alignment: Facing DC
+    amount_of_turn: ¼ between 7-8
+    feet_position: RF to side small step (Heel Pull)
+    rise_and_fall: null
+    step_number: 8
+  - alignment: Facing DC
+    amount_of_turn: Body turn R
+    feet_position: LFD fwd
+    rise_and_fall: null
+    step_number: 9
+  sway: SWAY SSLRSRSSL
+notes:
+- Special Note — Although the rise is taken from the T of LF on step 5, when the RF commences to move back for step 6 the
+  R Heel must be in contact with the floor
+- Although the rise is taken from the T of LF on step 5, when the RF commences to move back for step 6 the R Heel must be
+  in contact with the floor
+precede:
+  associate: []
+  fellow:
+  - Reverse Turn
+  - Natural Weave
+  - Basic Wave
+  - Top Spin
+  - Hover Cross
+  - Weave from PP
+  - At corner
+  - Natural Telemark
+  licentiate:
+  - Feather Finish
+  - Feather Ending
+  - Hover Feather
+  - Hover Telemark
+timing: SQQQQQS
+variant_name: LEADER

@@ -1,0 +1,62 @@
+_source_pdf_page: 20
+dance: waltz
+figure_name: Left Whisk
+figure_number: 25
+follow:
+  associate: []
+  fellow: []
+  licentiate: []
+follower:
+  beat_value: null
+  cbm: on 1
+  footwork: 'FOOTWORK: 1 HT; 2 TH; 3 TH. CBM on 1. SWAY: Nil'
+  steps:
+  - alignment: Facing DC (Moving along LOD)
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 3
+  sway: Nil
+  timing: null
+level: fellow
+leader:
+  beat_value: null
+  cbm: Nil
+  footwork: 'FOOTWORK: 1 H; 2 TH; 3 T (Leader''s RH will lower as the next step is taken). CBM Nil. SWAY: Nil'
+  steps:
+  - alignment: Facing DW (Moving along LOD)
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP and CBMP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Pointing DW
+    amount_of_turn: Body com. to turn L
+    feet_position: LF to side and slightly back
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: Body turn to L
+    feet_position: RF crosses behind LF
+    rise_and_fall: null
+    step_number: 3
+  sway: Nil
+  timing: null
+notes:
+- The term 'Facing' instead of 'Pointing' on step 2 would be equally correct
+- The Follower should overturn slightly to the L on step 3 and turn her head well to the L. The Leader should look towards
+  her face, not over her R shoulder
+precede:
+  associate: []
+  fellow: []
+  licentiate: []
+variant_name: null

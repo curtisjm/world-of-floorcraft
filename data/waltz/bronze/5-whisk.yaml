@@ -1,0 +1,53 @@
+_source_pdf_page: 9
+beat_value: null
+dance: waltz
+figure_name: Whisk
+figure_number: 5
+follow: {}
+follower:
+  cbm: Nil
+  footwork: 1 TH; 2 T; 3 TH
+  notes: The feet complete the turn between 1-2.
+  steps:
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: ¼ to R between 1-2. Body turns less.
+    feet_position: LF diag back
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: Body completes turn.
+    feet_position: RF crosses behind LF in PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SRR
+level: student_teacher
+leader:
+  cbm: on 1 (slight)
+  footwork: 1 HT; 2 T; 3 TH
+  notes: The position of step 2 is consistent with step 2 of a Closed Change.
+  steps:
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF to side and slightly fwd
+    rise_and_fall: Cont to rise
+    step_number: 2
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF crosses behind RF in PP
+    rise_and_fall: Up. Lower e/o 3
+    step_number: 3
+  sway: SLL
+notes: []
+precede: {}
+timing: null
+variant_name: null

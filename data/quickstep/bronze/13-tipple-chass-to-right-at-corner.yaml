@@ -1,0 +1,117 @@
+_source_pdf_page: 43
+dance: quickstep
+figure_name: Tipple Chassé to Right (at Corner)
+figure_number: 13
+follow:
+  associate:
+  - As for Forward Lock
+  fellow: []
+  licentiate:
+  - Leader ended DC—see note below — Quick Open Reverse — Fishtail. Note — On step 5 R may be followed by Tipps to L
+follower:
+  beat_value: null
+  cbm: on 1 and 8
+  footwork: 1 HT; 2 T; 3 T; 4 T; 5 T; 6 T; 7 TH; 8 T
+  steps:
+  - alignment: Facing LOD
+    amount_of_turn: Com to turn R
+    feet_position: RF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Backing new LOD
+    amount_of_turn: ⅛ between 1-2
+    feet_position: LF to side
+    rise_and_fall: Com to rise on 2 and 3
+    step_number: 2
+  - alignment: Backing LOD
+    amount_of_turn: null
+    feet_position: RF closes to LF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 3-4
+    feet_position: LF to side and slightly back
+    rise_and_fall: Up (see note below)
+    step_number: 4
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF closes R side leading
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF crosses in front of RF
+    rise_and_fall: Up
+    step_number: 6
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF diag back
+    rise_and_fall: Up Lower e/o 7
+    step_number: 7
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 8
+  sway: Nil
+  timing: SQQSQQSS
+level: associate
+leader:
+  beat_value: null
+  cbm: on 7 and 8
+  footwork: 1 TH; 2 T; 3 T; 4 T; 5 T; 6 T; 7 TH; 8 H
+  steps:
+  - alignment: Backing LOD
+    amount_of_turn: Com to turn R
+    feet_position: LF back
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Pointing new LOD
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Com to rise on 2 and 3
+    step_number: 2
+  - alignment: Facing LOD
+    amount_of_turn: null
+    feet_position: LF closes to RF
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Facing DW
+    amount_of_turn: ⅛ between 3-4
+    feet_position: RF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF closes to R side
+    rise_and_fall: Up (See note below)
+    step_number: 5
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF crosses behind LF
+    rise_and_fall: Up
+    step_number: 6
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF diag fwd
+    rise_and_fall: Up
+    step_number: 7
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd with step OP
+    rise_and_fall: Up Lower e/o 7
+    step_number: 8
+  sway: Nil
+  timing: SQQSQQSS
+notes:
+- L) 1-3 Natural Turn — Back Lock — Natural Turn and Back Lock.
+- F) As per 2-8 Tipple Chasse to R can be preceded by Tipps to L.
+precede:
+  associate:
+  - 1-3 Natural Turn
+  - Back Lock
+  - Natural Turn and Back Lock
+  fellow: []
+  licentiate:
+  - As per 2-8 Tipple Chasse to R can be preceded by Tipps to L
+variant_name: null

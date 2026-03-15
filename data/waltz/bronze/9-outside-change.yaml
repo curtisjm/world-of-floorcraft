@@ -1,0 +1,76 @@
+_source_pdf_page: 11
+beat_value: null
+dance: waltz
+figure_name: Outside Change
+figure_number: 9
+follow:
+  associate:
+  - Any Natural figure
+  fellow: []
+  licentiate:
+  - Closed Wing
+follower:
+  cbm: on 2 and 4
+  footwork: 1 HT; 2 T; 3 TH; 4 T
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF fwd
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Backing DW
+    amount_of_turn: Com to turn L ¼ between 2-3 Body turns less
+    feet_position: RF to side and slightly back
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: Nil
+level: associate
+leader:
+  cbm: on 2 and 4
+  footwork: 1 TH; 2 T; 3 TH; 4 H
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF back
+    rise_and_fall: Com to rise e/o 1 NFR
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: Cont to rise on 2
+    step_number: 2
+  - alignment: Pointing DW
+    amount_of_turn: Com to turn L ⅛ between 2-3 Body turns less
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Up Lower e/o 3
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 4
+  sway: Nil
+notes: []
+precede:
+  associate:
+  - Any Natural figure (either underturned or commenced facing DC (rather overturned to commence facing DC))
+  - At corner
+  - Reverse Corté (step 1 of Outside Change in CBMP Follower OP)
+  fellow:
+  - Left Whisk releasing LF on step 3
+  - Hover Corté with Outside Change ended DC with Closed Wing
+  licentiate:
+  - Progressive Chasse to R to end backing DC. At corner
+  - Cross Hesitation
+timing: null
+variant_name: null

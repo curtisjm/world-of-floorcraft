@@ -1,0 +1,105 @@
+_source_pdf_page: 28
+beat_value: null
+dance: foxtrot
+figure_name: Basic Weave
+figure_number: 8
+follow:
+  associate:
+  - As for Reverse Turn
+  fellow: []
+  licentiate: []
+follower:
+  cbm: on 1, 4 and 7
+  footwork: 1 TH; 2 T; 3 T; 4 T; 5 T; 6 TH; 7 T.
+  steps:
+  - alignment: Backing DC against LOD
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Rise e/o 1 NFR
+    step_number: 1
+  - alignment: Pointing DC
+    amount_of_turn: ⅛ between 1-2 Body turns less
+    feet_position: LF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Up
+    step_number: 3
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Up
+    step_number: 4
+  - alignment: Backing wall
+    amount_of_turn: ⅛ between 4-5
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 5-6 Body turns less
+    feet_position: LF back in CBMP
+    rise_and_fall: Up NFR. Lower e/o 6
+    step_number: 6
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: RF back
+    rise_and_fall: null
+    step_number: 7
+  sway: SRRSSLLS
+level: associate
+leader:
+  cbm: on 1, 4 and 7
+  footwork: 1 HT; 2 T; 3 T; 4 T; 5 T; 6 TH; 7 H.
+  steps:
+  - alignment: Facing DC against LOD
+    amount_of_turn: Com to turn L
+    feet_position: LF fwd
+    rise_and_fall: Rise e/o 1
+    step_number: 1
+  - alignment: Backing LOD
+    amount_of_turn: ⅛ between 1-2
+    feet_position: RF to side
+    rise_and_fall: Up
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: ⅛ between 2-3
+    feet_position: LF fwd in CBMP
+    rise_and_fall: Up
+    step_number: 3
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF back
+    rise_and_fall: Up
+    step_number: 4
+  - alignment: Pointing DW
+    amount_of_turn: ⅛ between 4-5 Body turns less
+    feet_position: LF to side (slightly fwd)
+    rise_and_fall: Up
+    step_number: 5
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: Up. Lower e/o 6
+    step_number: 6
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: LF fwd
+    rise_and_fall: null
+    step_number: 7
+  sway: SLLSSRS
+notes:
+- On step 3 the footwork of TH may be used. This will often result in a softer and more flowing movement. Rise on 3 will then
+  be 'Up, NFR.'
+precede:
+  associate:
+  - 1-4 Reverse Turn to end backing DW, check and Basic Weave turning ⅛, ⅛, ⅛ to end DW or new LOD
+  - 4-6 Basic Weave to end backing LOD or new LOD, checking. 1-4 Reverse Weave — 1-4 Reverse Turn to end backing LOD, check
+    and Basic Weave turning ⅛, ⅛ to end facing L foot to new LOD
+  fellow:
+  - At corner — Curved Feather to Back Feather — Fallaway Reverse and Slip Pivot
+  licentiate:
+  - Hover Telemark, step 4 LF fwd to be danced with partner on toe into overturned Basic Weave — 1-4 Reverse Wave
+timing: QQQQQQQS
+variant_name: null

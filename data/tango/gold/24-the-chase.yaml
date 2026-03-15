@@ -1,0 +1,91 @@
+_source_pdf_page: 64
+beat_value: null
+dance: tango
+figure_name: The Chase
+figure_number: 24
+follow:
+  associate: null
+  fellow: []
+  licentiate: null
+follower:
+  cbm: on 2, 4 and 5
+  footwork: 1 H; 2 H; 3 IE of BH; 4 BH; 5 B; 6 BH, and IE of B of RF
+  steps:
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: RF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DC
+    amount_of_turn: null
+    feet_position: LF fwd and across in PP into CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Backing wall
+    amount_of_turn: null
+    feet_position: RF to side and slightly back
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Almost against LOD
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Almost DW
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Backing DC. End facing DC or against LOD
+    amount_of_turn: null
+    feet_position: LF to side, RF placed to side without weight in PP
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+level: fellow
+leader:
+  cbm: on 2, 4 and 5
+  footwork: 1 H; 2 H; 3 IE of BH; 4 BH; 5 BH; 6 BH and IE of B of LF
+  steps:
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: LF to side in PP
+    rise_and_fall: null
+    step_number: 1
+  - alignment: Along LOD pointing DW
+    amount_of_turn: null
+    feet_position: RF fwd and across in PP into CBMP
+    rise_and_fall: null
+    step_number: 2
+  - alignment: Facing wall
+    amount_of_turn: null
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Almost against LOD
+    amount_of_turn: null
+    feet_position: RF fwd in CBMP, OP
+    rise_and_fall: null
+    step_number: 4
+  - alignment: Almost DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 5
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF to side, small step in PP
+    rise_and_fall: null
+    step_number: 6
+  sway: null
+notes:
+- A sharp body turn to R is used on step 4
+- The Follower may turn only. SQQQQQS or ¾ to R between 3-6. ¾ turn to L between 3-6.
+precede:
+  associate: null
+  fellow:
+  - As for Closed Promenade
+  - As for The Promenade figure. If ended in Line — Progressive Link
+  licentiate: null
+timing: SQQQQQS
+variant_name: null

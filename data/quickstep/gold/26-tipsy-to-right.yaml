@@ -1,0 +1,66 @@
+_source_pdf_page: 49
+dance: quickstep
+figure_name: Tipsy to Right
+figure_number: 26
+follow:
+  associate: []
+  fellow:
+  - 2-5 Forward Lock — Tipsy to L
+  licentiate: []
+follower:
+  beat_value: ½, ½, 1
+  cbm: Nil
+  footwork: 1 T; 2 T; 3 IE of T and IE of T of RF
+  steps:
+  - alignment: According to preceding Figure
+    amount_of_turn: Nil or up to ⅛ to R or L (See note)
+    feet_position: LF to side (small step)
+    rise_and_fall: Slight rise on 1 and
+    step_number: 1
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Move RF halfway towards LF
+    rise_and_fall: Lower e/o 2
+    step_number: 2
+  - alignment: null
+    amount_of_turn: null
+    feet_position: LF to side (small step)
+    rise_and_fall: Down, with sharp flexing of the knees
+    step_number: 3
+  sway: SRR or SSL
+  timing: Q & Q
+level: fellow
+leader:
+  beat_value: ½, ½, 1
+  cbm: Nil
+  footwork: 1 T; 2 T; 3 IE of T and IE of T of LF
+  steps:
+  - alignment: According to preceding figure
+    amount_of_turn: Nil or up to ⅛ to R or L (See note)
+    feet_position: RF to side (small step)
+    rise_and_fall: Slight rise on 1 and
+    step_number: 1
+  - alignment: null
+    amount_of_turn: null
+    feet_position: Move RF halfway towards RF
+    rise_and_fall: Lower e/o 2
+    step_number: 2
+  - alignment: null
+    amount_of_turn: null
+    feet_position: RF to side (small step)
+    rise_and_fall: Down, with sharp flexing of the knees
+    step_number: 3
+  sway: SLL or SSR
+  timing: Q & Q
+notes:
+- Continue with 2-5 Forward Lock QQSS
+- Continue with 3-5 Back Lock QQSS
+- When a Tipsy is danced after a forward step on the LF any turn made will be to L.
+- When it is danced after a step back on LF any turn made will be to R.
+precede:
+  associate: []
+  fellow:
+  - 1-4 Natural Turn — Back Lock — Progressive Chassé to R — Reverse Pivot or Double Reverse Spin followed by a step forward
+    on LF, S — Cross Swivel followed by a step back on LF, S — Tipsy to L — Horse Conté
+  licentiate: []
+variant_name: null

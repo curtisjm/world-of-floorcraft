@@ -1,0 +1,84 @@
+_source_pdf_page: 20
+dance: waltz
+figure_name: Turning Lock
+figure_number: 24
+follow:
+  associate: []
+  fellow:
+  - Closed Wing
+  licentiate:
+  - Any Natural figure
+follower:
+  beat_value: ½, ½, 1, 1, 1
+  cbm: '5'
+  footwork: 1 T; 2 T; 3 T; 4 TH; 5 T
+  steps:
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: LF fwd L side leading
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Facing DC
+    amount_of_turn: null
+    feet_position: RF crosses behind
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Facing DC
+    amount_of_turn: Com to turn L
+    feet_position: LF to side and slightly leftwards
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Backing DW
+    amount_of_turn: ⅛ between 3-4 Body turns less
+    feet_position: RF fwd and slightly side OP
+    rise_and_fall: Up Lower e/o 4
+    step_number: 4
+  - alignment: Backing DW
+    amount_of_turn: null
+    feet_position: LF back in CBMP
+    rise_and_fall: null
+    step_number: 5
+  sway: RRRSS
+  timing: 1 & 2 3, 1, 1
+level: licentiate
+leader:
+  beat_value: ½, ½, 1, 1, 1
+  cbm: on 5
+  footwork: 1 T; 2 T; 3 T; 4 TH; 5 H
+  steps:
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: RF back R side leading
+    rise_and_fall: Com to rise e/o 1
+    step_number: 1
+  - alignment: Backing DC
+    amount_of_turn: null
+    feet_position: LF crosses in front of RF
+    rise_and_fall: Cont to rise on 2 and 3
+    step_number: 2
+  - alignment: Backing DC
+    amount_of_turn: Com to turn L
+    feet_position: RF to side slightly rightwards
+    rise_and_fall: null
+    step_number: 3
+  - alignment: Pointing DW
+    amount_of_turn: ⅛ between 3-4 Body turns less
+    feet_position: LF to side and slightly fwd
+    rise_and_fall: Up Lower e/o 4
+    step_number: 4
+  - alignment: Facing DW
+    amount_of_turn: null
+    feet_position: RF back in CBMP
+    rise_and_fall: null
+    step_number: 5
+  sway: LLSSS
+  timing: 1 & 2 3, 1, 1
+notes:
+- Footwork of the last step of the preceding Natural Spin Turn will be as normal TH for Leader and Follower
+- The Turning Lock may be ended in PP. Refer to 'Outside Change ended in PP', Figure 9 for technical details and Follows
+precede:
+  associate: []
+  fellow: []
+  licentiate:
+  - Natural Spin Turn — Closed Impetus — underturned Outside Spin
+variant_name: null
