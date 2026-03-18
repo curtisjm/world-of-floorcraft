@@ -265,10 +265,20 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
     setEnabledLevels((prev) => ({ ...prev, [group]: !prev[group] }));
   }, []);
 
-  const filteredFigures = useMemo(
-    () => figures.filter((f) => enabledLevels[LEVEL_TO_GROUP[f.level] ?? "bronze"]),
-    [figures, enabledLevels]
-  );
+  const filteredFigures = useMemo(() => {
+    const visible = figures.filter(
+      (f) => enabledLevels[LEVEL_TO_GROUP[f.level] ?? "bronze"]
+    );
+
+    if (centerFigureId == null) return visible;
+
+    if (visible.some((f) => f.id === centerFigureId)) {
+      return visible;
+    }
+
+    const centerFigure = figures.find((f) => f.id === centerFigureId);
+    return centerFigure ? [...visible, centerFigure] : visible;
+  }, [figures, enabledLevels, centerFigureId]);
 
   const visibleIds = useMemo(
     () => new Set(filteredFigures.map((f) => f.id)),

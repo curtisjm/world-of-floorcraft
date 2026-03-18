@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 
 const LEVEL_BORDER_COLORS: Record<string, string> = {
@@ -29,7 +30,7 @@ export function FigureNode({ data }: NodeProps<FigureNode>) {
   return (
     <>
       <Handle type="target" position={Position.Left} className="!bg-muted-foreground !w-2 !h-2" />
-      <a
+      <Link
         href={href}
         className="block px-4 py-2.5 rounded-lg bg-card border-2 hover:brightness-125 transition-all cursor-pointer text-center"
         style={{
@@ -40,7 +41,7 @@ export function FigureNode({ data }: NodeProps<FigureNode>) {
         <div className="text-sm font-medium leading-tight whitespace-nowrap">
           {data.label}
         </div>
-      </a>
+      </Link>
       <Handle type="source" position={Position.Right} className="!bg-muted-foreground !w-2 !h-2" />
     </>
   );
