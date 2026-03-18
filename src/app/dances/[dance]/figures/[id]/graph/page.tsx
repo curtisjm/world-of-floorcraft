@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { eq, or, inArray } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { getDb } from "@/db";
-import { figures, figureEdges } from "@/db/schema";
+import { dances, figureEdges, figures } from "@/db/schema";
 import { DanceGraph } from "@/components/graph/dance-graph";
 
 export default async function FigureGraphPage({
@@ -17,10 +17,17 @@ export default async function FigureGraphPage({
 
   const db = getDb();
 
+  const [dance] = await db
+    .select()
+    .from(dances)
+    .where(eq(dances.name, danceSlug));
+
+  if (!dance) notFound();
+
   const [figure] = await db
     .select()
     .from(figures)
-    .where(eq(figures.id, figureId));
+    .where(and(eq(figures.id, figureId), eq(figures.danceId, dance.id)));
 
   if (!figure) notFound();
 

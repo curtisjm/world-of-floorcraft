@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { eq, or } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -113,17 +113,19 @@ export default async function FigureDetailPage({
 
   const db = getDb();
 
-  const [figure] = await db
-    .select()
-    .from(figures)
-    .where(eq(figures.id, figureId));
-
-  if (!figure) notFound();
-
   const [dance] = await db
     .select()
     .from(dances)
-    .where(eq(dances.id, figure.danceId));
+    .where(eq(dances.name, danceSlug));
+
+  if (!dance) notFound();
+
+  const [figure] = await db
+    .select()
+    .from(figures)
+    .where(and(eq(figures.id, figureId), eq(figures.danceId, dance.id)));
+
+  if (!figure) notFound();
 
   // Get edges and resolve figure names
   const edges = await db
