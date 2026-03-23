@@ -28,7 +28,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider appearance={{ baseTheme: dark }}>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+        variables: {
+          colorBackground: "#262626",
+          colorInputBackground: "#1a1a1a",
+          colorInputText: "#fafafa",
+          colorPrimary: "#fafafa",
+          colorText: "#fafafa",
+          colorTextSecondary: "#a1a1a1",
+          colorNeutral: "#a1a1a1",
+          borderRadius: "0.5rem",
+        },
+      }}
+    >
       <html lang="en" className="dark">
         <body className={`${inter.variable} font-sans antialiased`}>
           <Providers>
