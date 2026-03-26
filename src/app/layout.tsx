@@ -7,8 +7,8 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
-import { shadcn } from "@clerk/ui/themes";
 import { Providers } from "@/components/providers";
+import { clerkAppearance } from "@/lib/clerk-appearance";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider appearance={{ theme: shadcn }}>
+    <ClerkProvider appearance={clerkAppearance}>
       <html lang="en" className="dark">
         <body className={`${inter.variable} font-sans antialiased`}>
           <Providers>

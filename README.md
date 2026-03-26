@@ -1,6 +1,6 @@
 # Figure Graph
 
-Interactive visualization of the ISTD ballroom dance syllabus as a directed graph. Browse figures, explore precede/follow transitions, and build competition routines.
+A social platform for the ballroom dance community built around the ISTD syllabus. Browse figures, explore transitions as interactive graphs, build competition routines, share technique articles, and connect with dancers and teams.
 
 ## Background
 
@@ -26,106 +26,121 @@ Figures are introduced at progressively higher examination levels. Higher levels
 - **Licentiate** (Silver) — Intermediate figures and additional transitions
 - **Fellow** (Gold) — Advanced figures and the full transition set
 
-### What is a Figure?
+## Platform Features
 
-A figure is a named, repeatable sequence of steps with defined:
-- **Alignment** — direction the dancer faces relative to the room
-- **Footwork** — which part of the foot contacts the floor (heel, toe, ball)
-- **Rise and fall** — body elevation changes through the step
-- **CBM** (Contrary Body Movement) — rotation of the body opposite to the moving foot
-- **Sway** — lateral body inclination
-- **Timing** — which beats of the music each step occupies
+### Syllabus & Graph Tool
+- Browse figures for each dance with search and level filtering
+- Interactive directed graph visualization (React Flow + Dagre layout)
+- Full dance graphs and local figure neighborhood graphs
+- Figure detail pages with leader/follower step charts, footwork, CBM, sway, timing
 
-Each figure has separate step charts for the man and lady, since they mirror or complement each other.
+### Routine Builder
+- Build competition routines by selecting figures with transition validation
+- Level ceiling filtering (Bronze/Silver/Gold/Fellow)
+- Publish routines to your profile or share as feed posts
 
-### What are Precedes and Follows?
+### Social Network (in development)
+- Share routines with captions and write technique articles (WYSIWYG markdown editor)
+- Follow other dancers, like/comment/save posts
+- Organize saved posts into folders
+- User profiles with competition level badges
+- Following + Explore feed tabs
 
-The syllabus defines which figures can legally connect to each other. For example, in waltz, a Natural Turn can be followed by a Closed Change (RF) at Associate level, or by an Outside Spin at Licentiate level. These rules form a **directed graph** where figures are nodes and allowed transitions are edges, with each edge annotated with the minimum level required.
+### Organizations (in development)
+- Create or join teams (university ballroom teams, clubs, etc.)
+- Configurable membership: open, invite-only, or request-to-join
+- Org profile pages with posts, members, and settings
+- Org-scoped content visibility
+
+### Real-Time Messaging (in development)
+- Direct messages, group chats, and org channels
+- Real-time delivery via Ably
+- Typing indicators and presence
 
 ## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| Framework | [Next.js 15](https://nextjs.org/) (App Router) | React framework with file-based routing and server-side rendering |
-| Language | [TypeScript](https://www.typescriptlang.org/) | Static typing for JavaScript |
-| Styling | [Tailwind CSS v4](https://tailwindcss.com/) | Utility-first CSS framework |
-| UI Components | [shadcn/ui](https://ui.shadcn.com/) | Accessible components built on Radix UI primitives |
+| Framework | [Next.js 15](https://nextjs.org/) (App Router) | Server components, file-based routing |
+| Language | [TypeScript](https://www.typescriptlang.org/) | End-to-end type safety |
+| Styling | [Tailwind CSS v4](https://tailwindcss.com/) | Utility-first CSS |
+| UI Components | [shadcn/ui](https://ui.shadcn.com/) | Accessible components on Radix UI primitives |
 | Database | [PostgreSQL](https://www.postgresql.org/) via [Neon](https://neon.tech/) | Serverless PostgreSQL |
 | ORM | [Drizzle](https://orm.drizzle.team/) | TypeScript-first SQL ORM |
 | API | [tRPC v11](https://trpc.io/) | End-to-end typesafe API layer |
-| Auth | [Clerk](https://clerk.com/) | Authentication dependency installed; full UI flow not yet wired |
+| Auth | [Clerk](https://clerk.com/) | Authentication with OAuth providers |
+| Real-time | [Ably](https://ably.com/) | WebSocket messaging (planned) |
+| Editor | [Tiptap](https://tiptap.dev/) | WYSIWYG markdown editor (planned) |
+| Hosting | [Vercel](https://vercel.com/) | Deployment platform |
 | Package Manager | [pnpm](https://pnpm.io/) | Fast, disk-efficient package manager |
 | Dev Environment | [Nix](https://nixos.org/) flake | Reproducible development environment |
 
-## Project Structure
+## Architecture
+
+The codebase follows a **modular monolith** pattern organized by domain:
 
 ```
-figure-graph/
-  src/
-    app/                        # Next.js App Router pages
-      api/trpc/[trpc]/route.ts  # tRPC HTTP endpoint
-      dances/                   # Dance browsing pages
-        [dance]/                # Per-dance figure list + graph
-          figures/[id]/         # Individual figure detail + local graph
-      routines/                 # Routine management pages
-      layout.tsx                # Root layout (nav, dark theme, providers)
-      page.tsx                  # Landing page
-      globals.css               # Tailwind config, CSS variables, theme
-    components/
-      ui/                       # shadcn/ui components (button, card, etc.)
-      providers.tsx             # tRPC + React Query client providers
-    db/
-      schema.ts                 # Drizzle ORM table definitions
-      index.ts                  # Database connection (lazy, via Neon)
-    server/
-      trpc.ts                   # tRPC initialization
-      routers/                  # API routers (dance, figure, routine)
-    lib/
-      trpc.ts                   # Client-side tRPC hooks
-      utils.ts                  # Tailwind class merge utility
-  scripts/
-    extract_figures.py          # PDF extraction via Claude vision API
-    seed.ts                     # Database seeder from extracted YAML
-  data/
-    extracted/                  # YAML output from extraction (gitignored)
-    raw/                        # Scanned PDF pages (gitignored)
-  drizzle.config.ts             # Drizzle migration config
-  components.json               # shadcn/ui CLI config
+src/
+  domains/
+    syllabus/         # Figure graph, dance browsing, visualization
+    routines/         # Routine builder and management
+    social/           # Feed, posts, comments, likes, follows, saves
+    messaging/        # DMs, group chats, org channels
+    orgs/             # Organizations, membership, org profiles
+  shared/
+    auth/             # Clerk helpers, protected procedures
+    db/               # Database connection, shared enums
+    ui/               # shadcn/ui components
+    components/       # App shell (nav, layout)
+    lib/              # tRPC client, utilities
+    schema.ts         # Users table (shared across domains)
 ```
+
+Each domain owns its schema, routers, components, and routes. Cross-domain access uses explicit query/type exports. See [docs/](docs/) for detailed architecture documentation.
 
 ## Database Schema
 
+### Core (Syllabus)
 ```
 dances              1 ──── * figures           Figures belong to a dance
 figures             1 ──── * figure_edges      Edges connect two figures (directed)
-users               1 ──── * routines          Users own routines
-routines            1 ──── * routine_entries   Routines contain ordered figures
-users + figures     1 ──── * figure_notes      Users annotate figures
 ```
 
-Key tables:
-- **`figures`** — step data (JSONB for man/lady steps), footwork, CBM, sway, timing
-- **`figure_edges`** — directed transitions with minimum level and optional conditions
-- **`routine_entries`** — ordered figure sequence with wall segment markers
+### User Content
+```
+users               1 ──── * routines          Users own routines
+routines            1 ──── * routine_entries   Routines contain ordered figures
+users               1 ──── * posts             Users author posts
+posts               1 ──── * comments          Posts have threaded comments
+users               1 ──── * saved_posts       Users bookmark posts into folders
+```
+
+### Social
+```
+users               * ──── * follows           Follow relationships (with pending state)
+users               * ──── * organizations     Org membership (via memberships table)
+organizations       1 ──── * conversations     Org channels
+users               * ──── * conversations     DMs and group chats (via conversation_members)
+```
 
 ## Design
 
 ### Color System
 
-The app uses a dark theme with accent colors mapped to examination levels:
+Dark theme with accent colors mapped to examination levels:
 
 - **Bronze** `#CD7F32` — Student Teacher / Associate
 - **Silver** `#C0C0C0` — Licentiate
 - **Gold** `#FFD700` — Fellow
 
-These are available as Tailwind utilities: `text-bronze`, `border-silver`, `bg-gold`, etc.
+Available as Tailwind utilities: `text-bronze`, `border-silver`, `bg-gold`, etc.
 
 ## Getting Started
 
 ### Prerequisites
 
 - [Nix](https://nixos.org/download/) with flakes enabled, or Node.js 22+ with pnpm
-- A [Neon](https://neon.tech/) PostgreSQL database (for data features)
+- A [Neon](https://neon.tech/) PostgreSQL database
 
 ### Setup
 
@@ -140,9 +155,13 @@ pnpm install
 # Set up environment variables
 cp .env.example .env.local
 # Add DATABASE_URL from Neon dashboard
+# Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY from Clerk
 
 # Push schema to database
 pnpm db:push
+
+# Seed syllabus data
+pnpm db:seed
 
 # Start dev server
 pnpm dev
@@ -174,25 +193,36 @@ pnpm db:seed
 
 ## Status
 
-This project is in early scaffolding. Current state:
+### Implemented
+- [x] Syllabus browsing with search and level filters
+- [x] React Flow graph visualization (Dagre layout, edge-on-demand)
+- [x] Figure detail pages with leader/follower step data
+- [x] Routine builder with figure picker and transition validation
+- [x] Clerk authentication with route protection
+- [x] Dark theme with ISTD level accent colors
+- [x] PDF extraction and database seed pipeline
 
-- [x] Next.js project with dark theme and level accent colors
-- [x] Database schema for figures, edges, routines
-- [x] tRPC API with dance/figure/routine routers
-- [x] Live server-rendered dance, figure, and graph pages
-- [x] PDF extraction script
-- [x] Database seed script
-- [x] React Flow full and local graph visualization
-- [x] Figure route slug integrity checks (`/dances/[dance]/figures/[id]`)
-- [x] Routine tRPC endpoints locked to authenticated users
-- [ ] Clerk authentication
-- [ ] Routine builder UI
+### In Development
+- [ ] Social feed (shared routines + blog articles)
+- [ ] WYSIWYG markdown editor (Tiptap)
+- [ ] User profiles with competition levels
+- [ ] Follow system with public/private accounts
+- [ ] Organizations (teams, clubs)
+- [ ] Real-time messaging (Ably)
+- [ ] Notifications
+- [ ] Save/bookmark system with folders
+
+### Future
+- [ ] Competition management (judging, scheduling, registration)
+- [ ] Photo/video media support
+- [ ] Email/push notifications
 - [ ] AI choreography assistant
-- [ ] Framer Motion animations
+- [ ] Viennese Waltz syllabus data
 
-Known data gap:
+## Documentation
 
-- Viennese Waltz YAML source files are not yet present in `data/`, so seeded data is currently focused on Waltz/Foxtrot/Quickstep/Tango.
+- [`docs/superpowers/specs/`](docs/superpowers/specs/) — Design specifications
+- [`plans/`](plans/) — Implementation plans organized by phase
 
 ## License
 
