@@ -60,6 +60,12 @@ export default function RootLayout({
                       </Link>
                     </SignedOut>
                     <SignedIn>
+                      <Link
+                        href="/settings/profile"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Settings
+                      </Link>
                       <UserButton />
                     </SignedIn>
                   </div>
