@@ -14,7 +14,7 @@ import { join } from "path";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { parse } from "yaml";
-import * as schema from "../src/db/schema";
+import * as schema from "../src/domains/syllabus/schema";
 
 const DATA_DIR = join(__dirname, "..", "data");
 
