@@ -26,7 +26,7 @@ export function FollowButton({ targetUserId, isOwnProfile }: FollowButtonProps) 
 
   if (isOwnProfile || isLoading) return null;
 
-  const currentStatus = followStatus?.following;
+  const currentStatus = followStatus?.status;
 
   if (currentStatus === "active") {
     return (
