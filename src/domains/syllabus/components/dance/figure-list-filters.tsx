@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "../../../../shared/ui/badge";
 
 type LevelGroup = "bronze" | "silver" | "gold";
 
