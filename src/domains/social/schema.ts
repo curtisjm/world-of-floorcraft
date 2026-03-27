@@ -1,4 +1,4 @@
-import { index, integer, pgEnum, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgEnum, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { users } from "@shared/schema";
 
 export const followStatusEnum = pgEnum("follow_status", ["active", "pending"]);
@@ -53,6 +53,76 @@ export const posts = pgTable(
     visibilityPublishedIdx: index("posts_visibility_published_idx").on(
       table.visibility,
       table.publishedAt
+    ),
+  })
+);
+
+export const comments = pgTable(
+  "comments",
+  {
+    id: serial("id").primaryKey(),
+    postId: integer("post_id")
+      .references(() => posts.id, { onDelete: "cascade" })
+      .notNull(),
+    authorId: text("author_id")
+      .references(() => users.id)
+      .notNull(),
+    parentId: integer("parent_id"),  // self-reference for replies
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    postIdx: index("comments_post_idx").on(table.postId),
+    parentIdx: index("comments_parent_idx").on(table.parentId),
+  })
+);
+
+export const likes = pgTable(
+  "likes",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => users.id)
+      .notNull(),
+    postId: integer("post_id").references(() => posts.id, { onDelete: "cascade" }),
+    commentId: integer("comment_id").references(() => comments.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userPostUnique: uniqueIndex("likes_user_post_idx").on(table.userId, table.postId),
+    userCommentUnique: uniqueIndex("likes_user_comment_idx").on(table.userId, table.commentId),
+  })
+);
+
+export const saveFolders = pgTable("save_folders", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const savedPosts = pgTable(
+  "saved_posts",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => users.id)
+      .notNull(),
+    postId: integer("post_id")
+      .references(() => posts.id, { onDelete: "cascade" })
+      .notNull(),
+    folderId: integer("folder_id").references(() => saveFolders.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userPostFolderUnique: uniqueIndex("saved_posts_user_post_folder_idx").on(
+      table.userId,
+      table.postId,
+      table.folderId
     ),
   })
 );
