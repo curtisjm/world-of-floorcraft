@@ -9,6 +9,7 @@ import {
 } from "@clerk/nextjs";
 import { Providers } from "@shared/components/providers";
 import { clerkAppearance } from "@shared/lib/clerk-appearance";
+import { NotificationBell } from "@social/components/notification-bell";
 import "./globals.css";
 
 const inter = Inter({
@@ -78,6 +79,7 @@ export default function RootLayout({
                       >
                         Settings
                       </Link>
+                      <NotificationBell />
                       <UserButton />
                     </SignedIn>
                   </div>
