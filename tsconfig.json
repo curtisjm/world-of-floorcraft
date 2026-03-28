@@ -24,7 +24,8 @@
       "@syllabus/*": ["./src/domains/syllabus/*"],
       "@routines/*": ["./src/domains/routines/*"],
       "@social/*": ["./src/domains/social/*"],
-      "@orgs/*": ["./src/domains/orgs/*"]
+      "@orgs/*": ["./src/domains/orgs/*"],
+      "@messaging/*": ["./src/domains/messaging/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

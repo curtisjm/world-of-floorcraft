@@ -39,6 +39,12 @@ export const joinRequestStatusEnum = pgEnum("join_request_status", [
   "rejected",
 ]);
 
+export const conversationTypeEnum = pgEnum("conversation_type", [
+  "direct",
+  "group",
+  "org_channel",
+]);
+
 export const notificationTypeEnum = pgEnum("notification_type", [
   "like",
   "comment",
