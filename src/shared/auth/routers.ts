@@ -9,6 +9,11 @@ import { feedRouter } from "@social/routers/feed";
 import { commentRouter } from "@social/routers/comment";
 import { likeRouter } from "@social/routers/like";
 import { saveRouter } from "@social/routers/save";
+import { orgRouter } from "@orgs/routers/org";
+import { membershipRouter } from "@orgs/routers/membership";
+import { inviteRouter } from "@orgs/routers/invite";
+import { joinRequestRouter } from "@orgs/routers/join-request";
+import { orgPostRouter } from "@orgs/routers/org-post";
 
 export const appRouter = router({
   dance: danceRouter,
@@ -21,6 +26,11 @@ export const appRouter = router({
   comment: commentRouter,
   like: likeRouter,
   save: saveRouter,
+  org: orgRouter,
+  membership: membershipRouter,
+  invite: inviteRouter,
+  joinRequest: joinRequestRouter,
+  orgPost: orgPostRouter,
 });
 
 export type AppRouter = typeof appRouter;
