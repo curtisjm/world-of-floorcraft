@@ -5,6 +5,7 @@ import { router, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { users } from "@shared/schema";
 import { follows } from "@social/schema";
+import { createNotification } from "@social/lib/notify";
 
 export const followRouter = router({
   follow: protectedProcedure
@@ -33,6 +34,12 @@ export const followRouter = router({
           status,
         })
         .onConflictDoNothing();
+
+      await createNotification({
+        userId: input.targetUserId,
+        type: status === "active" ? "follow" : "follow_request",
+        actorId: ctx.userId,
+      });
 
       return { status };
     }),
@@ -79,6 +86,12 @@ export const followRouter = router({
             eq(follows.followingId, ctx.userId)
           )
         );
+
+      await createNotification({
+        userId: input.requesterId,
+        type: "follow_accepted",
+        actorId: ctx.userId,
+      });
 
       return { success: true };
     }),

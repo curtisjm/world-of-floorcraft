@@ -3,7 +3,8 @@ import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { protectedProcedure, publicProcedure, router } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { users } from "@shared/schema";
-import { comments } from "@social/schema";
+import { comments, posts } from "@social/schema";
+import { createNotification } from "@social/lib/notify";
 
 export const commentRouter = router({
   listByPost: publicProcedure
@@ -101,6 +102,39 @@ export const commentRouter = router({
           body: input.body,
         })
         .returning();
+
+      if (!input.parentId) {
+        // Top-level comment — notify post author
+        const post = await db.query.posts.findFirst({
+          where: eq(posts.id, input.postId),
+          columns: { authorId: true },
+        });
+        if (post?.authorId) {
+          await createNotification({
+            userId: post.authorId,
+            type: "comment",
+            actorId: ctx.userId,
+            postId: input.postId,
+            commentId: comment.id,
+          });
+        }
+      } else {
+        // Reply — notify parent comment author
+        const parentComment = await db.query.comments.findFirst({
+          where: eq(comments.id, input.parentId),
+          columns: { authorId: true },
+        });
+        if (parentComment?.authorId) {
+          await createNotification({
+            userId: parentComment.authorId,
+            type: "reply",
+            actorId: ctx.userId,
+            postId: input.postId,
+            commentId: comment.id,
+          });
+        }
+      }
+
       return { comment };
     }),
 

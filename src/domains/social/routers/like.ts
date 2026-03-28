@@ -2,7 +2,8 @@ import { z } from "zod";
 import { and, eq, sql } from "drizzle-orm";
 import { protectedProcedure, publicProcedure, router } from "@shared/auth/trpc";
 import { db } from "@shared/db";
-import { likes } from "@social/schema";
+import { likes, posts, comments } from "@social/schema";
+import { createNotification } from "@social/lib/notify";
 
 export const likeRouter = router({
   togglePost: protectedProcedure
@@ -27,6 +28,20 @@ export const likeRouter = router({
         userId: ctx.userId,
         postId: input.postId,
       });
+
+      const post = await db.query.posts.findFirst({
+        where: eq(posts.id, input.postId),
+        columns: { authorId: true },
+      });
+      if (post?.authorId) {
+        await createNotification({
+          userId: post.authorId,
+          type: "like",
+          actorId: ctx.userId,
+          postId: input.postId,
+        });
+      }
+
       return { liked: true };
     }),
 
@@ -52,6 +67,20 @@ export const likeRouter = router({
         userId: ctx.userId,
         commentId: input.commentId,
       });
+
+      const comment = await db.query.comments.findFirst({
+        where: eq(comments.id, input.commentId),
+        columns: { authorId: true },
+      });
+      if (comment?.authorId) {
+        await createNotification({
+          userId: comment.authorId,
+          type: "like",
+          actorId: ctx.userId,
+          commentId: input.commentId,
+        });
+      }
+
       return { liked: true };
     }),
 

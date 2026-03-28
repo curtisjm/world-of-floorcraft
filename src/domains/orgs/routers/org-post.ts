@@ -5,6 +5,7 @@ import { router, protectedProcedure, publicProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { organizations, memberships } from "@orgs/schema";
 import { posts } from "@social/schema";
+import { createBulkNotifications } from "@social/lib/notify";
 
 async function requireAdminOrOwner(orgId: number, userId: string) {
   const org = await db.query.organizations.findFirst({
@@ -60,6 +61,18 @@ export const orgPostRouter = router({
           publishedAt: input.publish ? new Date() : null,
         })
         .returning();
+
+      if (input.publish) {
+        const members = await db
+          .select({ userId: memberships.userId })
+          .from(memberships)
+          .where(eq(memberships.orgId, input.orgId));
+
+        await createBulkNotifications(
+          members.map((m) => m.userId),
+          { type: "org_post", actorId: ctx.userId, postId: post.id, orgId: input.orgId }
+        );
+      }
 
       return post;
     }),

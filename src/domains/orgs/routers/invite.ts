@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { router, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { organizations, memberships, orgInvites } from "@orgs/schema";
+import { createNotification } from "@social/lib/notify";
 
 async function requireAdminOrOwner(orgId: number, userId: string) {
   const org = await db.query.organizations.findFirst({
@@ -79,6 +80,13 @@ export const inviteRouter = router({
           expiresAt: sevenDaysFromNow(),
         })
         .returning();
+
+      await createNotification({
+        userId: input.userId,
+        type: "org_invite",
+        actorId: ctx.userId,
+        orgId: input.orgId,
+      });
 
       return invite;
     }),

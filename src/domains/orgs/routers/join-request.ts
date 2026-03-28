@@ -5,6 +5,7 @@ import { router, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { users } from "@shared/schema";
 import { organizations, memberships, joinRequests } from "@orgs/schema";
+import { createNotification, createBulkNotifications } from "@social/lib/notify";
 
 async function requireAdminOrOwner(orgId: number, userId: string) {
   const org = await db.query.organizations.findFirst({
@@ -77,6 +78,17 @@ export const joinRequestRouter = router({
         })
         .returning();
 
+      // Notify all admins about the new request
+      const admins = await db
+        .select({ userId: memberships.userId })
+        .from(memberships)
+        .where(and(eq(memberships.orgId, input.orgId), eq(memberships.role, "admin")));
+
+      await createBulkNotifications(
+        admins.map((a) => a.userId),
+        { type: "join_request", actorId: ctx.userId, orgId: input.orgId }
+      );
+
       return joinRequest;
     }),
 
@@ -115,6 +127,13 @@ export const joinRequestRouter = router({
         })
         .where(eq(joinRequests.id, input.requestId))
         .returning();
+
+      await createNotification({
+        userId: joinRequest.userId,
+        type: "join_approved",
+        actorId: ctx.userId,
+        orgId: joinRequest.orgId,
+      });
 
       return updated;
     }),
