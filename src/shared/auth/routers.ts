@@ -14,6 +14,7 @@ import { membershipRouter } from "@orgs/routers/membership";
 import { inviteRouter } from "@orgs/routers/invite";
 import { joinRequestRouter } from "@orgs/routers/join-request";
 import { orgPostRouter } from "@orgs/routers/org-post";
+import { notificationRouter } from "@social/routers/notification";
 
 export const appRouter = router({
   dance: danceRouter,
@@ -31,6 +32,7 @@ export const appRouter = router({
   invite: inviteRouter,
   joinRequest: joinRequestRouter,
   orgPost: orgPostRouter,
+  notification: notificationRouter,
 });
 
 export type AppRouter = typeof appRouter;
