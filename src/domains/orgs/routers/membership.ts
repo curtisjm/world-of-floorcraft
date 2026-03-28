@@ -5,6 +5,7 @@ import { router, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { users } from "@shared/schema";
 import { organizations, memberships } from "@orgs/schema";
+import { conversations, conversationMembers } from "@messaging/schema";
 
 async function requireAdminOrOwner(orgId: number, userId: string) {
   const org = await db.query.organizations.findFirst({
@@ -65,6 +66,17 @@ export const membershipRouter = router({
           role: "member",
         })
         .returning();
+
+      // Add user to all org channels
+      const orgChannels = await db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(and(eq(conversations.orgId, input.orgId), eq(conversations.type, "org_channel")));
+      if (orgChannels.length > 0) {
+        await db.insert(conversationMembers).values(
+          orgChannels.map((ch) => ({ conversationId: ch.id, userId: ctx.userId }))
+        ).onConflictDoNothing();
+      }
 
       return membership;
     }),

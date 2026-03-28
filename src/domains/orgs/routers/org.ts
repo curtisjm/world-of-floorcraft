@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure, publicProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { organizations, memberships } from "@orgs/schema";
+import { conversations, conversationMembers } from "@messaging/schema";
 
 function slugify(name: string): string {
   return name
@@ -49,6 +50,17 @@ export const orgRouter = router({
         orgId: org.id,
         userId: ctx.userId,
         role: "admin",
+      });
+
+      // Create a default "General" org channel and add the owner
+      const [generalChannel] = await db
+        .insert(conversations)
+        .values({ type: "org_channel", name: "General", orgId: org.id })
+        .returning();
+
+      await db.insert(conversationMembers).values({
+        conversationId: generalChannel.id,
+        userId: ctx.userId,
       });
 
       return org;

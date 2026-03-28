@@ -6,6 +6,7 @@ import { router, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { organizations, memberships, orgInvites } from "@orgs/schema";
 import { createNotification } from "@social/lib/notify";
+import { conversations, conversationMembers } from "@messaging/schema";
 
 async function requireAdminOrOwner(orgId: number, userId: string) {
   const org = await db.query.organizations.findFirst({
@@ -165,6 +166,17 @@ export const inviteRouter = router({
           .update(orgInvites)
           .set({ status: "accepted" })
           .where(eq(orgInvites.id, invite.id));
+      }
+
+      // Add accepting user to all org channels
+      const orgChannels = await db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(and(eq(conversations.orgId, invite.orgId), eq(conversations.type, "org_channel")));
+      if (orgChannels.length > 0) {
+        await db.insert(conversationMembers).values(
+          orgChannels.map((ch) => ({ conversationId: ch.id, userId: ctx.userId }))
+        ).onConflictDoNothing();
       }
 
       return { success: true };

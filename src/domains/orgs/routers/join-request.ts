@@ -6,6 +6,7 @@ import { db } from "@shared/db";
 import { users } from "@shared/schema";
 import { organizations, memberships, joinRequests } from "@orgs/schema";
 import { createNotification, createBulkNotifications } from "@social/lib/notify";
+import { conversations, conversationMembers } from "@messaging/schema";
 
 async function requireAdminOrOwner(orgId: number, userId: string) {
   const org = await db.query.organizations.findFirst({
@@ -134,6 +135,17 @@ export const joinRequestRouter = router({
         actorId: ctx.userId,
         orgId: joinRequest.orgId,
       });
+
+      // Add approved user to all org channels
+      const orgChannels = await db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(and(eq(conversations.orgId, joinRequest.orgId), eq(conversations.type, "org_channel")));
+      if (orgChannels.length > 0) {
+        await db.insert(conversationMembers).values(
+          orgChannels.map((ch) => ({ conversationId: ch.id, userId: joinRequest.userId }))
+        ).onConflictDoNothing();
+      }
 
       return updated;
     }),
