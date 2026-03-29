@@ -207,8 +207,8 @@ export const orgRouter = router({
 
       let nextCursor: number | undefined;
       if (items.length > limit) {
-        const next = items.pop();
-        nextCursor = next!.id;
+        items.pop();
+        nextCursor = items[items.length - 1]!.id;
       }
 
       return { items, nextCursor };
