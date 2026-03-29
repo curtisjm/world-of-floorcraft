@@ -4,14 +4,15 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    globalSetup: "./tests/setup/global-setup.ts",
+    globalSetup: [
+      "./tests/setup/global-setup.ts",
+      "./tests/setup/global-teardown.ts",
+    ],
     setupFiles: ["./tests/setup/vitest-setup.ts"],
     testTimeout: 15_000,
     hookTimeout: 15_000,
     pool: "forks",
-    poolOptions: {
-      forks: { singleFork: true },
-    },
+    forks: { singleFork: true },
   },
   resolve: {
     alias: {
