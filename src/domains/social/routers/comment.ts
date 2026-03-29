@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { protectedProcedure, publicProcedure, router } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { users } from "@shared/schema";
@@ -39,7 +39,7 @@ export const commentRouter = router({
               count: sql<number>`count(*)::int`,
             })
             .from(comments)
-            .where(sql`${comments.parentId} = ANY(${commentIds})`)
+            .where(inArray(comments.parentId, commentIds))
             .groupBy(comments.parentId)
         : [];
 
