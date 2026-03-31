@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, sql, desc } from "drizzle-orm";
+import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
@@ -46,14 +46,33 @@ export const conversationRouter = router({
   createGroup: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(1).max(100),
+        name: z.string().max(100).optional().default(""),
         memberIds: z.array(z.string()).min(1).max(50),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      let groupName = input.name;
+
+      // Auto-generate name from member usernames if not provided
+      if (!groupName) {
+        const allMemberIds = [...new Set([ctx.userId, ...input.memberIds])];
+        const members = await db
+          .select({ username: users.username, displayName: users.displayName })
+          .from(users)
+          .where(inArray(users.id, allMemberIds));
+
+        groupName = members
+          .map((m) => m.displayName || m.username || "Unknown")
+          .join(", ");
+
+        if (groupName.length > 100) {
+          groupName = groupName.slice(0, 97) + "...";
+        }
+      }
+
       const [conversation] = await db
         .insert(conversations)
-        .values({ type: "group", name: input.name })
+        .values({ type: "group", name: groupName })
         .returning();
 
       const allMembers = [...new Set([ctx.userId, ...input.memberIds])];
