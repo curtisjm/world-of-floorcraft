@@ -8,6 +8,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import { Providers } from "@shared/components/providers";
+import { OnboardingGuard } from "@shared/components/onboarding-guard";
 import { clerkAppearance } from "@shared/lib/clerk-appearance";
 import { NotificationBell } from "@social/components/notification-bell";
 import "./globals.css";
@@ -93,7 +94,9 @@ export default function RootLayout({
                   </div>
                 </nav>
               </header>
-              <main className="flex-1">{children}</main>
+              <main className="flex-1">
+                <OnboardingGuard>{children}</OnboardingGuard>
+              </main>
             </div>
           </Providers>
         </body>

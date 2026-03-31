@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, ne, or, ilike, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
@@ -11,6 +11,41 @@ const COMPETITION_LEVELS = [
 ] as const;
 
 export const profileRouter = router({
+  search: protectedProcedure
+    .input(z.object({ query: z.string().min(1).max(50) }))
+    .query(async ({ ctx, input }) => {
+      const pattern = `%${input.query}%`;
+      const results = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          avatarUrl: users.avatarUrl,
+        })
+        .from(users)
+        .where(
+          and(
+            ne(users.id, ctx.userId),
+            or(
+              ilike(users.username, pattern),
+              ilike(users.displayName, pattern)
+            )
+          )
+        )
+        .limit(20);
+
+      return results;
+    }),
+
+  needsOnboarding: protectedProcedure.query(async ({ ctx }) => {
+    const [user] = await db
+      .select({ username: users.username })
+      .from(users)
+      .where(eq(users.id, ctx.userId));
+
+    return { needsOnboarding: !user?.username };
+  }),
+
   getByUsername: publicProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ input }) => {
