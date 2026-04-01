@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@shared/ui/badge";
 import { FollowButton } from "./follow-button";
+import { FollowListDialog } from "./follow-list-dialog";
 
 const LEVEL_LABELS: Record<string, string> = {
   newcomer: "Newcomer", bronze: "Bronze", silver: "Silver", gold: "Gold",
@@ -25,11 +27,19 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
+  const [followListOpen, setFollowListOpen] = useState(false);
+  const [followListTab, setFollowListTab] = useState<"followers" | "following">("followers");
+
   const levelDisplay = user.competitionLevel
     ? user.competitionLevelHigh
       ? `${LEVEL_LABELS[user.competitionLevel]}/${LEVEL_LABELS[user.competitionLevelHigh]}`
       : LEVEL_LABELS[user.competitionLevel]
     : null;
+
+  const openFollowList = (tab: "followers" | "following") => {
+    setFollowListTab(tab);
+    setFollowListOpen(true);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,8 +58,20 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
           </div>
           {user.username && <p className="text-muted-foreground">@{user.username}</p>}
           <div className="flex items-center gap-4 mt-2 text-sm">
-            <span><span className="font-semibold">{user.followerCount}</span> <span className="text-muted-foreground">followers</span></span>
-            <span><span className="font-semibold">{user.followingCount}</span> <span className="text-muted-foreground">following</span></span>
+            <button
+              onClick={() => openFollowList("followers")}
+              className="hover:underline cursor-pointer"
+            >
+              <span className="font-semibold">{user.followerCount}</span>{" "}
+              <span className="text-muted-foreground">followers</span>
+            </button>
+            <button
+              onClick={() => openFollowList("following")}
+              className="hover:underline cursor-pointer"
+            >
+              <span className="font-semibold">{user.followingCount}</span>{" "}
+              <span className="text-muted-foreground">following</span>
+            </button>
           </div>
         </div>
       </div>
@@ -57,6 +79,15 @@ export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
         {user.bio && <p className="text-sm">{user.bio}</p>}
         {levelDisplay && <Badge variant="secondary" className="w-fit">{levelDisplay}</Badge>}
       </div>
+
+      {user.username && (
+        <FollowListDialog
+          username={user.username}
+          initialTab={followListTab}
+          open={followListOpen}
+          onOpenChange={setFollowListOpen}
+        />
+      )}
     </div>
   );
 }
