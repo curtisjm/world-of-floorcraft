@@ -1,4 +1,5 @@
 import { router, protectedProcedure } from "@shared/auth/trpc";
+import { TRPCError } from "@trpc/server";
 import { db } from "@shared/db";
 import { eq } from "drizzle-orm";
 import { conversationMembers } from "@messaging/schema";
@@ -13,6 +14,14 @@ export const ablyAuthRouter = router({
 
     const conversationIds = members.map((m) => m.conversationId);
 
-    return createAblyTokenRequest(ctx.userId, conversationIds);
+    try {
+      return await createAblyTokenRequest(ctx.userId, conversationIds);
+    } catch (err) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to create Ably token",
+        cause: err,
+      });
+    }
   }),
 });
