@@ -11,6 +11,7 @@ import { Providers } from "@shared/components/providers";
 import { OnboardingGuard } from "@shared/components/onboarding-guard";
 import { clerkAppearance } from "@shared/lib/clerk-appearance";
 import { NotificationBell } from "@social/components/notification-bell";
+import { ThemeToggle } from "@shared/components/theme-toggle";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider appearance={clerkAppearance}>
-      <html lang="en" className="dark">
+      <html lang="en" suppressHydrationWarning>
         <body className={`${inter.variable} font-sans antialiased`}>
           <Providers>
             <div className="min-h-screen flex flex-col">
@@ -91,6 +92,7 @@ export default function RootLayout({
                       <NotificationBell />
                       <UserButton />
                     </SignedIn>
+                    <ThemeToggle />
                   </div>
                 </nav>
               </header>

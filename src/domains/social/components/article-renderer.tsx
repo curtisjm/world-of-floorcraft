@@ -19,7 +19,7 @@ export function ArticleRenderer({ html }: ArticleRendererProps) {
 
   return (
     <div
-      className="prose prose-invert prose-sm max-w-none"
+      className="prose dark:prose-invert prose-sm max-w-none"
       // Content is sanitized via DOMPurify before rendering
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
