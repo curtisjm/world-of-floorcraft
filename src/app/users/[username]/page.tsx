@@ -1,9 +1,9 @@
-import { eq, and, asc, sql } from "drizzle-orm";
+import { eq, and, asc, desc, isNotNull, sql } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { getDb } from "@shared/db";
 import { users } from "@shared/schema";
-import { follows } from "@social/schema";
+import { follows, posts } from "@social/schema";
 import { routines } from "@routines/schema";
 import { ProfileHeader } from "@social/components/profile-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
@@ -74,6 +74,25 @@ export default async function UserProfilePage({
     }
   }
 
+  // Fetch published posts if visible
+  const userPosts = canViewContent
+    ? await db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          type: posts.type,
+          publishedAt: posts.publishedAt,
+        })
+        .from(posts)
+        .where(
+          and(
+            eq(posts.authorId, user.id),
+            isNotNull(posts.publishedAt)
+          )
+        )
+        .orderBy(desc(posts.publishedAt))
+    : [];
+
   // Fetch published routines if visible
   const userRoutines = canViewContent
     ? await db
@@ -111,7 +130,28 @@ export default async function UserProfilePage({
               <TabsTrigger value="routines">Routines</TabsTrigger>
             </TabsList>
             <TabsContent value="posts" className="mt-4">
-              <p className="text-muted-foreground text-sm">No posts yet.</p>
+              {userPosts.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No posts yet.</p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {userPosts.map((post) => (
+                    <Link key={post.id} href={`/posts/${post.id}`}>
+                      <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            {post.title ?? "Untitled"}
+                          </CardTitle>
+                          <CardDescription>
+                            {post.publishedAt
+                              ? new Date(post.publishedAt).toLocaleDateString()
+                              : "Draft"}
+                          </CardDescription>
+                        </CardHeader>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </TabsContent>
             <TabsContent value="routines" className="mt-4">
               {userRoutines.length === 0 ? (
