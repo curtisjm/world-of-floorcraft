@@ -12,8 +12,9 @@ export function ArticleRenderer({ html }: ArticleRendererProps) {
       "h1", "h2", "h3", "p", "br", "strong", "em", "s", "del",
       "ul", "ol", "li", "blockquote", "pre", "code",
       "a", "img", "hr",
+      "table", "thead", "tbody", "tr", "th", "td", "colgroup", "col",
     ],
-    ALLOWED_ATTR: ["href", "src", "alt", "class", "target", "rel"],
+    ALLOWED_ATTR: ["href", "src", "alt", "class", "target", "rel", "colspan", "rowspan", "colwidth", "style"],
   });
 
   return (

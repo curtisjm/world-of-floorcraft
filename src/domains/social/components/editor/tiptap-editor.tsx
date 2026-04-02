@@ -5,6 +5,10 @@ import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import ImageExtension from "@tiptap/extension-image";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableCell } from "@tiptap/extension-table-cell";
 import { Toolbar } from "./toolbar";
 
 interface TiptapEditorProps {
@@ -38,6 +42,15 @@ export function TiptapEditor({
           class: "rounded-lg max-w-full",
         },
       }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: "tiptap-table",
+        },
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content,
     onUpdate: ({ editor }) => {
