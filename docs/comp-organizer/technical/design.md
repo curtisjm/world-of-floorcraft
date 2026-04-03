@@ -225,6 +225,38 @@ The default grouping tables define which events a competition offers. Organizers
 
 ---
 
+## Results Display
+
+Reference: DSCO Berkeley 2025 Championship Standard WTVFQ results page.
+
+### Two-tab layout per event:
+
+#### Summary Tab (default)
+The "awards reading" view — clean, scannable.
+
+For each couple, ordered by placement:
+- **Placement** with visual indicator (trophy/medal icons for 1st-3rd)
+- **Per-dance placements** in parentheses, e.g. `(1, 1, 1, 1, 1)` with `Sum: 5`
+- **Couple number**
+- **Both partner names** (leader on top, follower below)
+- **Organization name + logo** on the right
+
+#### Marks Tab
+Full tabulation table, one section per dance within the event.
+
+Each dance section has a table with columns:
+- `#` (couple number)
+- `Couple` (both names, clickable to view competitor's full results history)
+- **Judge columns** (judge initials as headers, e.g. "AC", "SC", "RG") — raw placement marks
+- **Cumulative columns**: `1`, `1-2`, `1-3`, `1-4`, `1-{N}` — tabulation counts from skating system
+- `Place` — final placement for this dance
+
+Empty cells where count didn't reach majority. Values with tiebreak sums shown in parentheses, e.g. `3(5)`.
+
+For multi-dance events, a **Final Summary** section follows all individual dance tables, showing per-dance placements, total, tiebreak rule, and final overall placement.
+
+---
+
 ## Judge Model
 
 Judges do NOT have platform user accounts. They exist in a global judge directory that grows over time as they are used across competitions.

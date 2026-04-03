@@ -106,6 +106,7 @@ Global judge directory. Grows over time as judges are used across competitions. 
 | id | serial PK | |
 | first_name | text, not null | |
 | last_name | text, not null | |
+| initials | text | Short display for tabulation table headers (e.g. "AC", "RG") |
 | affiliation | text | Organization or country |
 | created_at | timestamp, default now | |
 
