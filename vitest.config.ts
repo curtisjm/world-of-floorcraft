@@ -24,6 +24,7 @@ export default defineConfig({
       "@social": path.resolve(__dirname, "src/domains/social"),
       "@orgs": path.resolve(__dirname, "src/domains/orgs"),
       "@messaging": path.resolve(__dirname, "src/domains/messaging"),
+      "@competitions": path.resolve(__dirname, "src/domains/competitions"),
       "@": path.resolve(__dirname, "src"),
     },
   },

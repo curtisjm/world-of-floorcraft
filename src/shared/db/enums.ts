@@ -58,3 +58,41 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "join_approved",
   "org_post",
 ]);
+
+// ── Competition domain ──────────────────────────────────────────────
+
+export const competitionStatusEnum = pgEnum("competition_status", [
+  "draft",
+  "advertised",
+  "accepting_entries",
+  "entries_closed",
+  "running",
+  "finished",
+]);
+
+export const scheduleBlockTypeEnum = pgEnum("schedule_block_type", [
+  "session",
+  "break",
+]);
+
+export const competitionStaffRoleEnum = pgEnum("competition_staff_role", [
+  "scrutineer",
+  "chairman",
+  "judge",
+  "emcee",
+  "deck_captain",
+  "registration",
+]);
+
+export const danceStyleEnum = pgEnum("dance_style", [
+  "standard",
+  "smooth",
+  "latin",
+  "rhythm",
+  "nightclub",
+]);
+
+export const eventTypeEnum = pgEnum("event_type", [
+  "single_dance",
+  "multi_dance",
+]);

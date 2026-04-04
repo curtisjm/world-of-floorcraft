@@ -9,6 +9,7 @@ export default defineConfig({
     "./src/domains/social/schema.ts",
     "./src/domains/orgs/schema.ts",
     "./src/domains/messaging/schema.ts",
+    "./src/domains/competitions/schema.ts",
   ],
   out: "./drizzle",
   dialect: "postgresql",

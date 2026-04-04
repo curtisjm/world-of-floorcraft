@@ -25,7 +25,8 @@
       "@routines/*": ["./src/domains/routines/*"],
       "@social/*": ["./src/domains/social/*"],
       "@orgs/*": ["./src/domains/orgs/*"],
-      "@messaging/*": ["./src/domains/messaging/*"]
+      "@messaging/*": ["./src/domains/messaging/*"],
+      "@competitions/*": ["./src/domains/competitions/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

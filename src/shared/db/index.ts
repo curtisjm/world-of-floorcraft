@@ -6,8 +6,9 @@ import * as routinesSchema from "@routines/schema";
 import * as socialSchema from "@social/schema";
 import * as orgsSchema from "@orgs/schema";
 import * as messagingSchema from "@messaging/schema";
+import * as competitionsSchema from "@competitions/schema";
 
-const schema = { ...sharedSchema, ...syllabusSchema, ...routinesSchema, ...socialSchema, ...orgsSchema, ...messagingSchema };
+const schema = { ...sharedSchema, ...syllabusSchema, ...routinesSchema, ...socialSchema, ...orgsSchema, ...messagingSchema, ...competitionsSchema };
 
 let _db: NeonHttpDatabase<typeof schema> | null = null;
 
