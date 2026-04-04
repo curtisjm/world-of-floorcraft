@@ -12,11 +12,11 @@ Linear epic: [WOF-13](https://linear.app/floorcraft/issue/WOF-13/competition-org
 | Phase 2: Registration & Entries | Complete | Complete | Registration, entries, TBA, team match, payments, numbers |
 | Phase 3: Pre-comp Operations | Complete | Complete | Add/drop, rounds, schedule estimation, stats, awards |
 | Phase 4: Scoring Engine | Complete | Complete | Scoring workflow, public results with tabulation |
-| Phase 5: Judge UI | Designed | Not started | Tablet-optimized marking pages |
+| Phase 5: Judge UI | Complete | Complete | Judge tablet, scrutineer controls, JWT auth |
 | Phase 6: Comp Day Operations | Designed | Not started | Real-time views for all staff roles |
 | Phase 7: Post-comp & Global | Designed | Not started | Results history, feedback, global search |
 
-**Total: 237 backend tests passing, 23 frontend pages implemented.**
+**Total: 263 backend tests passing, 24 frontend pages implemented.**
 
 ## Documentation Structure
 
@@ -35,6 +35,6 @@ End-user documentation organized by role.
 
 - [Competition Organizer Guide](./user-guide/organizer.md) — Creating and managing competitions
 - [Competitor Guide](./user-guide/competitor.md) — Finding, registering for, and competing in competitions
-- Judge Guide — *coming with Phase 5*
-- Scrutineer Guide — *coming with Phase 5/6*
+- [Judge Guide](./user-guide/judge.md) — Using the tablet marking interface
+- Scrutineer Guide — *coming with Phase 6*
 - Day-of Staff Guide — *coming with Phase 6*

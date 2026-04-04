@@ -27,9 +27,12 @@ src/app/competitions/
       add-drop/page.tsx                          # Add/drop request management
       payments/page.tsx                          # Payment summary + Stripe
       rounds/page.tsx                            # Round/heat management
-      scoring/page.tsx                           # Scoring + results workflow
+      scoring/page.tsx                           # Scoring + scrutineer controls
       schedule-estimation/page.tsx               # Time estimation
       stats/page.tsx                             # Stats + awards calculator
+
+src/app/judge/
+  page.tsx                                       # Judge tablet (standalone, no Clerk)
 ```
 
 ## Shared Components
@@ -50,6 +53,7 @@ src/domains/competitions/components/
 | sonner | Toast notifications (`toast.success()` / `toast.error()`) |
 | @dnd-kit/react v2 | Drag-and-drop (schedule block reordering) |
 | @tanstack/react-table | Data tables (installed, not yet used) |
+| jose | JWT creation/verification for judge tablet auth |
 | lucide-react | Icons |
 
 ## Key Patterns
@@ -176,6 +180,7 @@ Plus Settings at the bottom.
 | Add/Drop Mgmt | `dashboard/add-drop` | Admin | Safe/review groups, batch approve |
 | Payments | `dashboard/payments` | Admin | Summary, Stripe Connect |
 | Rounds | `dashboard/rounds` | Admin | Generate, expand, manage heats |
-| Scoring | `dashboard/scoring` | Admin | Compute, review, publish |
+| Scoring | `dashboard/scoring` | Admin | Scrutineer controls, round start/stop, submissions, compute, review, publish, corrections |
 | Schedule Est. | `dashboard/schedule-estimation` | Admin | Time breakdown, settings |
 | Stats | `dashboard/stats` | Admin | Stats cards, awards calculator |
+| Judge Tablet | `/judge` | Judge JWT | Comp code auth, callback marking, final ranking, submit/edit flow |

@@ -159,18 +159,36 @@ Tablet-optimized marking pages with real-time submission.
 
 **Goal**: Judges can mark preliminary callbacks and rank finals on tablets.
 
-- [ ] Judge schedule page
-- [ ] Preliminary round marking page:
-  - [ ] Display all couple numbers, line dividers between heats
-  - [ ] Click cycle: mark -> maybe (visual only) -> unmarked
-  - [ ] Submit button with validation (wrong callback count warning)
-  - [ ] Post-submit: grey out marks, show edit button
-- [ ] Final round marking page:
-  - [ ] Display finalist numbers, tap-to-rank interface
-  - [ ] Submit/confirm flow (same as prelim)
-- [ ] Real-time mark submission via Ably
-- [ ] Scrutineer view: see which judges have submitted, review marks
-- [ ] Auto-score trigger when all judges submit, scrutineer review before publish
+**Backend** (implemented):
+- [x] Database schema: judge_sessions, active_rounds, mark_corrections
+- [x] New enums: judge_session_status, mark_correction_source
+- [x] Judge auth library (`src/domains/competitions/lib/judge-auth.ts`): JWT creation/verification with jose, token hashing, session validation
+- [x] Ably competition library (`src/domains/competitions/lib/ably-comp.ts`): channel helpers, publishing, scoped token creation for judges and scrutineers
+- [x] Judge session router (`judge-session.ts`): authenticate (comp code + master password + judge ID), logout, submitCallbackMarks, submitFinalMarks, getActiveRound, getMySubmission, getAblyToken
+- [x] Scrutineer router (`scrutineer.ts`): startRound, stopRound, overrideMarks, unlockJudgeSubmission, reviewResults, publishResults, recomputeResults, getSubmissionStatus, viewJudgeMarks, getResults, getNextRound, getCorrectionHistory
+- [x] Competition code validation tightened to 3-4 uppercase characters
+- [x] Integration tests: 26 tests across 2 test files (judge-session, scrutineer)
+
+**Frontend** (implemented):
+- [x] Judge tablet page (`/judge`) — standalone route, no Clerk auth
+  - [x] Auth screen with comp code, master password, judge ID
+  - [x] Callback marking page: tap-to-toggle grid (mark/maybe/unmarked), heat dividers, count validation, submit/edit flow
+  - [x] Final marking page: tap-to-rank interface with per-dance tabs, placement list, submit/edit flow
+  - [x] Waiting screen with auto-refresh for round activation
+  - [x] JWT persistence in localStorage for session continuity
+- [x] Enhanced scoring dashboard page with scrutineer controls
+  - [x] Live panel: active round status, judge submission monitoring (3s polling), start/stop/advance controls
+  - [x] Next round preview with auto-determination
+  - [x] Round detail dialog with compute/review/publish workflow, callback and final results display, correction history
+
+**Key decisions**:
+- Judge authentication is separate from Clerk: judges use a 3-4 character comp code + master password + judge ID. This avoids requiring judges to have platform accounts.
+- JWTs are created with `jose` (edge-compatible), expire after 24h, and are scoped to a single competition.
+- Only one active session per judge per competition (enforced by partial unique index). Re-login ends the previous session.
+- Only one active round per competition at a time (enforced by partial unique index on `active_rounds`).
+- Mark corrections use delete-then-insert for final marks to avoid unique constraint violations when swapping placements.
+- Ably integration is best-effort: failures don't block mark submission. Judge tablets poll for active round as fallback.
+- The scoring dashboard polling (3s) provides near-real-time feedback without requiring Ably subscription on the scrutineer side (Ably subscription can be added as enhancement).
 
 ---
 
