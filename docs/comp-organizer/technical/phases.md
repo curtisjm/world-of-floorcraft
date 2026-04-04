@@ -88,18 +88,34 @@ Add/drop management, schedule generation from entries.
 
 **Goal**: Handle the period between entries closing and comp day.
 
-- [ ] Database schema: add_drop_requests
-- [ ] Add/drop form (competitor-facing): submit change requests after entries close
-- [ ] Add/drop management (organizer-facing): review requests, approve/reject
-  - [ ] Auto-approve changes that don't affect round structure
-  - [ ] Separate review for changes that would add preliminary rounds
-- [ ] Schedule generation: estimate event times based on entry counts
-- [ ] Organizer can manually adjust estimated times
-- [ ] Round/heat generation: based on max final size and max heat size settings
-  - [ ] Determine if event needs preliminary rounds
-  - [ ] Split large preliminary rounds into heats
-- [ ] Ribbon/award calculator: compute awards needed based on entries and final sizes
-- [ ] Stats page: competitor count, entry count, event count
+**Backend** (implemented):
+- [x] Database schema: add_drop_requests, rounds, heats, heat_assignments, event_time_overrides
+- [x] New enums: add_drop_type (add, drop), add_drop_status (pending, approved, rejected), round_status (pending, in_progress, completed), round_type (1st_round, 2nd_round, quarter_final, semi_final, final)
+- [x] Competitions table additions: minutesPerCouplePerDance (default 1.5), transitionMinutes (default 2.0)
+- [x] Add/drop router: submit (partner or org admin), approve, reject, approveAllSafe (bulk approve non-round-affecting requests), listByCompetition (grouped: safe/needsReview/resolved), listByRegistration
+- [x] Round router: generateForCompetition, generateForEvent (auto round structure + heat assignments), addRound, removeRound, update, reassignHeats, moveEntry, listByEvent (public), getById
+- [x] Schedule estimation router: getEstimatedSchedule (public, computed from entries/dances/settings), updateCompSettings, setEventOverride, removeEventOverride
+- [x] Stats router: getCompetitionStats (registrations, entries, events, entries per event, registrations by org, payment summary)
+- [x] Awards router: calculate (medals + ribbons per event and aggregate, with configurable buffer percentage, no database writes)
+- [x] Integration tests: 28 tests across 5 test files (add-drop, round, schedule-estimation, stats, awards)
+
+**Frontend** (not yet started):
+- [ ] Add/drop form (competitor-facing)
+- [ ] Add/drop management page (organizer-facing, with safe/needs-review grouping)
+- [ ] Schedule estimation page with time visualization
+- [ ] Round/heat management page
+- [ ] Stats dashboard
+- [ ] Award calculator page
+
+**Key decisions**:
+- Add/drop requests can only be submitted when competition is in `entries_closed` status. Either partner or an org admin for the couple's affiliated org can submit.
+- `affectsRounds` is computed at submission time: an "add" affects rounds if it would push entry count past maxFinalSize; a "drop" affects rounds if it would bring count back down to maxFinalSize.
+- `approveAllSafe` bulk-approves only requests where `affectsRounds` is false, providing a fast path for routine changes.
+- Round generation works backward from the final: if entries > maxFinalSize, preliminary rounds are added. Each prelim assumes ~55% advancement rate. Only the first round gets heat assignments; subsequent rounds are populated as couples advance.
+- Heats are distributed round-robin across `ceil(entries / maxHeatSize)` heats for even distribution.
+- Schedule estimation formula: `entries × dances × minutesPerCouplePerDance + transitionMinutes`. Per-event overrides via `event_time_overrides` table take precedence. Multi-round events sum all round estimates.
+- Award calculator is pure computation (no database writes): medals for places 1-3, finalist ribbons for places 4+, 2 awards per couple (leader + follower), with configurable buffer percentage.
+- round_type and round_status promoted from plain text to pgEnums for type safety.
 
 ---
 

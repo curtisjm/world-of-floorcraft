@@ -238,6 +238,58 @@ Competitors can submit team match ideas/suggestions via a text form. These submi
 
 ---
 
+## After Entries Close
+
+When you move the competition to **Entries Closed** status, the following pre-comp operations become available.
+
+### Add/Drop Requests
+
+Competitors can submit late change requests (adds or drops) after entries close. Staff reviews these from the dashboard:
+
+- **Safe requests** (don't affect round structure) are shown in a batch with an "Approve All" option
+- **Requests needing review** (would add or remove a preliminary round) are shown separately for individual approval or rejection
+- Either partner in a couple, or their org admin, can submit requests
+
+### Rounds & Heats
+
+The system can automatically determine the round structure for each event:
+
+- Events with entries at or below the **max final size** (default 8) go straight to a final
+- Events with more entries get preliminary rounds (semi-final, quarter-final, etc.)
+- When a round has more couples than the **max heat size**, it splits into multiple heats with couples distributed evenly
+
+You can also manually add/remove rounds, reassign heats, or move individual couples between heats.
+
+### Schedule Time Estimation
+
+The system estimates how long each event will take based on:
+
+- **Entries**: number of couples in the event
+- **Dances**: number of dances in the event
+- **Minutes per couple per dance** (default 1.5 — configurable)
+- **Transition time** between events (default 2 minutes — configurable)
+
+These estimates flow through the schedule so you can see estimated start/end times for each session. You can also set manual time overrides for specific events.
+
+### Competition Statistics
+
+View aggregate stats including:
+- Total registrations and entries
+- Entries per event
+- Registrations by organization
+- Payment collection summary
+
+### Award Calculator
+
+Calculate how many awards you need to order:
+
+- **Medals**: for places 1-3 (2 per couple — leader + follower)
+- **Finalist ribbons**: for places 4 through final size (2 per couple)
+- Configurable **buffer percentage** (default 10%) for extras
+- Broken down per event and aggregated across the competition
+
+---
+
 ## Tips
 
 - **Start simple**: Create a 1-day competition first. You can add days and complexity later.

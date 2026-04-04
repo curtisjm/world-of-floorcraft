@@ -113,14 +113,14 @@ describe("router-name router", () => {
    - `tests/setup/test-db.ts` (schema import + spread)
    - `vitest.config.ts` (resolve alias, if new path alias)
 
-### Test Coverage (29 files, 180 tests)
+### Test Coverage (34 files, 208 tests)
 
 - syllabus: dance, figure
 - routines: routine
 - social: profile, follow, post, feed, comment, like, save, notification
 - orgs: org, membership, invite, join-request, org-post
 - messaging: conversation, message
-- competitions: competition, schedule, event, staff, judge, registration, entry, payment, number, tba, team-match
+- competitions: competition, schedule, event, staff, judge, registration, entry, payment, number, tba, team-match, add-drop, round, schedule-estimation, stats, awards
 
 ## Schema Management
 
