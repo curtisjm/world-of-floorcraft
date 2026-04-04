@@ -120,27 +120,34 @@ Add/drop management, schedule generation from entries.
 ---
 
 ## Phase 4: Scoring Engine
-Port skating system to TypeScript. Pure logic, no UI.
+Port skating system to TypeScript. Scoring router for mark submission and result computation.
 
 **Goal**: Fully tested scoring engine that can compute results for any round type.
 
-- [ ] Port `score_final.py` to TypeScript in `src/domains/competitions/lib/scoring/`
-- [ ] `placeCouples()` — Rules 5-8: single dance placement using majority system
-- [ ] `singleDance()` — Score a single dance, compute point values for ties
-- [ ] `multiDance()` — Rules 9-11: multi-dance event scoring (sum placements, tiebreak with place counts, Rule 11 smushed marks)
-- [ ] Helper functions: majority calculation, relevant marks, tiebreakers
-- [ ] Callback tallying for preliminary rounds (count marks, determine advancement)
-- [ ] Ties through Rule 11 simply stand (no further resolution)
-- [ ] Comprehensive test suite covering:
-  - [ ] Clear majority (Rule 5)
-  - [ ] Multiple majorities (Rule 6)
-  - [ ] Equal majorities / sum tiebreak (Rule 7)
-  - [ ] No majority (Rule 8)
-  - [ ] Multi-dance with clean results (Rule 9)
-  - [ ] Multi-dance ties (Rule 10)
-  - [ ] Rule 11 tiebreak (smushed marks)
-  - [ ] Unbreakable ties
-  - [ ] Preliminary round callback counting
+**Backend** (implemented):
+- [x] Database schema: callback_marks, final_marks, judge_submissions, callback_results, final_results, tabulation_tables, round_results_meta
+- [x] New enums: mark_status (pending, submitted, confirmed), result_status (computed, reviewed, published)
+- [x] Scoring engine library (`src/domains/competitions/lib/scoring/`):
+  - [x] `placeCouples()` — Rules 5-8: recursive majority-based single dance placement
+  - [x] `singleDance()` — Score a single dance, compute point values for ties
+  - [x] `multiDance()` — Rules 9-11: multi-dance event scoring (sum point values, tiebreak with place counts, Rule 11 smushed marks)
+  - [x] `tallyCallbacks()` — Preliminary round callback counting
+  - [x] Ties through Rule 11 simply stand (no further resolution)
+- [x] Scoring router: submitCallbackMarks, submitFinalMarks, getSubmissionStatus, computeCallbackResults, computeFinalResults, getResults, getCallbackResults, reviewResults, publishResults
+- [x] Unit tests: 15 tests covering Rules 5-11, callbacks, ties, edge cases, multi-dance scenarios
+- [x] Integration tests: 14 tests covering mark submission, result computation, workflow, authorization
+
+**Frontend** (not yet started):
+- [ ] Results display page with tabulation tables
+- [ ] Scrutineer results review and publish UI
+
+**Key decisions**:
+- Marks (raw judge input) and results (computed output) are stored separately. Results can be recomputed if marks are corrected.
+- Tabulation tables are stored as JSONB for display, avoiding recomputation on every view.
+- Final mark submission uses delete-then-insert per dance/judge to avoid unique constraint violations when swapping placements.
+- Results workflow: computed → reviewed (by scrutineer) → published (visible to competitors).
+- The scoring engine is a pure library with no database dependencies — the router handles all DB interaction.
+- Point values for ties use averaged positions (e.g., tied for 1st/2nd → both get 1.5), critical for multi-dance scoring.
 
 ---
 
@@ -149,7 +156,6 @@ Tablet-optimized marking pages with real-time submission.
 
 **Goal**: Judges can mark preliminary callbacks and rank finals on tablets.
 
-- [ ] Database schema: callback_marks, final_marks, judge_submissions
 - [ ] Judge schedule page
 - [ ] Preliminary round marking page:
   - [ ] Display all couple numbers, line dividers between heats

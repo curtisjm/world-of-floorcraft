@@ -129,39 +129,28 @@ Metadata about computed results for a round.
   2. If multi-dance: run `multiDance()` (Rules 9-11) → overall placements + summary table
 - Output: `final_results` rows (per-dance + overall) + `tabulation_tables` rows
 
-### Scoring Engine Function Signatures
+### Scoring Engine Function Signatures (Implemented)
 
 ```typescript
-// Types
-interface Marks {
-  [coupleId: string]: number[];  // couple -> array of judge placements
-}
+// Types (src/domains/competitions/lib/scoring/types.ts)
+type Marks = Record<string, number[]>;  // coupleId -> array of judge placements
 
-interface TabulationRow {
-  cells: string[];     // tabulation table cells
-  placement: number;   // final placement
-  pointValue: number;  // point value (for tie handling in multi-dance)
-}
-
-interface SingleDanceResult {
-  placements: Array<{ coupleId: string; placement: number }>;
-  tabulation: Map<string, TabulationRow>;
-}
-
+interface TabulationCell { label: string; value: number | null; majority: boolean; }
+interface TabulationRow { cells: TabulationCell[]; placement: number; pointValue: number; }
+interface SingleDanceResult { orderedCouples: string[]; tabulation: Record<string, TabulationRow>; }
 interface MultiDanceResult {
-  finalPlacements: Map<string, number>;
-  tiebreakRules: Map<string, string>;
-  perDanceResults: Map<string, SingleDanceResult>;
-  summaryTable: Map<string, { danceValues: number[]; total: number }>;
+  placements: Record<string, number>;
+  tiebreakRules: Record<string, string>;
+  perDancePlacements: Record<string, Array<{ placement: number; pointValue: number }>>;
+  totals: Record<string, number>;
 }
+interface CallbackTally { coupleId: string; totalMarks: number; }
 
-// Core functions (port from score_final.py)
-function placeCouples(marks: Marks, currentMark: number, placesToAward: number): SingleDanceResult;
+// Core functions (src/domains/competitions/lib/scoring/engine.ts)
+function placeCouples(marks: Marks, currentMark: number, placesToAward: number): string[];
 function singleDance(marks: Marks): SingleDanceResult;
-function multiDance(results: SingleDanceResult[], allMarks: Marks[]): MultiDanceResult;
-
-// Preliminary round
-function tallyCallbacks(marks: Map<string, boolean[]>): Array<{ coupleId: string; total: number }>;
+function multiDance(perDanceResults: SingleDanceResult[], allMarks: Marks[]): MultiDanceResult;
+function tallyCallbacks(marks: Record<string, boolean[]>): CallbackTally[];
 ```
 
 ### Results Workflow
