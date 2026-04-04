@@ -18,6 +18,11 @@ import { notificationRouter } from "@social/routers/notification";
 import { ablyAuthRouter } from "@messaging/routers/ably-auth";
 import { conversationRouter } from "@messaging/routers/conversation";
 import { messageRouter } from "@messaging/routers/message";
+import { competitionRouter } from "@competitions/routers/competition";
+import { scheduleRouter } from "@competitions/routers/schedule";
+import { eventRouter } from "@competitions/routers/event";
+import { staffRouter } from "@competitions/routers/staff";
+import { judgeRouter } from "@competitions/routers/judge";
 
 export const appRouter = router({
   dance: danceRouter,
@@ -39,6 +44,11 @@ export const appRouter = router({
   ablyAuth: ablyAuthRouter,
   conversation: conversationRouter,
   message: messageRouter,
+  competition: competitionRouter,
+  schedule: scheduleRouter,
+  event: eventRouter,
+  staff: staffRouter,
+  judge: judgeRouter,
 });
 
 export type AppRouter = typeof appRouter;
