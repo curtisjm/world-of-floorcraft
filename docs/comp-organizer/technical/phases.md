@@ -47,16 +47,39 @@ Couple registration, TBA finder, payment tracking, competitor numbers.
 
 **Goal**: Competitors can register, enter events, and pay.
 
-- [ ] Database schema: entries, competitor_numbers, tba_listings, team_match_submissions, pricing_tiers, payments
-- [ ] Registration router: one partner registers both, partner notification, partner can modify/remove
-- [ ] Org affiliation selection for couples in different orgs
-- [ ] Unaffiliated entry support
-- [ ] Payment tracking: flat fee with optional tiers (student, spectator), manual override for cash
-- [ ] Competitor number assignment: auto-assign from start number, exclusions, manual override
-- [ ] TBA finder: post looking-for-partner listings (level, style, role), browse listings
-- [ ] Team match request page (text submission)
+**Backend** (implemented):
+- [x] Database schema: competition_registrations, entries, payments, pricing_tiers, tba_listings, team_match_submissions
+- [x] New enums: pricing_model (flat_fee, per_event), dance_role (leader, follower), payment_method (online, cash, check, other)
+- [x] Competitions table additions: pricingModel, requirePaymentAtRegistration, stripeAccountId, stripeOnboardingComplete
+- [x] Competition_events addition: entryPrice (for per-event pricing)
+- [x] Shared auth helpers extracted to `src/domains/competitions/lib/auth.ts`: requireCompOrgRole, requireCompStaffRole
+- [x] Registration router: register (self + optional partner by username), getMyRegistration, listByCompetition, getById, updateOrgAffiliation, updateTier, toggleCheckedIn, cancel
+- [x] Entry router: create, remove, scratch (staff only), bulkCreate, listByEvent (public, with SQL joins for names/numbers), listByRegistration, listByCompetition
+- [x] Payment router: recordManual, recordRefund (negative amounts), listByRegistration, summaryByCompetition (aggregate stats), createCheckoutSession (Stripe), createConnectAccount, getConnectStatus
+- [x] Number router: autoAssign (respects numberStart/exclusions, leaders-with-entries only), manualAssign, unassign, listAssignments, updateSettings
+- [x] TBA router: create, markFulfilled, delete (own only), listByCompetition (public, filterable by style)
+- [x] Team match router: submit, delete (own only), listByCompetition (staff only)
+- [x] Integration tests: 32 tests across 6 test files (registration, entry, payment, number, tba, team-match)
+- [x] Stripe v22.0.0 added as dependency
+
+**Frontend** (not yet started):
 - [ ] Registration page UI
 - [ ] Entries list page (public, grouped by event)
+- [ ] Payment page (Stripe checkout flow + manual payment UI)
+- [ ] Competitor number management page
+- [ ] TBA finder page
+- [ ] Team match submission page
+
+**Key decisions**:
+- Registration is per-person, not per-couple. One partner registers both by providing the other's username, creating two linked registration rows. Either partner can later modify entries.
+- Entries link two registrations (leader + follower) to an event. The leader/follower distinction is enforced by schema (separate foreign keys) and used for number assignment.
+- Pricing supports two models: flat_fee (single base fee) and per_event (fee per event entered). `recalcAmountOwed()` in the entry router recalculates whenever entries change under per-event pricing.
+- Competitor numbers are assigned only to leaders who have at least one entry. Auto-assign starts from `numberStart` (default 1), skipping any numbers in the `numberExclusions` array.
+- Stripe Connect (Express accounts) is used for online payments. Lazy `getStripe()` initialization avoids errors in environments without STRIPE_SECRET_KEY.
+- Refunds are stored as negative payment amounts, keeping the payment ledger append-only.
+- Auth helpers extracted to shared module (`lib/auth.ts`) for Phase 2+ routers. Phase 1 routers still have inline versions (will be consolidated in a future cleanup).
+- `entry.listByEvent` uses raw SQL joins to return leader/follower display names and competitor numbers in a single query, avoiding N+1 queries.
+- Partial unique index on `competitor_number` (WHERE NOT NULL) allows multiple null values while enforcing uniqueness for assigned numbers.
 
 ---
 

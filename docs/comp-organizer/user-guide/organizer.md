@@ -173,9 +173,76 @@ Dance list TBD — all single dances at all levels.
 
 ---
 
+## Registration & Entries
+
+Once your competition is in **Accepting Entries** status, competitors can register and enter events.
+
+### How Registration Works
+
+1. One partner **registers both** by entering the other partner's username
+2. The system creates two linked registrations (one per person)
+3. Either partner can later add, remove, or modify their entries
+4. Competitors don't need to belong to an organization — they can enter unaffiliated
+5. If partners belong to different orgs, they choose which org to enter under
+
+A single person can also register solo (without a partner) — useful if they're still looking for a partner via the TBA board.
+
+### Managing Entries
+
+Competitors enter events as couples (leader + follower). They can:
+- **Enter individual events** one at a time
+- **Bulk-enter multiple events** at once (e.g., all Newcomer Smooth events)
+- **Remove entries** before the entry deadline
+
+Staff with the **deck captain** role can **scratch** entries on comp day (reversible toggle).
+
+### Payment & Pricing
+
+Two pricing models are available:
+
+| Model | How It Works |
+|-------|-------------|
+| **Flat fee** (default) | One price covers all event entries. Set the base fee on the competition. |
+| **Per event** | Each event has its own price. The amount owed recalculates as entries are added/removed. |
+
+Optionally, create **pricing tiers** for discounted rates (e.g., student pricing).
+
+**Collecting payment:**
+- **Online**: Connect your Stripe account to accept card payments. Competitors pay via Stripe Checkout.
+- **At the door**: Staff with the **registration** role can record cash, check, or other manual payments.
+
+Refunds are recorded as separate negative-amount transactions, keeping a full audit trail.
+
+### Competitor Numbers
+
+Numbers are assigned to **leaders only** (the leader's number identifies the couple on the floor).
+
+- **Auto-assign**: Assigns sequential numbers starting from your configured start number, skipping any excluded numbers
+- **Manual assign**: Override with a specific number for any registration
+- **Unassign**: Remove a number assignment
+
+Configure number settings (start number, exclusions) from the competition dashboard before assigning.
+
+### TBA (To Be Announced) Finder
+
+Competitors looking for a partner can post to the TBA board:
+- Specify the **style**, **level**, and **role** they're looking for
+- Other competitors browse listings filtered by style
+- Once a match is found, the poster marks the listing as fulfilled
+
+TBA listings are public — anyone can browse them without logging in.
+
+### Team Match
+
+Competitors can submit team match ideas/suggestions via a text form. These submissions are visible only to competition staff.
+
+---
+
 ## Tips
 
 - **Start simple**: Create a 1-day competition first. You can add days and complexity later.
 - **Generate then prune**: It's faster to generate all default events and remove what you don't need than to create each event manually.
 - **Draft mode is safe**: Take your time setting up in draft. Nothing is visible to competitors until you change the status.
 - **Backward transitions are safe**: If you accidentally move to "Accepting Entries" before you're ready, just move back to "Advertised" or "Draft". No data is lost.
+- **Flat fee is simpler**: Unless you have a specific reason for per-event pricing, the flat fee model is easier to manage.
+- **Auto-assign numbers last**: Wait until most entries are in before assigning competitor numbers, so the numbering is sequential without gaps.
