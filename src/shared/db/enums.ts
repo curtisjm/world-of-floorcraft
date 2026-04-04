@@ -113,3 +113,28 @@ export const paymentMethodEnum = pgEnum("payment_method", [
   "check",
   "other",
 ]);
+
+export const addDropTypeEnum = pgEnum("add_drop_type", [
+  "add",
+  "drop",
+]);
+
+export const addDropStatusEnum = pgEnum("add_drop_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+
+export const roundStatusEnum = pgEnum("round_status", [
+  "pending",
+  "in_progress",
+  "completed",
+]);
+
+export const roundTypeEnum = pgEnum("round_type", [
+  "1st_round",
+  "2nd_round",
+  "quarter_final",
+  "semi_final",
+  "final",
+]);

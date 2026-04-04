@@ -272,6 +272,8 @@ export const competitionRouter = router({
         baseFee: z.string().nullable().optional(),
         numberStart: z.number().min(1).optional(),
         numberExclusions: z.number().array().nullable().optional(),
+        minutesPerCouplePerDance: z.string().optional(),
+        transitionMinutes: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

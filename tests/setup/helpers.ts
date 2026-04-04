@@ -20,6 +20,11 @@ import {
   pricingTiers,
   tbaListings,
   teamMatchSubmissions,
+  addDropRequests,
+  rounds,
+  heats,
+  heatAssignments,
+  eventTimeOverrides,
 } from "@competitions/schema";
 
 // ---------- Caller ----------
@@ -213,6 +218,11 @@ export async function truncateAll() {
   const pool = getTestPool();
   await pool.query(`
     TRUNCATE
+      event_time_overrides,
+      heat_assignments,
+      heats,
+      rounds,
+      add_drop_requests,
       team_match_submissions,
       tba_listings,
       payments,

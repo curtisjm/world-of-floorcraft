@@ -23,6 +23,10 @@ import {
   pricingModelEnum,
   danceRoleEnum,
   paymentMethodEnum,
+  addDropTypeEnum,
+  addDropStatusEnum,
+  roundStatusEnum,
+  roundTypeEnum,
 } from "@shared/db/enums";
 
 // ── Competitions ────────────────────────────────────────────────────
@@ -56,6 +60,8 @@ export const competitions = pgTable("competitions", {
   requirePaymentAtRegistration: boolean("require_payment_at_registration").notNull().default(false),
   stripeAccountId: text("stripe_account_id"),
   stripeOnboardingComplete: boolean("stripe_onboarding_complete").notNull().default(false),
+  minutesPerCouplePerDance: numeric("minutes_per_couple_per_dance", { precision: 4, scale: 1 }).default("1.5"),
+  transitionMinutes: numeric("transition_minutes", { precision: 4, scale: 1 }).default("2.0"),
   compCode: text("comp_code").unique(),
   masterPasswordHash: text("master_password_hash"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -347,4 +353,109 @@ export const teamMatchSubmissions = pgTable("team_match_submissions", {
     .notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ── Add/Drop Requests ───────────────────────────────��──────────────
+
+export const addDropRequests = pgTable(
+  "add_drop_requests",
+  {
+    id: serial("id").primaryKey(),
+    competitionId: integer("competition_id")
+      .references(() => competitions.id, { onDelete: "cascade" })
+      .notNull(),
+    submittedBy: text("submitted_by")
+      .references(() => users.id)
+      .notNull(),
+    type: addDropTypeEnum("type").notNull(),
+    eventId: integer("event_id")
+      .references(() => competitionEvents.id)
+      .notNull(),
+    leaderRegistrationId: integer("leader_registration_id")
+      .references(() => competitionRegistrations.id)
+      .notNull(),
+    followerRegistrationId: integer("follower_registration_id")
+      .references(() => competitionRegistrations.id)
+      .notNull(),
+    reason: text("reason"),
+    status: addDropStatusEnum("status").notNull().default("pending"),
+    reviewedBy: text("reviewed_by").references(() => users.id),
+    reviewedAt: timestamp("reviewed_at"),
+    affectsRounds: boolean("affects_rounds"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("add_drop_requests_comp_status_idx").on(
+      table.competitionId,
+      table.status,
+    ),
+  ],
+);
+
+// ── Rounds ─────────���───────────────────────────────────────────────
+
+export const rounds = pgTable(
+  "rounds",
+  {
+    id: serial("id").primaryKey(),
+    eventId: integer("event_id")
+      .references(() => competitionEvents.id, { onDelete: "cascade" })
+      .notNull(),
+    roundType: roundTypeEnum("round_type").notNull(),
+    position: integer("position").notNull(),
+    callbacksRequested: integer("callbacks_requested"),
+    status: roundStatusEnum("status").notNull().default("pending"),
+  },
+  (table) => [
+    uniqueIndex("rounds_event_pos_idx").on(table.eventId, table.position),
+  ],
+);
+
+// ── Heats ─────────────��────────────────────────────────────────────
+
+export const heats = pgTable(
+  "heats",
+  {
+    id: serial("id").primaryKey(),
+    roundId: integer("round_id")
+      .references(() => rounds.id, { onDelete: "cascade" })
+      .notNull(),
+    heatNumber: integer("heat_number").notNull(),
+    status: roundStatusEnum("status").notNull().default("pending"),
+  },
+  (table) => [
+    uniqueIndex("heats_round_number_idx").on(table.roundId, table.heatNumber),
+  ],
+);
+
+// ── Heat Assignments ───────────��───────────────────────────────────
+
+export const heatAssignments = pgTable(
+  "heat_assignments",
+  {
+    id: serial("id").primaryKey(),
+    heatId: integer("heat_id")
+      .references(() => heats.id, { onDelete: "cascade" })
+      .notNull(),
+    entryId: integer("entry_id")
+      .references(() => entries.id)
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("heat_assignments_heat_entry_idx").on(
+      table.heatId,
+      table.entryId,
+    ),
+  ],
+);
+
+// ── Event Time Overrides ───────────��───────────────────────────────
+
+export const eventTimeOverrides = pgTable("event_time_overrides", {
+  id: serial("id").primaryKey(),
+  eventId: integer("event_id")
+    .references(() => competitionEvents.id, { onDelete: "cascade" })
+    .notNull()
+    .unique(),
+  estimatedMinutes: numeric("estimated_minutes", { precision: 5, scale: 1 }).notNull(),
 });
