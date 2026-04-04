@@ -5,6 +5,16 @@ import { dances, figures } from "@syllabus/schema";
 import { posts } from "@social/schema";
 import { organizations, memberships } from "@orgs/schema";
 import { conversations, conversationMembers } from "@messaging/schema";
+import {
+  competitions,
+  competitionDays,
+  scheduleBlocks,
+  competitionEvents,
+  eventDances,
+  judges,
+  competitionStaff,
+  competitionJudges,
+} from "@competitions/schema";
 
 // ---------- Caller ----------
 
@@ -134,6 +144,41 @@ export async function createConversation(
   return conv;
 }
 
+let _compCounter = 0;
+
+export async function createCompetition(
+  orgId: number,
+  createdBy: string,
+  overrides: Partial<typeof competitions.$inferInsert> = {},
+) {
+  _compCounter++;
+  const [comp] = await db()
+    .insert(competitions)
+    .values({
+      orgId,
+      createdBy,
+      name: overrides.name ?? `Test Competition ${_compCounter}`,
+      slug: overrides.slug ?? `test-comp-${_compCounter}-${Date.now()}`,
+      ...overrides,
+    })
+    .returning();
+  return comp;
+}
+
+export async function createJudge(
+  overrides: Partial<typeof judges.$inferInsert> = {},
+) {
+  const [judge] = await db()
+    .insert(judges)
+    .values({
+      firstName: overrides.firstName ?? "Test",
+      lastName: overrides.lastName ?? `Judge ${Date.now()}`,
+      ...overrides,
+    })
+    .returning();
+  return judge;
+}
+
 // ---------- Cleanup ----------
 
 /**
@@ -144,6 +189,14 @@ export async function truncateAll() {
   const pool = getTestPool();
   await pool.query(`
     TRUNCATE
+      event_dances,
+      competition_events,
+      schedule_blocks,
+      competition_days,
+      competition_judges,
+      competition_staff,
+      judges,
+      competitions,
       messages,
       conversation_members,
       conversations,
@@ -168,4 +221,5 @@ export async function truncateAll() {
     CASCADE
   `);
   _userCounter = 0;
+  _compCounter = 0;
 }

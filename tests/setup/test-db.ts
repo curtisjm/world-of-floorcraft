@@ -7,6 +7,7 @@ import * as routinesSchema from "@routines/schema";
 import * as socialSchema from "@social/schema";
 import * as orgsSchema from "@orgs/schema";
 import * as messagingSchema from "@messaging/schema";
+import * as competitionsSchema from "@competitions/schema";
 
 const schema = {
   ...sharedSchema,
@@ -15,6 +16,7 @@ const schema = {
   ...socialSchema,
   ...orgsSchema,
   ...messagingSchema,
+  ...competitionsSchema,
 };
 
 export type TestSchema = typeof schema;
