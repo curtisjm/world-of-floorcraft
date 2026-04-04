@@ -9,7 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Separator } from "@shared/ui/separator";
 import { Skeleton } from "@shared/ui/skeleton";
 import { StatusBadge } from "@competitions/components/status-badge";
-import { MapPin, Building2, LayoutDashboard, ScrollText } from "lucide-react";
+import {
+  MapPin,
+  Building2,
+  LayoutDashboard,
+  ScrollText,
+  UserPlus,
+  ClipboardList,
+  Trophy,
+  Users,
+  MessageSquare,
+  FileText,
+} from "lucide-react";
 
 export default function CompetitionPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -140,7 +151,45 @@ export default function CompetitionPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Quick Links */}
+        <Separator />
+        <section>
+          <h2 className="text-lg font-semibold mb-3">Quick Links</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {comp.status === "accepting_entries" && (
+              <QuickLink href={`/competitions/${slug}/register`} icon={UserPlus} label="Register" />
+            )}
+            <QuickLink href={`/competitions/${slug}/entries`} icon={ClipboardList} label="View Entries" />
+            <QuickLink href={`/competitions/${slug}/results`} icon={Trophy} label="Results" />
+            <QuickLink href={`/competitions/${slug}/tba`} icon={Users} label="Partner Finder (TBA)" />
+            <QuickLink href={`/competitions/${slug}/team-match`} icon={MessageSquare} label="Team Match" />
+            {(comp.status === "entries_closed" || comp.status === "running") && (
+              <QuickLink href={`/competitions/${slug}/add-drop`} icon={FileText} label="Add/Drop Form" />
+            )}
+          </div>
+        </section>
       </div>
     </div>
+  );
+}
+
+function QuickLink({
+  href,
+  icon: Icon,
+  label,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors"
+    >
+      <Icon className="size-4 text-muted-foreground shrink-0" />
+      <span className="text-sm font-medium">{label}</span>
+    </Link>
   );
 }

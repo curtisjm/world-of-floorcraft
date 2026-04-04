@@ -22,14 +22,17 @@ Competition CRUD, schedule builder, and event management.
 - [x] Judge directory + competition assignments: global judge CRUD, search, assignToCompetition/removeFromCompetition
 - [x] Integration tests: 40 tests across 5 test files (competition, schedule, event, staff, judge)
 
-**Frontend** (not yet started):
-- [ ] Dashboard page with checklist/timeline view and navigation to sub-pages
-- [ ] Competition home/info page (public-facing)
-- [ ] Rules page (organizer-editable, public-viewable)
-- [ ] Creation wizard UI (multi-step: basic info → schedule → events → details → publish)
-- [ ] Schedule builder UI (drag-and-drop reordering)
-- [ ] Event management UI (generate defaults, prune, edit groupings)
-- [ ] Staff/judge assignment UI
+**Frontend** (implemented):
+- [x] Competition discovery page (`/competitions`) with status filter tabs and cursor pagination
+- [x] Competition public info page (`/competitions/[slug]`) with venue, rules, pricing, quick links
+- [x] Dashboard layout with sectioned sidebar nav (Setup, Entries, Competition)
+- [x] Dashboard overview page with status transitions, stat cards, setup checklist
+- [x] Creation wizard (`/competitions/create`) — 4-step flow: basic info → schedule → events → review
+- [x] Schedule builder with @dnd-kit/react v2 drag-and-drop, day/block CRUD, default template
+- [x] Event management with session grouping, generate defaults, create dialog with react-hook-form
+- [x] Staff assignment with user search (profile.search), role selector, grouped by role
+- [x] Judge management with global directory search, create/edit judges, assign/remove
+- [x] Settings page with 4 form sections (general, venue, scoring, pricing) + tablet auth + danger zone
 
 **Key decisions**:
 - Default event grouping rules are defined as application config (not database), applied when generating events for a new competition. Organizer edits are stored per-competition.
@@ -62,13 +65,13 @@ Couple registration, TBA finder, payment tracking, competitor numbers.
 - [x] Integration tests: 32 tests across 6 test files (registration, entry, payment, number, tba, team-match)
 - [x] Stripe v22.0.0 added as dependency
 
-**Frontend** (not yet started):
-- [ ] Registration page UI
-- [ ] Entries list page (public, grouped by event)
-- [ ] Payment page (Stripe checkout flow + manual payment UI)
-- [ ] Competitor number management page
-- [ ] TBA finder page
-- [ ] Team match submission page
+**Frontend** (implemented):
+- [x] Registration page (`/competitions/[slug]/register`) with partner entry, org selection, bulk event entry, payment info
+- [x] Entries list page (`/competitions/[slug]/entries`) — public, grouped by event with couple names
+- [x] Payment management dashboard page with summary cards, Stripe Connect setup, manual payment recording
+- [x] Competitor number management with auto-assign, manual assign, settings dialog
+- [x] TBA finder page (`/competitions/[slug]/tba`) with style/level/role filters, create/delete listings
+- [x] Team match page (`/competitions/[slug]/team-match`) with submit/delete ideas
 
 **Key decisions**:
 - Registration is per-person, not per-couple. One partner registers both by providing the other's username, creating two linked registration rows. Either partner can later modify entries.
@@ -99,13 +102,13 @@ Add/drop management, schedule generation from entries.
 - [x] Awards router: calculate (medals + ribbons per event and aggregate, with configurable buffer percentage, no database writes)
 - [x] Integration tests: 28 tests across 5 test files (add-drop, round, schedule-estimation, stats, awards)
 
-**Frontend** (not yet started):
-- [ ] Add/drop form (competitor-facing)
-- [ ] Add/drop management page (organizer-facing, with safe/needs-review grouping)
-- [ ] Schedule estimation page with time visualization
-- [ ] Round/heat management page
-- [ ] Stats dashboard
-- [ ] Award calculator page
+**Frontend** (implemented):
+- [x] Add/drop form (`/competitions/[slug]/add-drop`) — competitor-facing, submit add/drop requests with event selector
+- [x] Add/drop management (dashboard) — organizer-facing, safe/needs-review grouping, batch approve safe, individual approve/reject
+- [x] Schedule estimation page with day/block/event time breakdown, configurable settings
+- [x] Round management page with generate all/per-event, expandable event cards, heat display, start/complete rounds
+- [x] Stats dashboard with stat cards, entries per event, registrations by org
+- [x] Award calculator with medals/ribbons per event, buffer percentage, aggregate totals
 
 **Key decisions**:
 - Add/drop requests can only be submitted when competition is in `entries_closed` status. Either partner or an org admin for the couple's affiliated org can submit.
@@ -137,9 +140,9 @@ Port skating system to TypeScript. Scoring router for mark submission and result
 - [x] Unit tests: 15 tests covering Rules 5-11, callbacks, ties, edge cases, multi-dance scenarios
 - [x] Integration tests: 14 tests covering mark submission, result computation, workflow, authorization
 
-**Frontend** (not yet started):
-- [ ] Results display page with tabulation tables
-- [ ] Scrutineer results review and publish UI
+**Frontend** (implemented):
+- [x] Public results page (`/competitions/[slug]/results`) with expandable event cards, placement list, tabulation table
+- [x] Scoring dashboard page with per-event round list, round detail dialog (submission status, compute callbacks/final, review, publish)
 
 **Key decisions**:
 - Marks (raw judge input) and results (computed output) are stored separately. Results can be recomputed if marks are corrected.
