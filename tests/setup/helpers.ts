@@ -25,6 +25,13 @@ import {
   heats,
   heatAssignments,
   eventTimeOverrides,
+  callbackMarks,
+  finalMarks,
+  judgeSubmissions,
+  callbackResults,
+  finalResults,
+  tabulationTables,
+  roundResultsMeta,
 } from "@competitions/schema";
 
 // ---------- Caller ----------
@@ -218,6 +225,13 @@ export async function truncateAll() {
   const pool = getTestPool();
   await pool.query(`
     TRUNCATE
+      round_results_meta,
+      tabulation_tables,
+      final_results,
+      callback_results,
+      judge_submissions,
+      final_marks,
+      callback_marks,
       event_time_overrides,
       heat_assignments,
       heats,
