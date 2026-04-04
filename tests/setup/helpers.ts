@@ -32,6 +32,9 @@ import {
   finalResults,
   tabulationTables,
   roundResultsMeta,
+  judgeSessions,
+  activeRounds,
+  markCorrections,
 } from "@competitions/schema";
 
 // ---------- Caller ----------
@@ -225,6 +228,9 @@ export async function truncateAll() {
   const pool = getTestPool();
   await pool.query(`
     TRUNCATE
+      mark_corrections,
+      active_rounds,
+      judge_sessions,
       round_results_meta,
       tabulation_tables,
       final_results,
