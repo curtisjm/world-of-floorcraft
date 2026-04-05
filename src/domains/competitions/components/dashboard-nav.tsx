@@ -20,6 +20,10 @@ import {
   Calculator,
   Clock,
   BarChart3,
+  Monitor,
+  ClipboardCheck,
+  Flag,
+  Mic,
 } from "lucide-react";
 
 const navSections = [
@@ -49,6 +53,15 @@ const navSections = [
       { label: "Scoring", href: "/scoring", icon: Calculator },
       { label: "Schedule Est.", href: "/schedule-estimation", icon: Clock },
       { label: "Stats & Awards", href: "/stats", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Comp Day",
+    items: [
+      { label: "Dashboard", href: "/comp-day", icon: Monitor },
+      { label: "Reg. Table", href: "/comp-day/registration", icon: ClipboardCheck },
+      { label: "Deck Captain", href: "/comp-day/deck-captain", icon: Flag },
+      { label: "Emcee", href: "/comp-day/emcee", icon: Mic },
     ],
   },
   {
