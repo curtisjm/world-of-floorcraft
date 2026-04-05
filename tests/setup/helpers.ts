@@ -231,6 +231,11 @@ export async function truncateAll() {
   const pool = getTestPool();
   await pool.query(`
     TRUNCATE
+      record_removal_requests,
+      feedback_answers,
+      feedback_responses,
+      feedback_questions,
+      feedback_forms,
       registration_checkins,
       deck_captain_checkins,
       announcement_notes,

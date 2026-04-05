@@ -170,3 +170,18 @@ export const announcementNoteTypeEnum = pgEnum("announcement_note_type", [
   "text",
   "break",
 ]);
+
+// ── Phase 7: Post-comp ────────────────────────────────────────────
+
+export const feedbackQuestionTypeEnum = pgEnum("feedback_question_type", [
+  "text",
+  "rating",
+  "multiple_choice",
+  "yes_no",
+]);
+
+export const recordRemovalStatusEnum = pgEnum("record_removal_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);

@@ -33,6 +33,8 @@ import {
   judgeSessionStatusEnum,
   markCorrectionSourceEnum,
   announcementNoteTypeEnum,
+  feedbackQuestionTypeEnum,
+  recordRemovalStatusEnum,
 } from "@shared/db/enums";
 
 // ── Competitions ────────────────────────────────────────────────────
@@ -783,5 +785,104 @@ export const announcementNotes = pgTable(
   },
   (table) => [
     index("announcement_notes_comp_day_idx").on(table.competitionId, table.dayId),
+  ],
+);
+
+// ── Feedback Forms (Phase 7) ──────────────────────────────────────
+
+export const feedbackForms = pgTable("feedback_forms", {
+  id: serial("id").primaryKey(),
+  competitionId: integer("competition_id")
+    .references(() => competitions.id, { onDelete: "cascade" })
+    .notNull()
+    .unique(),
+  title: text("title").notNull().default("Competition Feedback"),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ── Feedback Questions (Phase 7) ──────────────────────────────────
+
+export const feedbackQuestions = pgTable(
+  "feedback_questions",
+  {
+    id: serial("id").primaryKey(),
+    formId: integer("form_id")
+      .references(() => feedbackForms.id, { onDelete: "cascade" })
+      .notNull(),
+    questionType: feedbackQuestionTypeEnum("question_type").notNull(),
+    label: text("label").notNull(),
+    options: text("options").array(),
+    required: boolean("required").notNull().default(false),
+    position: integer("position").notNull(),
+  },
+  (table) => [
+    uniqueIndex("feedback_questions_form_pos_idx").on(table.formId, table.position),
+  ],
+);
+
+// ── Feedback Responses (Phase 7) ──────────────────────────────────
+
+export const feedbackResponses = pgTable(
+  "feedback_responses",
+  {
+    id: serial("id").primaryKey(),
+    formId: integer("form_id")
+      .references(() => feedbackForms.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: text("user_id")
+      .references(() => users.id)
+      .notNull(),
+    submittedAt: timestamp("submitted_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("feedback_responses_form_user_idx").on(table.formId, table.userId),
+  ],
+);
+
+// ── Feedback Answers (Phase 7) ────────────────────────────────────
+
+export const feedbackAnswers = pgTable(
+  "feedback_answers",
+  {
+    id: serial("id").primaryKey(),
+    responseId: integer("response_id")
+      .references(() => feedbackResponses.id, { onDelete: "cascade" })
+      .notNull(),
+    questionId: integer("question_id")
+      .references(() => feedbackQuestions.id, { onDelete: "cascade" })
+      .notNull(),
+    value: text("value").notNull(),
+  },
+  (table) => [
+    uniqueIndex("feedback_answers_response_question_idx").on(table.responseId, table.questionId),
+  ],
+);
+
+// ── Record Removal Requests (Phase 7) ─────────────────────────────
+
+export const recordRemovalRequests = pgTable(
+  "record_removal_requests",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => users.id)
+      .notNull(),
+    competitionId: integer("competition_id")
+      .references(() => competitions.id)
+      .notNull(),
+    entryId: integer("entry_id").references(() => entries.id),
+    reason: text("reason").notNull(),
+    status: recordRemovalStatusEnum("status").notNull().default("pending"),
+    reviewedBy: text("reviewed_by").references(() => users.id),
+    reviewedAt: timestamp("reviewed_at"),
+    reviewNotes: text("review_notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("record_removal_pending_idx")
+      .on(table.userId, table.competitionId)
+      .where(sql`status = 'pending'`),
   ],
 );
