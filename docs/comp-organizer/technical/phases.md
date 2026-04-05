@@ -235,15 +235,22 @@ Results, history, feedback, and discovery.
 
 **Goal**: Complete the competitor experience with results and global navigation.
 
-- [ ] Results page per competition (placements by event, tabulation tables)
-- [ ] Click competitor name to view full results history
-- [ ] All results by competitor (global search)
-- [ ] Competition calendar (upcoming competitions)
-- [ ] Past events archive
-- [ ] Feedback form (available after comp finishes)
-- [ ] Request record removal (competitor can request removal from a comp's results)
-- [ ] Participating org pages:
-  - [ ] Team entries and schedule
-  - [ ] When competitors need to be at venue
-  - [ ] Org admin add/drop for members
-- [ ] Payment analytics for organizers
+**Backend** (implemented):
+- [x] Results router: getByCompetition, getEventResults (Summary + Marks tabs), getCompetitorHistory, searchCompetitors
+- [x] Feedback router: form builder (CRUD), default template, submitResponse, getMyResponse, getResponses, getAnalytics
+- [x] Calendar router: getUpcoming (with filters), getPast (paginated), getCompetitionPreview
+- [x] Record removal router: submit, listPending, getRequest, approve, reject
+- [x] Org competition router: getOrgSchedule, getOrgEntries, getOrgResults, submitAddDrop
+- [x] Payment analytics router: getSummary, getPaymentLog (filtered), getOutstanding
+- [x] Schema: feedback_forms, feedback_questions, feedback_responses, feedback_answers, record_removal_requests
+- [x] Enums: feedback_question_type, record_removal_status
+- [x] Integration tests: 64 tests across 6 test files
+
+**Frontend**: Not started
+
+**Key decisions**:
+- Results pages (per-competition and per-competitor history) are read-only views built from existing Phase 4 tables (final_results, tabulation_tables). No additional schema needed.
+- Calendar and archive are query-time views on the existing competitions table with location/date/style filters.
+- Record removal is platform-admin-only review (not organizer) to keep the process neutral. Approval soft-hides entries from public display.
+- Feedback forms are one-per-competition, organizer-configurable. Default template with 6 questions (4 ratings, 1 yes/no, 1 text). Rating scale is always 1-5.
+- All answers stored as text strings for uniform storage, parsed by type for analytics display.
