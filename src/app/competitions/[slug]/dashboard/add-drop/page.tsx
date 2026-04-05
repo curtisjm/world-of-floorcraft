@@ -104,7 +104,7 @@ export default function AddDropManagementPage() {
               Safe to Approve ({safe.length})
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              These requests don't affect any existing rounds.
+              These requests don&apos;t affect any existing rounds.
             </p>
           </CardHeader>
           <CardContent>
