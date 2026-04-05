@@ -42,6 +42,12 @@ import { deckCaptainRouter } from "@competitions/routers/deck-captain";
 import { emceeRouter } from "@competitions/routers/emcee";
 import { scrutineerDashboardRouter } from "@competitions/routers/scrutineer-dashboard";
 import { liveViewRouter } from "@competitions/routers/live-view";
+import { resultsRouter } from "@competitions/routers/results";
+import { feedbackRouter } from "@competitions/routers/feedback";
+import { calendarRouter } from "@competitions/routers/calendar";
+import { recordRemovalRouter } from "@competitions/routers/record-removal";
+import { orgCompetitionRouter } from "@competitions/routers/org-competition";
+import { paymentAnalyticsRouter } from "@competitions/routers/payment-analytics";
 
 export const appRouter = router({
   dance: danceRouter,
@@ -87,6 +93,12 @@ export const appRouter = router({
   emcee: emceeRouter,
   scrutineerDashboard: scrutineerDashboardRouter,
   liveView: liveViewRouter,
+  results: resultsRouter,
+  feedback: feedbackRouter,
+  calendar: calendarRouter,
+  recordRemoval: recordRemovalRouter,
+  orgCompetition: orgCompetitionRouter,
+  paymentAnalytics: paymentAnalyticsRouter,
 });
 
 export type AppRouter = typeof appRouter;
