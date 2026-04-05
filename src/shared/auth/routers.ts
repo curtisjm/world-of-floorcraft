@@ -37,6 +37,11 @@ import { awardsRouter } from "@competitions/routers/awards";
 import { scoringRouter } from "@competitions/routers/scoring";
 import { judgeSessionRouter } from "@competitions/routers/judge-session";
 import { scrutineerRouter } from "@competitions/routers/scrutineer";
+import { registrationTableRouter } from "@competitions/routers/registration-table";
+import { deckCaptainRouter } from "@competitions/routers/deck-captain";
+import { emceeRouter } from "@competitions/routers/emcee";
+import { scrutineerDashboardRouter } from "@competitions/routers/scrutineer-dashboard";
+import { liveViewRouter } from "@competitions/routers/live-view";
 
 export const appRouter = router({
   dance: danceRouter,
@@ -77,6 +82,11 @@ export const appRouter = router({
   scoring: scoringRouter,
   judgeSession: judgeSessionRouter,
   scrutineer: scrutineerRouter,
+  registrationTable: registrationTableRouter,
+  deckCaptain: deckCaptainRouter,
+  emcee: emceeRouter,
+  scrutineerDashboard: scrutineerDashboardRouter,
+  liveView: liveViewRouter,
 });
 
 export type AppRouter = typeof appRouter;
