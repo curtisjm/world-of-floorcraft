@@ -32,6 +32,7 @@ import {
   resultStatusEnum,
   judgeSessionStatusEnum,
   markCorrectionSourceEnum,
+  announcementNoteTypeEnum,
 } from "@shared/db/enums";
 
 // ── Competitions ────────────────────────────────────────────────────
@@ -712,5 +713,75 @@ export const markCorrections = pgTable(
   },
   (table) => [
     index("mark_corrections_round_idx").on(table.roundId),
+  ],
+);
+
+// ── Registration Check-ins (Phase 6) ───────────────────────────────
+
+export const registrationCheckins = pgTable(
+  "registration_checkins",
+  {
+    id: serial("id").primaryKey(),
+    registrationId: integer("registration_id")
+      .references(() => competitionRegistrations.id, { onDelete: "cascade" })
+      .notNull(),
+    checkedInBy: text("checked_in_by")
+      .references(() => users.id)
+      .notNull(),
+    checkedInAt: timestamp("checked_in_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("reg_checkins_registration_idx").on(table.registrationId),
+  ],
+);
+
+// ── Deck Captain Check-ins (Phase 6) ───────────────────────────────
+
+export const deckCaptainCheckins = pgTable(
+  "deck_captain_checkins",
+  {
+    id: serial("id").primaryKey(),
+    roundId: integer("round_id")
+      .references(() => rounds.id, { onDelete: "cascade" })
+      .notNull(),
+    entryId: integer("entry_id")
+      .references(() => entries.id, { onDelete: "cascade" })
+      .notNull(),
+    status: text("status").notNull().default("ready"),
+    checkedInBy: text("checked_in_by")
+      .references(() => users.id)
+      .notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("deck_checkins_round_entry_idx").on(table.roundId, table.entryId),
+  ],
+);
+
+// ── Announcement Notes (Phase 6) ───────────────────────────────────
+
+export const announcementNotes = pgTable(
+  "announcement_notes",
+  {
+    id: serial("id").primaryKey(),
+    competitionId: integer("competition_id")
+      .references(() => competitions.id, { onDelete: "cascade" })
+      .notNull(),
+    dayId: integer("day_id")
+      .references(() => competitionDays.id, { onDelete: "cascade" })
+      .notNull(),
+    positionAfterEventId: integer("position_after_event_id")
+      .references(() => competitionEvents.id, { onDelete: "set null" }),
+    type: announcementNoteTypeEnum("type").notNull().default("text"),
+    content: text("content").notNull(),
+    createdBy: text("created_by")
+      .references(() => users.id)
+      .notNull(),
+    visibleOnProjector: boolean("visible_on_projector").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("announcement_notes_comp_day_idx").on(table.competitionId, table.dayId),
   ],
 );

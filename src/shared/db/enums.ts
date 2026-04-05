@@ -160,3 +160,13 @@ export const markCorrectionSourceEnum = pgEnum("mark_correction_source", [
   "scrutineer",
   "judge",
 ]);
+
+export const checkinTypeEnum = pgEnum("checkin_type", [
+  "registration",
+  "deck_captain",
+]);
+
+export const announcementNoteTypeEnum = pgEnum("announcement_note_type", [
+  "text",
+  "break",
+]);
