@@ -39,6 +39,22 @@ src/app/competitions/
         emcee/page.tsx                           # Emcee schedule + announcements
     display/page.tsx                             # Projector display (standalone, no auth)
     live/page.tsx                                # Competitor live view (public)
+    feedback/page.tsx                            # Competitor feedback form (public, auth to submit)
+    results/[eventId]/page.tsx                   # Event results detail (Summary + Marks tabs)
+
+    dashboard/
+      analytics/page.tsx                         # Entry + financial analytics (tabbed)
+      feedback/page.tsx                          # Feedback form management + analytics
+
+src/app/competitors/
+  page.tsx                                       # Competitor search (public)
+  [userId]/page.tsx                              # Competitor history + record removal (public/auth)
+
+src/app/results/
+  page.tsx                                       # Browse all past competition results (public)
+
+src/app/orgs/[slug]/competitions/
+  [compSlug]/page.tsx                            # Org's view of a competition (schedule, entries, results)
 
 src/app/judge/
   page.tsx                                       # Judge tablet (standalone, no Clerk)
@@ -50,7 +66,7 @@ src/app/judge/
 src/domains/competitions/components/
   competition-card.tsx          # Card for discovery list
   status-badge.tsx              # Color-coded status badge (6 statuses)
-  dashboard-nav.tsx             # Sidebar with sectioned nav (Setup, Entries, Competition, Comp Day)
+  dashboard-nav.tsx             # Sidebar with sectioned nav (Setup, Entries, Competition, Comp Day, Analytics, Post-Comp)
 
 src/domains/competitions/lib/
   ably-comp-client.ts           # Ably subscription hooks for comp live channel (useCompLive, useCompLiveWithInvalidation)
@@ -170,6 +186,12 @@ The sidebar organizes dashboard pages into three sections:
 **Comp Day** — Day-of operations
 - Dashboard, Reg. Table, Deck Captain, Emcee
 
+**Analytics** — Data and insights
+- Analytics (entries + financials tabs)
+
+**Post-Comp** — After the competition
+- Feedback
+
 Plus Settings at the bottom.
 
 ## Page Summary
@@ -205,4 +227,12 @@ Plus Settings at the bottom.
 | Emcee | `dashboard/comp-day/emcee` | Staff | Schedule timeline, announcements, results readout |
 | Projector Display | `/[slug]/display` | Public | Full-screen dark projection display |
 | Competitor Live | `/[slug]/live` | Public | Live schedule, my events, published results |
+| Event Results | `/[slug]/results/[eventId]` | Public | Summary/Marks tabs, medal highlighting, judge tabulation |
+| Feedback Form | `/[slug]/feedback` | Auth | Star ratings, yes/no, multiple choice, text questions |
+| Analytics | `dashboard/analytics` | Admin | Entry stats + financial analytics (tabbed) |
+| Feedback Mgmt | `dashboard/feedback` | Admin | Create form, view analytics per question |
+| Competitor Search | `/competitors` | Public | Debounced search, competition count |
+| Competitor History | `/competitors/[userId]` | Public | Cross-comp results, record removal (own profile) |
+| Results Browse | `/results` | Public | Past competitions with year/style filters, pagination |
+| Org Competition | `/orgs/[slug]/competitions/[compSlug]` | Auth | Org's schedule, entries, results for a competition |
 | Judge Tablet | `/judge` | Judge JWT | Comp code auth, callback marking, final ranking, submit/edit flow |

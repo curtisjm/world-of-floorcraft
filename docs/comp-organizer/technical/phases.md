@@ -246,7 +246,19 @@ Results, history, feedback, and discovery.
 - [x] Enums: feedback_question_type, record_removal_status
 - [x] Integration tests: 64 tests across 6 test files
 
-**Frontend**: Not started
+**Frontend** (implemented):
+- [x] Results list page: events grouped by session, top-3 preview, medal colors
+- [x] Event results detail: Summary + Marks tabs, per-dance placements, judge tabulation
+- [x] Competitor search page: debounced search, competition count badges
+- [x] Competitor history page: cross-competition results, record removal dialog (own profile)
+- [x] Results browsing page: past competitions with year/style filters, pagination
+- [x] Competition discovery: Active/Past tabs, past tab with calendar filters
+- [x] Feedback form page: star ratings, yes/no, multiple choice, text questions
+- [x] Feedback dashboard: form creation, per-question analytics (ratings, distributions, text)
+- [x] Analytics dashboard: entries by event + registrations by org, financial summary + outstanding balances + payment log
+- [x] Org competition view: schedule, entries, results tabs for org members
+- [x] Dashboard nav: added Analytics and Post-Comp sections
+- [x] Competition page: added feedback, live view, and org view quick links
 
 **Key decisions**:
 - Results pages (per-competition and per-competitor history) are read-only views built from existing Phase 4 tables (final_results, tabulation_tables). No additional schema needed.
