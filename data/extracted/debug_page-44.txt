@@ -1,0 +1,237 @@
+```json
+[
+  {
+    "dance": "quickstep",
+    "level": "associate",
+    "figure_number": 14,
+    "figure_name": "Running Finish",
+    "variant_name": "MAN",
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF back in CBMP, RF to side on",
+          "alignment": "Backing DW, Pointing to DW",
+          "amount_of_turn": "Com to turn R to between 1/8 and 1/4 between 1-3, Body turns ⅛",
+          "rise_and_fall": "Rise e/o 1, Up"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF fwd preparing to step OP",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 3"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF fwd in CBMP, OP",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 T; 2 T; 3 TH; 4 H",
+      "cbm": "on 1 and 4",
+      "sway": "SLLS",
+      "timing": "QOSS or SQQS"
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF fwd in CBMP, OP",
+          "alignment": "Facing DW",
+          "amount_of_turn": "Com to turn R",
+          "rise_and_fall": "Rise e/o 1"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF to side",
+          "alignment": "Backing DC",
+          "amount_of_turn": "¼ between 1-2 to between 2-3",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF back R side leading",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 HT; 2 T; 3 TH; 4 T",
+      "cbm": "on 1 and 4",
+      "sway": "SRRS",
+      "timing": "QOSS or SQQS"
+    },
+    "timing": "QOSS or SQQS",
+    "beat_value": null,
+    "notes": ["The Running Finish may be commenced in other alignments. Man may turn ¼ between 1-2, when a facing alignment would be used. Lady would turn ¼ between 1-2, ⅛ between 2-3."],
+    "precede": {
+      "associate": ["Back Lock — Progressive Chassé to R — Natural Turn and Back Lock"],
+      "licentiate": [],
+      "fellow": ["Cross Swivel — Hover Corté"]
+    },
+    "follow": {
+      "associate": ["Any figures that follow Quick Open Reverse — Fishtail. At corner — LF back with Lady OP, TH, S, into Four Quick Run"],
+      "licentiate": [],
+      "fellow": ["Tipsy to L into 3-D Vc DC or 2-5 Back Lock down LOD. At corner — LF back with Lady OP, TH, S, into Six Quick Run"]
+    }
+  },
+  {
+    "dance": "quickstep",
+    "level": "associate",
+    "figure_number": 15,
+    "figure_name": "Natural Turn and Back Lock",
+    "variant_name": "MAN",
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF fwd",
+          "alignment": "Facing DW",
+          "amount_of_turn": "Com to turn R to between 1-3",
+          "rise_and_fall": "Rise e/o 1"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF to side to LF",
+          "alignment": "Backing DC",
+          "amount_of_turn": "⅜ between 1-3",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF back",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "LF back",
+          "alignment": "Backing LOD",
+          "amount_of_turn": "Com to rise e/o 4 NFR",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 5,
+          "feet_position": "RF back R side leading",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": "Com to rise on 5 and 6"
+        },
+        {
+          "step_number": 6,
+          "feet_position": "LF crosses in front of RF",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 7,
+          "feet_position": "RF diag back",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 7"
+        },
+        {
+          "step_number": 8,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 HT; 2 T; 3 TH; 4 TH; 5 T; 6 T; 7 TH; 8 T",
+      "cbm": "on 1, 4, and 8",
+      "sway": "SRSSSSSS",
+      "timing": "SQQSQQSS"
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF back",
+          "alignment": "Backing DW, Pointing to LOD",
+          "amount_of_turn": "Com to turn R to between 1-3 Body turns less Body completes turn",
+          "rise_and_fall": "Rise e/o 1 NFR, Up"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "RF to side",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 3,
+          "feet_position": "LF closes to RF",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "RF fwd",
+          "alignment": "Facing LOD",
+          "amount_of_turn": "Com to rise e/o 4",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 5,
+          "feet_position": "LF fwd L side leading",
+          "alignment": "Facing LOD",
+          "amount_of_turn": "Com to rise on 5 and 6",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 6,
+          "feet_position": "RF crosses behind LF",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 7,
+          "feet_position": "LF diag fwd preparing to step OP",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 7"
+        },
+        {
+          "step_number": 8,
+          "feet_position": "RF fwd in CBMP, OP",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 TH; 2 T; 3 TH; 4 HT; 5 T; 6 T; 7 TH; 8 H",
+      "cbm": "on 1, 4, and 8",
+      "sway": "SLLLSSSS",
+      "timing": "SQQSQQSS"
+    },
+    "timing": "SQQSQQSS",
+    "beat_value": null,
+    "notes": ["The Man may use foot rise on step 4 — see "Back Lock", Figure 10.", "As corner — L3 Natural Turn may be danced to end backing DW of new LOD to follow with Back Lock."],
+    "precede": {
+      "associate": ["Any figure which leaves the RF free to move forward"],
+      "licentiate": [],
+      "fellow": []
+    },
+    "follow": {
+      "associate": ["Closed Impetus — Tipple Chassé to R — Running Finish"],
+      "licentiate": [],
+      "fellow": ["Tipsy to R"]
+    }
+  }
+]
+```

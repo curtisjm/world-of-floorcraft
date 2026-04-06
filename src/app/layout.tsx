@@ -66,6 +66,12 @@ export default function RootLayout({
                     >
                       Organizations
                     </Link>
+                    <Link
+                      href="/competitions"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Competitions
+                    </Link>
                     <SignedIn>
                       <Link
                         href="/messages"

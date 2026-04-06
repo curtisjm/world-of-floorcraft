@@ -1,0 +1,161 @@
+```json
+[
+  {
+    "dance": "tango",
+    "level": "student_teacher",
+    "figure_number": 3,
+    "figure_name": "Progressive Link",
+    "variant_name": null,
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF fwd in CBMP",
+          "alignment": "DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 2,
+          "feet_position": "RF to side and slightly back in PP",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "H; IE of foot and IE of B of RF",
+      "cbm": "Nil",
+      "sway": null
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF back in CBMP",
+          "alignment": "DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF to side and slightly back in PP",
+          "alignment": "Facing DC",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "BH; IE of BH and IE of B of RF",
+      "cbm": null,
+      "sway": null
+    },
+    "timing": "QQ",
+    "beat_value": null,
+    "notes": [
+      "As the 2nd step is taken, the R side should move slightly back.",
+      "The position of the 2nd step is slightly back in relation to the body, not the LOD. The turn on the RF on this figure is less than R Heel lowers."
+    ],
+    "precede": {
+      "associate": ["As for Progressive Side Step"],
+      "licentiate": null,
+      "fellow": null
+    },
+    "follow": {
+      "associate": ["Natural Promenade", "Open Promenade", "Natural Twist Turn", "Natural Promenade"],
+      "licentiate": ["Promenade Link", "Back Open Promenade", "Fallaway Promenade"],
+      "fellow": ["Chase"]
+    }
+  },
+  {
+    "dance": "tango",
+    "level": "student_teacher",
+    "figure_number": 4,
+    "figure_name": "Closed Promenade",
+    "variant_name": null,
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF to side in PP",
+          "alignment": "Along LOD pointing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 2,
+          "feet_position": "RF fwd and across in PP and CBMP",
+          "alignment": "Along LOD pointing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 3,
+          "feet_position": "LF to side and slightly fwd",
+          "alignment": "Pointing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 4,
+          "feet_position": "RF closes to LF slightly back",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "H; H; IE of foot; Whole foot",
+      "cbm": "Nil",
+      "sway": null
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF to side in PP",
+          "alignment": "Along LOD pointing DC",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF fwd and across in PP and CBMP",
+          "alignment": "Along LOD pointing DC",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF to side and slightly back",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 4,
+          "feet_position": "LF closes to RF slightly back",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "H; H; IE of BH; Whole foot",
+      "cbm": "on 2",
+      "sway": null
+    },
+    "timing": "SQQS",
+    "beat_value": null,
+    "notes": [
+      "The Man may turn square to Lady on step 3, to end Backing DC. Footwork for Man would then be "IE of BH" and for the Lady "IE of foot""
+    ],
+    "precede": {
+      "associate": ["A Progressive Link", "Walk on RF or Closed or Open Promenade or any Closed or Open Finish turning to PP (see 'Methods of preceding any Promenade figure', page 99)"],
+      "licentiate": ["Four Step", "Fallaway Promenade", "Fallaway Four Step", "Endings 1, 2, 3, 5, 6, 7 to Overway", "Chase and endings 1, 3, 4", "Five Step", "Contra Check"],
+      "fellow": null
+    },
+    "follow": {
+      "associate": ["Walk on RF", "Progressive Side Step", "Progressive Link", "Back Corté", "LF Rock", "Closed DC", "Any Reverse Turn"],
+      "licentiate": ["Four Step", "Outside Swivel", "Fallaway Four Step Change", "Brush Tap", "Fallaway Four Step", "Overway", "Fallaway Reverse and Slip Pivot", "Five Step", "Contra Check"],
+      "fellow": null
+    }
+  }
+]
+```

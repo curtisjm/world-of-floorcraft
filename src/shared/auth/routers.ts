@@ -18,6 +18,36 @@ import { notificationRouter } from "@social/routers/notification";
 import { ablyAuthRouter } from "@messaging/routers/ably-auth";
 import { conversationRouter } from "@messaging/routers/conversation";
 import { messageRouter } from "@messaging/routers/message";
+import { competitionRouter } from "@competitions/routers/competition";
+import { scheduleRouter } from "@competitions/routers/schedule";
+import { eventRouter } from "@competitions/routers/event";
+import { staffRouter } from "@competitions/routers/staff";
+import { judgeRouter } from "@competitions/routers/judge";
+import { registrationRouter } from "@competitions/routers/registration";
+import { entryRouter } from "@competitions/routers/entry";
+import { paymentRouter } from "@competitions/routers/payment";
+import { numberRouter } from "@competitions/routers/number";
+import { tbaRouter } from "@competitions/routers/tba";
+import { teamMatchRouter } from "@competitions/routers/team-match";
+import { addDropRouter } from "@competitions/routers/add-drop";
+import { roundRouter } from "@competitions/routers/round";
+import { scheduleEstimationRouter } from "@competitions/routers/schedule-estimation";
+import { statsRouter } from "@competitions/routers/stats";
+import { awardsRouter } from "@competitions/routers/awards";
+import { scoringRouter } from "@competitions/routers/scoring";
+import { judgeSessionRouter } from "@competitions/routers/judge-session";
+import { scrutineerRouter } from "@competitions/routers/scrutineer";
+import { registrationTableRouter } from "@competitions/routers/registration-table";
+import { deckCaptainRouter } from "@competitions/routers/deck-captain";
+import { emceeRouter } from "@competitions/routers/emcee";
+import { scrutineerDashboardRouter } from "@competitions/routers/scrutineer-dashboard";
+import { liveViewRouter } from "@competitions/routers/live-view";
+import { resultsRouter } from "@competitions/routers/results";
+import { feedbackRouter } from "@competitions/routers/feedback";
+import { calendarRouter } from "@competitions/routers/calendar";
+import { recordRemovalRouter } from "@competitions/routers/record-removal";
+import { orgCompetitionRouter } from "@competitions/routers/org-competition";
+import { paymentAnalyticsRouter } from "@competitions/routers/payment-analytics";
 
 export const appRouter = router({
   dance: danceRouter,
@@ -39,6 +69,36 @@ export const appRouter = router({
   ablyAuth: ablyAuthRouter,
   conversation: conversationRouter,
   message: messageRouter,
+  competition: competitionRouter,
+  schedule: scheduleRouter,
+  event: eventRouter,
+  staff: staffRouter,
+  judge: judgeRouter,
+  registration: registrationRouter,
+  entry: entryRouter,
+  payment: paymentRouter,
+  number: numberRouter,
+  tba: tbaRouter,
+  teamMatch: teamMatchRouter,
+  addDrop: addDropRouter,
+  round: roundRouter,
+  scheduleEstimation: scheduleEstimationRouter,
+  stats: statsRouter,
+  awards: awardsRouter,
+  scoring: scoringRouter,
+  judgeSession: judgeSessionRouter,
+  scrutineer: scrutineerRouter,
+  registrationTable: registrationTableRouter,
+  deckCaptain: deckCaptainRouter,
+  emcee: emceeRouter,
+  scrutineerDashboard: scrutineerDashboardRouter,
+  liveView: liveViewRouter,
+  results: resultsRouter,
+  feedback: feedbackRouter,
+  calendar: calendarRouter,
+  recordRemoval: recordRemovalRouter,
+  orgCompetition: orgCompetitionRouter,
+  paymentAnalytics: paymentAnalyticsRouter,
 });
 
 export type AppRouter = typeof appRouter;

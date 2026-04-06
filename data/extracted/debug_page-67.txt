@@ -1,0 +1,276 @@
+```json
+[
+  {
+    "dance": "quickstep",
+    "level": "associate",
+    "figure_number": null,
+    "figure_name": "Zig-Zag, Back Lock and Running Finish",
+    "variant_name": null,
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF fwd",
+          "alignment": "Facing LOD",
+          "amount_of_turn": "Com to turn L",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 2,
+          "feet_position": "RF to side",
+          "alignment": "Backing wall",
+          "amount_of_turn": "¼ between 1-2",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 3,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing DW",
+          "amount_of_turn": "⅛ between 2-3",
+          "rise_and_fall": "Com to rise e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "RF back",
+          "alignment": null,
+          "amount_of_turn": "Body turns less",
+          "rise_and_fall": "NFR. Com to rise e/o 4 and 5"
+        },
+        {
+          "step_number": 5,
+          "feet_position": "LF crosses in front of RF",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 6,
+          "feet_position": "RF back",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 6"
+        },
+        {
+          "step_number": 7,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing DW",
+          "amount_of_turn": "Com to turn R",
+          "rise_and_fall": "Rise e/o 7"
+        },
+        {
+          "step_number": 8,
+          "feet_position": "RF to side and slightly fwd",
+          "alignment": "Backing LOD",
+          "amount_of_turn": "¼ between 7-8. Body turns less",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 9,
+          "feet_position": "LF fwd, leading to OP",
+          "alignment": "Facing LOD",
+          "amount_of_turn": "Body turns to R",
+          "rise_and_fall": "Up. Lower e/o 9"
+        },
+        {
+          "step_number": 10,
+          "feet_position": "RF fwd in CBMP",
+          "alignment": "Facing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 HT; 2 TH; 3 TH; 4 T; 5 T; 6 TH; 7 T; 8 T; 9 TH; 10 H",
+      "cbm": "on 1, 3 (slight), 7 and 10",
+      "sway": "SSSSSSSRRS",
+      "timing": "SSQQSQQQS (SQQS may be used on 7-10)",
+      "notes": ["No "R side lead" is needed on steps 4 and 6 as the body is already in the correct position for the Back Lock when the "Body turns less" between steps 2-3."]
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF back",
+          "alignment": "Backing LOD",
+          "amount_of_turn": "Com to turn L",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF closes to RF (Heel Turn)",
+          "alignment": "Facing DW",
+          "amount_of_turn": "⅜ between 1-2. Body turns less",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF fwd in CBMP",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Com to rise e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "LF diag fwd",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Cont to rise on 4 and 5"
+        },
+        {
+          "step_number": 5,
+          "feet_position": "RF crosses behind LF",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 6,
+          "feet_position": "LF diag fwd",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 6"
+        },
+        {
+          "step_number": 7,
+          "feet_position": "RF fwd in CBMP",
+          "alignment": "Facing DW",
+          "amount_of_turn": "Com to turn R",
+          "rise_and_fall": "Rise e/o 7"
+        },
+        {
+          "step_number": 8,
+          "feet_position": "LF to side",
+          "alignment": "Backing DC",
+          "amount_of_turn": "⅜ between 7-8",
+          "rise_and_fall": null
+        },
+        {
+          "step_number": 9,
+          "feet_position": "RF back, R side leading",
+          "alignment": "Backing LOD",
+          "amount_of_turn": "¼ between 8-9",
+          "rise_and_fall": "Up. Lower e/o 9"
+        },
+        {
+          "step_number": 10,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing LOD",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 TH; 2 H; 3 HT; 4 T; 5 T; 6 TH; 7 HT; 8 T; 9 TH; 10 T",
+      "cbm": "on 1, 3 (slight), 7 and 10",
+      "sway": "SSSSQQQRRS",
+      "timing": "SSQQSQQQS (SQQS may be used on 7-10)",
+      "notes": null
+    },
+    "timing": "SSQQSQQQS (SQQS may be used on 7-10)",
+    "beat_value": null,
+    "notes": ["No "R side lead" is needed on steps 4 and 6 as the body is already in the correct position for the Back Lock when the "Body turns less" between steps 2-3."],
+    "precede": {
+      "associate": ["Heel Pivot — Reverse Pivot — Double Reverse Spin. The 6th step of a Natural Turn and Change of Direction may be used as entry"],
+      "licentiate": [],
+      "fellow": []
+    },
+    "follow": {
+      "associate": ["Any Natural figure — Forward Lock"],
+      "licentiate": ["Fish Tail"],
+      "fellow": []
+    }
+  },
+  {
+    "dance": "quickstep",
+    "level": "associate",
+    "figure_number": null,
+    "figure_name": "Cross Chasse",
+    "variant_name": null,
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF fwd",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Rise e/o 1"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "RF to side",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "LF closes to RF",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "RF fwd in CBMP",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 HT; 2 T; 3 TH; 4 H",
+      "cbm": "on 1 and 4",
+      "sway": "SLLS",
+      "timing": "SQQS",
+      "notes": null
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF back",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Rise e/o 1"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF to side",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF closes to LF",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up. Lower e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 TH; 2 T; 3 TH; 4 T",
+      "cbm": "on 1 and 4",
+      "sway": "SRRS",
+      "timing": "SQQS",
+      "notes": null
+    },
+    "timing": "SQQS",
+    "beat_value": null,
+    "notes": null,
+    "precede": {
+      "associate": [],
+      "licentiate": [],
+      "fellow": []
+    },
+    "follow": {
+      "associate": [],
+      "licentiate": [],
+      "fellow": []
+    }
+  }
+]
+```

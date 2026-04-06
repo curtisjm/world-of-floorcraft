@@ -5,6 +5,8 @@ import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import superjson from "superjson";
 import { ThemeProvider } from "next-themes";
+import { TooltipProvider } from "@shared/ui/tooltip";
+import { Toaster } from "@shared/ui/sonner";
 import { trpc } from "@shared/lib/trpc";
 
 function getBaseUrl() {
@@ -29,7 +31,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            {children}
+            <Toaster richColors closeButton />
+          </TooltipProvider>
+        </QueryClientProvider>
       </trpc.Provider>
     </ThemeProvider>
   );

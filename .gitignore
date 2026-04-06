@@ -33,3 +33,7 @@ data/raw/
 
 # Test database
 .pg-test/
+
+# Local tooling
+.claude/
+.playwright-mcp/

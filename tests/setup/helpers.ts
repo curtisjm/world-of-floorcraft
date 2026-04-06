@@ -5,6 +5,40 @@ import { dances, figures } from "@syllabus/schema";
 import { posts } from "@social/schema";
 import { organizations, memberships } from "@orgs/schema";
 import { conversations, conversationMembers } from "@messaging/schema";
+import {
+  competitions,
+  competitionDays,
+  scheduleBlocks,
+  competitionEvents,
+  eventDances,
+  judges,
+  competitionStaff,
+  competitionJudges,
+  competitionRegistrations,
+  entries,
+  payments,
+  pricingTiers,
+  tbaListings,
+  teamMatchSubmissions,
+  addDropRequests,
+  rounds,
+  heats,
+  heatAssignments,
+  eventTimeOverrides,
+  callbackMarks,
+  finalMarks,
+  judgeSubmissions,
+  callbackResults,
+  finalResults,
+  tabulationTables,
+  roundResultsMeta,
+  judgeSessions,
+  activeRounds,
+  markCorrections,
+  registrationCheckins,
+  deckCaptainCheckins,
+  announcementNotes,
+} from "@competitions/schema";
 
 // ---------- Caller ----------
 
@@ -134,6 +168,59 @@ export async function createConversation(
   return conv;
 }
 
+let _compCounter = 0;
+
+export async function createCompetition(
+  orgId: number,
+  createdBy: string,
+  overrides: Partial<typeof competitions.$inferInsert> = {},
+) {
+  _compCounter++;
+  const [comp] = await db()
+    .insert(competitions)
+    .values({
+      orgId,
+      createdBy,
+      name: overrides.name ?? `Test Competition ${_compCounter}`,
+      slug: overrides.slug ?? `test-comp-${_compCounter}-${Date.now()}`,
+      ...overrides,
+    })
+    .returning();
+  return comp;
+}
+
+export async function createJudge(
+  overrides: Partial<typeof judges.$inferInsert> = {},
+) {
+  const [judge] = await db()
+    .insert(judges)
+    .values({
+      firstName: overrides.firstName ?? "Test",
+      lastName: overrides.lastName ?? `Judge ${Date.now()}`,
+      ...overrides,
+    })
+    .returning();
+  return judge;
+}
+
+export async function createRegistration(
+  competitionId: number,
+  userId: string,
+  overrides: Partial<typeof competitionRegistrations.$inferInsert> = {},
+) {
+  const [reg] = await db()
+    .insert(competitionRegistrations)
+    .values({
+      competitionId,
+      userId,
+      registeredBy: overrides.registeredBy ?? userId,
+      amountOwed: overrides.amountOwed ?? "0",
+      ...overrides,
+    })
+    .returning();
+  return reg;
+}
+
 // ---------- Cleanup ----------
 
 /**
@@ -144,6 +231,43 @@ export async function truncateAll() {
   const pool = getTestPool();
   await pool.query(`
     TRUNCATE
+      record_removal_requests,
+      feedback_answers,
+      feedback_responses,
+      feedback_questions,
+      feedback_forms,
+      registration_checkins,
+      deck_captain_checkins,
+      announcement_notes,
+      mark_corrections,
+      active_rounds,
+      judge_sessions,
+      round_results_meta,
+      tabulation_tables,
+      final_results,
+      callback_results,
+      judge_submissions,
+      final_marks,
+      callback_marks,
+      event_time_overrides,
+      heat_assignments,
+      heats,
+      rounds,
+      add_drop_requests,
+      team_match_submissions,
+      tba_listings,
+      payments,
+      entries,
+      competition_registrations,
+      pricing_tiers,
+      event_dances,
+      competition_events,
+      schedule_blocks,
+      competition_days,
+      competition_judges,
+      competition_staff,
+      judges,
+      competitions,
       messages,
       conversation_members,
       conversations,
@@ -168,4 +292,5 @@ export async function truncateAll() {
     CASCADE
   `);
   _userCounter = 0;
+  _compCounter = 0;
 }
