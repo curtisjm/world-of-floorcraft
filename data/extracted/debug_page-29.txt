@@ -1,0 +1,248 @@
+```json
+[
+  {
+    "dance": "foxtrot",
+    "level": "licentiate",
+    "figure_number": 10,
+    "figure_name": "Open Telemark and Feather Ending",
+    "variant_name": null,
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF fwd",
+          "alignment": "Facing DC",
+          "amount_of_turn": "Com to turn L",
+          "rise_and_fall": "Rise e/o 1"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "RF to side, slightly fwd in PP",
+          "alignment": "Backing DW Body facing towards LOD",
+          "amount_of_turn": "¼ to L between 1-2 ⅛ between 2-3 Body turns less",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF to side, slightly fwd in PP",
+          "alignment": "Pointing DW Body facing wall",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up Lower e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "RF fwd in CBMP",
+          "alignment": "Body facing wall",
+          "amount_of_turn": null,
+          "rise_and_fall": "Rise e/o 4"
+        },
+        {
+          "step_number": 5,
+          "feet_position": "LF slightly fwd moving to step OP",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 6,
+          "feet_position": "RF fwd in CBMP, OP",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": "Up Lower e/o 6"
+        },
+        {
+          "step_number": 7,
+          "feet_position": "LF fwd",
+          "alignment": "Facing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 HT; 2 T 3 TH; 4 HT; 5 T; 6 TH; 7 H",
+      "cbm": "on 1 and 7",
+      "sway": "SLSSRSS"
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF back",
+          "alignment": "Backing DC",
+          "amount_of_turn": "Com to turn L",
+          "rise_and_fall": "Rise slightly e/o 1 NFR"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF closes to RF (Heel Turn)",
+          "alignment": "Facing LOD",
+          "amount_of_turn": "⅜ between 1-2",
+          "rise_and_fall": "Cont to rise on 2"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF diag. fwd in PP Body leading",
+          "alignment": "Pointing to LOD",
+          "amount_of_turn": "Slight body turn on 3",
+          "rise_and_fall": "Up Lower e/o 3"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "LF closes across in PP and CBMP",
+          "alignment": "Pointing to LOD (Moving DW)",
+          "amount_of_turn": "Com to turn L",
+          "rise_and_fall": "Rise e/o 4"
+        },
+        {
+          "step_number": 5,
+          "feet_position": "RF back and slightly back",
+          "alignment": "Backing DW",
+          "amount_of_turn": "⅛ between 4-5",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 6,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing DW",
+          "amount_of_turn": "⅛ between 5-6 Body turns less",
+          "rise_and_fall": "Up NFR Lower e/o 6"
+        },
+        {
+          "step_number": 7,
+          "feet_position": "RF back",
+          "alignment": "Backing DW",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 TH; 2 HT; 3 TH; 4 HT; 5 TH; 6 TH; 7 T",
+      "cbm": "on 4 and 7",
+      "sway": "SRSSRSS"
+    },
+    "timing": "SQQSQQS",
+    "beat_value": null,
+    "notes": [
+      "L and F are from PP may follow 1-3 Open Telemark. Man's first step, RF, will be Facing LOD and the amount of turn will be ¼ between preceding step and 1, ⅛ between 1-2. F Natural Zig-Zag from PP moving along LOD. On step 3 RF will have to step DW.",
+      "F Natural Zig-Zag from PP moving along LOD may follow 1-3 Open Telemark."
+    ],
+    "precede": {
+      "associate": [],
+      "licentiate": ["As for Reverse Turn"],
+      "fellow": ["As for Reverse Turn"]
+    },
+    "follow": {
+      "associate": [],
+      "licentiate": ["As for Reverse Turn"],
+      "fellow": ["As for Reverse Turn"]
+    }
+  },
+  {
+    "dance": "foxtrot",
+    "level": "licentiate",
+    "figure_number": 11,
+    "figure_name": "Top Spin (At a corner, after 1-6 Reverse Turn)",
+    "variant_name": null,
+    "man": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing against LOD",
+          "amount_of_turn": "⅜ to L between preceding step and 1",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "RF back",
+          "alignment": "Backing DW against LOD",
+          "amount_of_turn": "⅛ between 1-2",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "LF to side, slightly fwd",
+          "alignment": "Backing DC of new LOD",
+          "amount_of_turn": "⅜ between 2-3 Body turns less",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "RF fwd in CBMP, OP",
+          "alignment": "Facing DC",
+          "amount_of_turn": "Body turns less",
+          "rise_and_fall": "Up Lower e/o 4"
+        },
+        {
+          "step_number": 5,
+          "feet_position": "LF fwd",
+          "alignment": "Facing DC",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 T; 2 T; 3 T; 4 TH; 5 H",
+      "cbm": "on 2 and 5",
+      "sway": "SSRSS"
+    },
+    "lady": {
+      "steps": [
+        {
+          "step_number": 1,
+          "feet_position": "RF fwd in CBMP, OP",
+          "alignment": "Facing against LOD",
+          "amount_of_turn": "⅜ to L between preceding step and 1",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 2,
+          "feet_position": "LF fwd",
+          "alignment": "Facing DW against LOD",
+          "amount_of_turn": "⅛ between 1-2",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 3,
+          "feet_position": "RF to side",
+          "alignment": "Backing new LOD",
+          "amount_of_turn": "⅜ between 2-3",
+          "rise_and_fall": "Up"
+        },
+        {
+          "step_number": 4,
+          "feet_position": "LF back in CBMP",
+          "alignment": "Backing DC",
+          "amount_of_turn": "⅛ between 3-4 Body turns less",
+          "rise_and_fall": "Up NFR Lower e/o 4"
+        },
+        {
+          "step_number": 5,
+          "feet_position": "RF back",
+          "alignment": "Backing DC",
+          "amount_of_turn": null,
+          "rise_and_fall": null
+        }
+      ],
+      "footwork": "1 T; 2 T; 3 T; 4 TH; 5 T",
+      "cbm": "on 4",
+      "sway": "SSLLS"
+    },
+    "timing": "QQQQS",
+    "beat_value": null,
+    "notes": [
+      "On step 1 the footwork of TH may be used. This will often result in a softer and more flowing movement. When this footwork is used the rise will be "Up NFR" on step 2.",
+      "On step 4 of the preceding Reverse Turn the RF and the body will be facing DW and the Lady will be backing DW with LF and body.",
+      "At end of Top Spin a more advanced turning lock 1-3 to LF may be danced, turning on 1-3 against LOD and ¾ on Feather Finish to face DC against LOD. Continue with Top Spin on Feet for Lady or Top Spin.",
+      "Open Telemark, Natural Turn to Outside Swivel may be danced, turning only ⅛ to R for Man, ¾ for Lady on step 7 to follow with Feather Ending DC against LOD or Outside Top Spin."
+    ],
+    "precede": {
+      "associate": [],
+      "licentiate": ["1-6 Reverse Turn — 1-3 Feather Step — 1-3 Feather Finish — 1-3 Feather Ending 1-2 Hover Feather"],
+      "fellow": ["1-6 Reverse Turn — 1-3 Feather Step — 1-3 Feather Finish — 1-3 Feather Ending 1-2 Hover Feather"]
+    },
+    "follow": {
+      "associate": [],
+      "licentiate": ["If ended DC — Reverse Turn — Closed Telemark — Open Telemark. At corner — Top Spin.", "If ended LOD or DW — Three Step — Change of Direction — Hover Telemark — Reverse Wave"],
+      "fellow": ["If ended DC — Reverse Turn — Closed Telemark — Open Telemark. At corner — Top Spin.", "If ended LOD or DW — Three Step — Change of Direction — Hover Telemark — Reverse Wave", "Fallaway Reverse and Slip Pivot — Bounce Fallaway with Weave Ending"]
+    }
+  }
+]
+```
