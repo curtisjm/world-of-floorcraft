@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "world_of_floorcraft",
+  "project_id": "8f55808e-2dc3-4608-aa6d-bb59953a867d"
+}
