@@ -23,6 +23,7 @@ const statusFilters = [
   { label: "Upcoming", value: "accepting_entries" as const },
   { label: "Running", value: "running" as const },
   { label: "Finished", value: "finished" as const },
+  { label: "Past", value: "past" as const },
 ] as const;
 
 type StatusFilter = (typeof statusFilters)[number]["value"];
@@ -32,20 +33,21 @@ const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 10 }, (_, i) => currentYear - i);
 const PAGE_SIZE = 20;
 
-type Tab = "active" | "past";
-
 export default function CompetitionsPage() {
-  const [tab, setTab] = useState<Tab>("active");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(undefined);
 
-  // Past tab filters
+  // Past filters
   const [year, setYear] = useState<number | undefined>(undefined);
   const [style, setStyle] = useState<string | undefined>(undefined);
   const [offset, setOffset] = useState(0);
 
+  const isPast = statusFilter === "past";
+
+  const activeStatus = statusFilter === "past" ? undefined : statusFilter;
+
   const { data, isLoading } = trpc.competition.list.useQuery(
-    { status: statusFilter, limit: 20 },
-    { enabled: tab === "active" },
+    { status: activeStatus, limit: 20 },
+    { enabled: !isPast },
   );
 
   const { data: pastData, isLoading: pastLoading } =
@@ -56,7 +58,7 @@ export default function CompetitionsPage() {
         limit: PAGE_SIZE,
         offset,
       },
-      { enabled: tab === "past" },
+      { enabled: isPast },
     );
 
   return (
@@ -71,74 +73,8 @@ export default function CompetitionsPage() {
         </Link>
       </div>
 
-      {/* Active / Past tabs */}
+      {/* Status filter */}
       <div className="flex gap-1 mb-6 p-1 bg-muted rounded-lg w-fit">
-        <button
-          onClick={() => setTab("active")}
-          className={cn(
-            "px-4 py-1.5 text-sm font-medium rounded-md transition-colors",
-            tab === "active"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          Active
-        </button>
-        <button
-          onClick={() => setTab("past")}
-          className={cn(
-            "px-4 py-1.5 text-sm font-medium rounded-md transition-colors",
-            tab === "past"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          Past
-        </button>
-      </div>
-
-      {tab === "active" && (
-        <ActiveTab
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          data={data}
-          isLoading={isLoading}
-        />
-      )}
-
-      {tab === "past" && (
-        <PastTab
-          year={year}
-          setYear={(y) => { setYear(y); setOffset(0); }}
-          style={style}
-          setStyle={(s) => { setStyle(s); setOffset(0); }}
-          offset={offset}
-          setOffset={setOffset}
-          data={pastData}
-          isLoading={pastLoading}
-        />
-      )}
-    </div>
-  );
-}
-
-// ── Active Tab ────────────────────────────────────────────────
-
-function ActiveTab({
-  statusFilter,
-  setStatusFilter,
-  data,
-  isLoading,
-}: {
-  statusFilter: StatusFilter;
-  setStatusFilter: (v: StatusFilter) => void;
-  data: { items: Array<{ id: number; slug: string; name: string; status: string; description?: string | null; venueName?: string | null; city?: string | null; state?: string | null; orgName: string }>; nextCursor?: number | null } | undefined;
-  isLoading: boolean;
-}) {
-  return (
-    <>
-      {/* Status filter tabs */}
-      <div className="flex gap-1 mb-6 p-1 bg-muted/50 rounded-lg w-fit">
         {statusFilters.map((filter) => (
           <button
             key={filter.label}
@@ -155,6 +91,41 @@ function ActiveTab({
         ))}
       </div>
 
+      {isPast ? (
+        <PastTab
+          year={year}
+          setYear={(y) => { setYear(y); setOffset(0); }}
+          style={style}
+          setStyle={(s) => { setStyle(s); setOffset(0); }}
+          offset={offset}
+          setOffset={setOffset}
+          data={pastData}
+          isLoading={pastLoading}
+        />
+      ) : (
+        <ActiveTab
+          data={data}
+          isLoading={isLoading}
+          statusFilter={statusFilter}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Active Tab ────────────────────────────────────────────────
+
+function ActiveTab({
+  data,
+  isLoading,
+  statusFilter,
+}: {
+  data: { items: Array<{ id: number; slug: string; name: string; status: string; description?: string | null; venueName?: string | null; city?: string | null; state?: string | null; orgName: string }>; nextCursor?: number | null } | undefined;
+  isLoading: boolean;
+  statusFilter: StatusFilter;
+}) {
+  return (
+    <>
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
