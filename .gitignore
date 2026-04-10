@@ -40,6 +40,12 @@ data/raw/
 .claude/
 .playwright-mcp/
 
+# Gas Town runtime
+.runtime/
+.beads/
+tsconfig.tsbuildinfo
+CLAUDE.local.md
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db
