@@ -2,7 +2,7 @@ import { getTestDb, getTestPool } from "./test-db";
 import { appRouter } from "@shared/auth/routers";
 import { users } from "@shared/schema";
 import { dances, figures } from "@syllabus/schema";
-import { posts } from "@social/schema";
+import { posts, partnerSearchProfiles } from "@social/schema";
 import { organizations, memberships } from "@orgs/schema";
 import { conversations, conversationMembers } from "@messaging/schema";
 import {
@@ -282,6 +282,7 @@ export async function truncateAll() {
       organizations,
       routine_entries,
       routines,
+      partner_search_profiles,
       follows,
       posts,
       figure_notes,

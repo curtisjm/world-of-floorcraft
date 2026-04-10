@@ -107,6 +107,12 @@ export const danceRoleEnum = pgEnum("dance_role", [
   "follower",
 ]);
 
+export const rolePreferenceEnum = pgEnum("role_preference", [
+  "lead",
+  "follow",
+  "both",
+]);
+
 export const paymentMethodEnum = pgEnum("payment_method", [
   "online",
   "cash",

@@ -15,6 +15,7 @@ import { inviteRouter } from "@orgs/routers/invite";
 import { joinRequestRouter } from "@orgs/routers/join-request";
 import { orgPostRouter } from "@orgs/routers/org-post";
 import { notificationRouter } from "@social/routers/notification";
+import { partnerSearchRouter } from "@social/routers/partner-search";
 import { ablyAuthRouter } from "@messaging/routers/ably-auth";
 import { conversationRouter } from "@messaging/routers/conversation";
 import { messageRouter } from "@messaging/routers/message";
@@ -66,6 +67,7 @@ export const appRouter = router({
   joinRequest: joinRequestRouter,
   orgPost: orgPostRouter,
   notification: notificationRouter,
+  partnerSearch: partnerSearchRouter,
   ablyAuth: ablyAuthRouter,
   conversation: conversationRouter,
   message: messageRouter,

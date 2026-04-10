@@ -3,9 +3,10 @@ import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { getDb } from "@shared/db";
 import { users } from "@shared/schema";
-import { follows, posts } from "@social/schema";
+import { follows, posts, partnerSearchProfiles } from "@social/schema";
 import { routines } from "@routines/schema";
 import { ProfileHeader } from "@social/components/profile-header";
+import { PartnerSearchCard } from "@social/components/partner-search-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@shared/ui/card";
 import Link from "next/link";
@@ -51,6 +52,18 @@ export default async function UserProfilePage({
 
   const followerCount = followerCountRow?.count ?? 0;
   const followingCount = followingCountRow?.count ?? 0;
+
+  // Fetch partner search profile
+  const [partnerSearch] = await db
+    .select({
+      danceStyles: partnerSearchProfiles.danceStyles,
+      height: partnerSearchProfiles.height,
+      location: partnerSearchProfiles.location,
+      bio: partnerSearchProfiles.bio,
+      rolePreference: partnerSearchProfiles.rolePreference,
+    })
+    .from(partnerSearchProfiles)
+    .where(eq(partnerSearchProfiles.userId, user.id));
 
   const isOwnProfile = currentUserId === user.id;
 
@@ -116,6 +129,12 @@ export default async function UserProfilePage({
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <ProfileHeader user={profileUser} isOwnProfile={isOwnProfile} />
+
+      {partnerSearch && (
+        <div className="mt-4">
+          <PartnerSearchCard profile={partnerSearch} />
+        </div>
+      )}
 
       <div className="mt-8">
         {!canViewContent ? (

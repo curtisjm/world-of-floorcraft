@@ -38,6 +38,7 @@ import {
   Trophy,
   Users,
   Menu,
+  HeartHandshake,
 } from "lucide-react";
 
 const DANCES = [
@@ -112,6 +113,7 @@ export function MainNav() {
     pathname.startsWith("/feed") ||
     pathname.startsWith("/orgs") ||
     pathname.startsWith("/messages") ||
+    pathname.startsWith("/partners") ||
     pathname.startsWith("/posts") ||
     pathname.startsWith("/users") ||
     pathname.startsWith("/saved");
@@ -205,6 +207,13 @@ export function MainNav() {
                     <SignedIn>
                       <NavLink href="/messages" icon={MessageCircle}>
                         Messages
+                      </NavLink>
+                      <NavLink
+                        href="/partners"
+                        icon={HeartHandshake}
+                        description="Find a dance partner"
+                      >
+                        Partner Search
                       </NavLink>
                       <div className="my-1 h-px bg-border" />
                       <NavLink href="/settings/profile" icon={User}>
@@ -311,6 +320,9 @@ export function MainNav() {
                 <SignedIn>
                   <MobileNavLink href="/messages" icon={MessageCircle}>
                     Messages
+                  </MobileNavLink>
+                  <MobileNavLink href="/partners" icon={HeartHandshake}>
+                    Partner Search
                   </MobileNavLink>
                 </SignedIn>
 

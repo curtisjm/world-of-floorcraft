@@ -1,5 +1,6 @@
 import { index, integer, pgEnum, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { users } from "@shared/schema";
+import { danceStyleEnum, rolePreferenceEnum } from "@shared/db/enums";
 
 export const followStatusEnum = pgEnum("follow_status", ["active", "pending"]);
 
@@ -126,3 +127,16 @@ export const savedPosts = pgTable(
     ),
   })
 );
+
+export const partnerSearchProfiles = pgTable("partner_search_profiles", {
+  userId: text("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .primaryKey(),
+  danceStyles: danceStyleEnum("dance_styles").array().notNull(),
+  height: text("height"),
+  location: text("location"),
+  bio: text("bio"),
+  rolePreference: rolePreferenceEnum("role_preference").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
