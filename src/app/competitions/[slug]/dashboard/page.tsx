@@ -14,7 +14,7 @@ import {
   Scale,
   CalendarDays,
   CheckCircle2,
-  XCircle,
+  Circle,
   AlertTriangle,
 } from "lucide-react";
 
@@ -40,12 +40,17 @@ export default function DashboardOverviewPage() {
     { competitionId: comp?.id ?? 0 },
     { enabled: !!comp },
   );
+  const { data: setup } = trpc.competition.setupStatus.useQuery(
+    { competitionId: comp?.id ?? 0 },
+    { enabled: !!comp },
+  );
 
   const utils = trpc.useUtils();
   const statusMutation = trpc.competition.updateStatus.useMutation({
     onSuccess: () => {
       utils.competition.getBySlug.invalidate({ slug });
       utils.competition.getForDashboard.invalidate({ competitionId: comp!.id });
+      utils.competition.setupStatus.invalidate({ competitionId: comp!.id });
       toast.success("Status updated");
     },
     onError: (err) => toast.error(err.message),
@@ -65,40 +70,62 @@ export default function DashboardOverviewPage() {
   }
 
   const transitions = statusTransitions[comp.status] ?? [];
-  const hasSchedule = (dashboard?.days?.length ?? 0) > 0;
-  const hasEvents = (dashboard?.eventCount ?? 0) > 0;
-  const judgeCount = dashboard?.judgeCount ?? 0;
-  const roleCounts = dashboard?.staffRoleCounts ?? {};
 
-  const requiredStaffRoles = [
-    { role: "scrutineer", label: "Scrutineer", min: 1 },
-    { role: "emcee", label: "Emcee", min: 1 },
-    { role: "chairman", label: "Chairman", min: 1 },
-    { role: "dj", label: "DJ", min: 1 },
-  ] as const;
+  const staffDetail = setup?.staffDetail;
+  const staffParts = staffDetail
+    ? [
+        staffDetail.scrutineer >= 1 ? null : "scrutineer",
+        staffDetail.emcee >= 1 ? null : "emcee",
+        staffDetail.chairman >= 1 ? null : "chairman",
+        staffDetail.dj >= 1 ? null : "DJ",
+        staffDetail.judges >= 5 ? null : `judges (${staffDetail.judges}/5)`,
+      ].filter(Boolean)
+    : [];
 
   const checklist = [
     {
       label: "Set up schedule",
-      done: hasSchedule,
+      done: setup?.hasSchedule ?? false,
       href: `/competitions/${slug}/dashboard/schedule`,
     },
     {
       label: "Configure events",
-      done: hasEvents,
+      done: setup?.hasEvents ?? false,
       href: `/competitions/${slug}/dashboard/events`,
     },
     {
-      label: "Assign judges",
-      done: judgeCount >= 5,
-      detail: `${judgeCount}/5 assigned`,
-      href: `/competitions/${slug}/dashboard/judges`,
-    },
-    ...requiredStaffRoles.map((r) => ({
-      label: `Assign ${r.label}`,
-      done: (roleCounts[r.role] ?? 0) >= r.min,
+      label: "Assign staff",
+      done: setup?.staffComplete ?? false,
+      detail: setup?.staffComplete
+        ? undefined
+        : staffParts.length > 0
+          ? `Need: ${staffParts.join(", ")}`
+          : undefined,
       href: `/competitions/${slug}/dashboard/staff`,
-    })),
+    },
+    {
+      label: "Open registration",
+      done: setup?.registrationOpen ?? false,
+      href: `/competitions/${slug}/dashboard/registration`,
+    },
+    {
+      label: "Assign competitor numbers",
+      done: setup?.numbersAssigned ?? false,
+      detail:
+        (setup?.numbersDetail?.total ?? 0) > 0
+          ? `${setup!.numbersDetail.assigned}/${setup!.numbersDetail.total} assigned`
+          : undefined,
+      href: `/competitions/${slug}/dashboard/registration`,
+    },
+    {
+      label: "Finalize heats",
+      done: setup?.heatsFinalized ?? false,
+      detail:
+        (setup?.heatsDetail?.eventsWithEntries ?? 0) > 0
+          ? `${setup!.heatsDetail.eventsWithRounds}/${setup!.heatsDetail.eventsWithEntries} events ready`
+          : undefined,
+      href: `/competitions/${slug}/dashboard/events`,
+    },
   ];
 
   const completedSteps = checklist.filter((c) => c.done).length;
@@ -189,7 +216,7 @@ export default function DashboardOverviewPage() {
                 {item.done ? (
                   <CheckCircle2 className="size-5 text-green-500 shrink-0" />
                 ) : (
-                  <XCircle className="size-5 text-red-500 shrink-0" />
+                  <Circle className="size-5 text-muted-foreground/40 shrink-0" />
                 )}
                 <span
                   className={

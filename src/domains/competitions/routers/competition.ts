@@ -10,6 +10,9 @@ import {
   competitionEvents,
   competitionStaff,
   competitionJudges,
+  competitionRegistrations,
+  entries,
+  rounds,
 } from "@competitions/schema";
 import { organizations, memberships } from "@orgs/schema";
 import * as bcrypt from "bcryptjs";
@@ -215,6 +218,125 @@ export const competitionRouter = router({
         staffCount: staffCount[0]?.count ?? 0,
         staffRoleCounts: roleCounts,
         judgeCount: judgeCount[0]?.count ?? 0,
+      };
+    }),
+
+  setupStatus: protectedProcedure
+    .input(z.object({ competitionId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const { competition } = await requireCompOrgRole(input.competitionId, ctx.userId);
+      const compId = competition.id;
+
+      // 1. Schedule — at least 1 day exists
+      const [dayRow] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(competitionDays)
+        .where(eq(competitionDays.competitionId, compId));
+
+      // 2. Events — at least 1 event exists
+      const [eventRow] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(competitionEvents)
+        .where(eq(competitionEvents.competitionId, compId));
+
+      // 3. Staff — scrutineer + emcee + chairman + DJ (1 each) + 5 judges
+      const staffRoleRows = await db
+        .select({
+          role: competitionStaff.role,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(competitionStaff)
+        .where(eq(competitionStaff.competitionId, compId))
+        .groupBy(competitionStaff.role);
+
+      const [judgeRow] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(competitionJudges)
+        .where(eq(competitionJudges.competitionId, compId));
+
+      const roleCounts: Record<string, number> = {};
+      for (const row of staffRoleRows) roleCounts[row.role] = row.count;
+      const judges = judgeRow?.count ?? 0;
+
+      const staffDetail = {
+        scrutineer: roleCounts["scrutineer"] ?? 0,
+        emcee: roleCounts["emcee"] ?? 0,
+        chairman: roleCounts["chairman"] ?? 0,
+        dj: roleCounts["dj"] ?? 0,
+        judges,
+      };
+
+      // 4. Registration opened — status at or beyond accepting_entries
+      const statusOrder = ["draft", "advertised", "accepting_entries", "entries_closed", "running", "finished"];
+      const registrationOpen = statusOrder.indexOf(competition.status) >= statusOrder.indexOf("accepting_entries");
+
+      // 5. Competitor numbers — all active registrations have a number
+      const [totalRegRow] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(competitionRegistrations)
+        .where(
+          and(
+            eq(competitionRegistrations.competitionId, compId),
+            eq(competitionRegistrations.cancelled, false),
+          ),
+        );
+      const [unnumberedRow] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(competitionRegistrations)
+        .where(
+          and(
+            eq(competitionRegistrations.competitionId, compId),
+            eq(competitionRegistrations.cancelled, false),
+            sql`${competitionRegistrations.competitorNumber} IS NULL`,
+          ),
+        );
+      const totalRegs = totalRegRow?.count ?? 0;
+      const unnumbered = unnumberedRow?.count ?? 0;
+
+      // 6. Heats finalized — events with entries have rounds generated
+      // TODO: add heat approval check when that feature lands
+      const eventIdsWithEntries = await db
+        .selectDistinct({ eventId: entries.eventId })
+        .from(entries)
+        .innerJoin(competitionEvents, eq(entries.eventId, competitionEvents.id))
+        .where(
+          and(
+            eq(competitionEvents.competitionId, compId),
+            eq(entries.scratched, false),
+          ),
+        );
+      const entryEventIds = eventIdsWithEntries.map((r) => r.eventId);
+      const eventsWithEntries = entryEventIds.length;
+
+      let eventsWithRounds = 0;
+      if (entryEventIds.length > 0) {
+        const [row] = await db
+          .select({ count: sql<number>`count(distinct ${rounds.eventId})::int` })
+          .from(rounds)
+          .where(
+            sql`${rounds.eventId} IN (${sql.join(
+              entryEventIds.map((id) => sql`${id}`),
+              sql`, `,
+            )})`,
+          );
+        eventsWithRounds = row?.count ?? 0;
+      }
+
+      return {
+        hasSchedule: (dayRow?.count ?? 0) > 0,
+        hasEvents: (eventRow?.count ?? 0) > 0,
+        staffComplete:
+          staffDetail.scrutineer >= 1 &&
+          staffDetail.emcee >= 1 &&
+          staffDetail.chairman >= 1 &&
+          staffDetail.dj >= 1 &&
+          staffDetail.judges >= 5,
+        staffDetail,
+        registrationOpen,
+        numbersAssigned: totalRegs > 0 && unnumbered === 0,
+        numbersDetail: { total: totalRegs, assigned: totalRegs - unnumbered },
+        heatsFinalized: eventsWithEntries > 0 && eventsWithEntries === eventsWithRounds,
+        heatsDetail: { eventsWithEntries, eventsWithRounds },
       };
     }),
 
