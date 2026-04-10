@@ -19,6 +19,10 @@ function getStripe(): Stripe {
 }
 
 export const paymentRouter = router({
+  isStripeConfigured: protectedProcedure.query(() => {
+    return { configured: !!process.env.STRIPE_SECRET_KEY };
+  }),
+
   listByRegistration: protectedProcedure
     .input(z.object({ registrationId: z.number() }))
     .query(async ({ ctx, input }) => {

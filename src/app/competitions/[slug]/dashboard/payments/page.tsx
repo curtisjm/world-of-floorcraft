@@ -16,9 +16,10 @@ export default function PaymentsPage() {
     { competitionId: comp?.id ?? 0 },
     { enabled: !!comp },
   );
+  const { data: stripeConfig } = trpc.payment.isStripeConfigured.useQuery();
   const { data: connectStatus } = trpc.payment.getConnectStatus.useQuery(
     { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+    { enabled: !!comp && stripeConfig?.configured === true },
   );
 
   const createConnect = trpc.payment.createConnectAccount.useMutation({
@@ -120,7 +121,12 @@ export default function PaymentsPage() {
           <CardTitle className="text-base">Online Payments (Stripe)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {connectStatus?.connected ? (
+          {stripeConfig?.configured === false ? (
+            <div className="flex items-center gap-2">
+              <AlertCircle className="size-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Online payments not available</span>
+            </div>
+          ) : connectStatus?.connected ? (
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-5 text-green-500" />
               <span className="text-sm">
