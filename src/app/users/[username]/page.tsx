@@ -7,6 +7,7 @@ import { follows, posts, partnerSearchProfiles } from "@social/schema";
 import { routines } from "@routines/schema";
 import { ProfileHeader } from "@social/components/profile-header";
 import { PartnerSearchCard } from "@social/components/partner-search-card";
+import { PastCompetitionsTab } from "@competitions/components/past-competitions-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@shared/ui/card";
 import Link from "next/link";
@@ -158,6 +159,7 @@ export default async function UserProfilePage({
             <TabsList>
               <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="routines">Routines</TabsTrigger>
+              <TabsTrigger value="competitions">Competitions</TabsTrigger>
             </TabsList>
             <TabsContent value="posts" className="mt-4">
               {userPosts.length === 0 ? (
@@ -202,6 +204,9 @@ export default async function UserProfilePage({
                   ))}
                 </div>
               )}
+            </TabsContent>
+            <TabsContent value="competitions" className="mt-4">
+              <PastCompetitionsTab userId={user.id} />
             </TabsContent>
           </Tabs>
         )}
