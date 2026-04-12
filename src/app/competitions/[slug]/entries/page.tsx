@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { trpc } from "@shared/lib/trpc";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
+import { PartnerEntriesSheet } from "@competitions/components/partner-entries-sheet";
 
 export default function EntriesPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -13,6 +15,7 @@ export default function EntriesPage() {
     { competitionId: comp?.id ?? 0 },
     { enabled: !!comp },
   );
+  const [sheetRegistrationId, setSheetRegistrationId] = useState<number | null>(null);
 
   if (isLoading || !comp) {
     return (
@@ -68,7 +71,17 @@ export default function EntriesPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground w-6 text-right">{i + 1}.</span>
                         <span>
-                          {entry.leaderName ?? "TBA"} & {entry.followerName ?? "TBA"}
+                          <NameButton
+                            name={entry.leaderName}
+                            registrationId={entry.leaderRegistrationId}
+                            onClick={setSheetRegistrationId}
+                          />
+                          {" & "}
+                          <NameButton
+                            name={entry.followerName}
+                            registrationId={entry.followerRegistrationId}
+                            onClick={setSheetRegistrationId}
+                          />
                         </span>
                       </div>
                       {entry.leaderNumber != null && (
@@ -82,6 +95,37 @@ export default function EntriesPage() {
           </Card>
         ))
       )}
+
+      {sheetRegistrationId && comp && (
+        <PartnerEntriesSheet
+          competitionId={comp.id}
+          registrationId={sheetRegistrationId}
+          slug={slug}
+          open={!!sheetRegistrationId}
+          onOpenChange={(open) => !open && setSheetRegistrationId(null)}
+        />
+      )}
     </div>
+  );
+}
+
+function NameButton({
+  name,
+  registrationId,
+  onClick,
+}: {
+  name: string | null;
+  registrationId: number;
+  onClick: (id: number) => void;
+}) {
+  if (!name) return <span>TBA</span>;
+  return (
+    <button
+      type="button"
+      className="hover:underline text-left"
+      onClick={() => onClick(registrationId)}
+    >
+      {name}
+    </button>
   );
 }

@@ -126,6 +126,8 @@ export const entryRouter = router({
           id: entries.id,
           eventId: entries.eventId,
           scratched: entries.scratched,
+          leaderRegistrationId: entries.leaderRegistrationId,
+          followerRegistrationId: entries.followerRegistrationId,
           leaderNumber: sql<number | null>`lr.competitor_number`,
           leaderName: sql<string>`lu.display_name`,
           followerName: sql<string>`fu.display_name`,
