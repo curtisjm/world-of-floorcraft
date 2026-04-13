@@ -7,9 +7,18 @@ import { ensureUser } from "./auth";
 export const createTRPCContext = async () => {
   try {
     const { userId } = await auth();
-    return { userId: userId ?? null };
+    // Read judge token from httpOnly cookie if available
+    let judgeToken: string | null = null;
+    try {
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      judgeToken = cookieStore.get("judge_token")?.value ?? null;
+    } catch {
+      // cookies() not available (e.g., tests or non-Next.js context)
+    }
+    return { userId: userId ?? null, judgeToken };
   } catch {
-    return { userId: null };
+    return { userId: null, judgeToken: null };
   }
 };
 

@@ -116,7 +116,7 @@ describe("judge-session router", () => {
           masterPassword: "wrong",
           judgeId: judge.id,
         }),
-      ).rejects.toThrow("Invalid master password");
+      ).rejects.toThrow("Invalid credentials");
     });
 
     it("rejects unknown comp code", async () => {
@@ -128,7 +128,7 @@ describe("judge-session router", () => {
           masterPassword: "secret123",
           judgeId: judge.id,
         }),
-      ).rejects.toThrow("Competition not found");
+      ).rejects.toThrow("Invalid credentials");
     });
 
     it("rejects judge not assigned to competition", async () => {
@@ -140,7 +140,7 @@ describe("judge-session router", () => {
           masterPassword: "secret123",
           judgeId: judge.id,
         }),
-      ).rejects.toThrow("Judge not assigned");
+      ).rejects.toThrow("Invalid credentials");
     });
 
     it("ends previous active session on re-login", async () => {

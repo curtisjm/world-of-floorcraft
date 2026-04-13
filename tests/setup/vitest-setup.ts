@@ -1,5 +1,8 @@
 import { vi } from "vitest";
 
+// Set required env vars for judge auth
+process.env.JUDGE_JWT_SECRET = "test-judge-jwt-secret-minimum-32-characters-long";
+
 // Mock @clerk/nextjs/server -- routers import trpc.ts which imports auth from Clerk
 vi.mock("@clerk/nextjs/server", () => ({
   auth: async () => ({ userId: null }),

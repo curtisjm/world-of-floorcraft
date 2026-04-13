@@ -48,14 +48,14 @@ import {
  * The user row must exist in the DB (use createUser first).
  */
 export function createCaller(userId: string) {
-  return appRouter.createCaller({ userId });
+  return appRouter.createCaller({ userId, judgeToken: null });
 }
 
 /**
  * Create an unauthenticated tRPC caller (for public procedures).
  */
 export function createPublicCaller() {
-  return appRouter.createCaller({ userId: null });
+  return appRouter.createCaller({ userId: null, judgeToken: null });
 }
 
 // ---------- Factories ----------

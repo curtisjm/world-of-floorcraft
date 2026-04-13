@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@shared/lib/trpc";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -11,12 +11,10 @@ import { toast } from "sonner";
 import {
   LogOut,
   Check,
-  X,
   Send,
   Edit3,
   Loader2,
   Gavel,
-  AlertTriangle,
 } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -40,45 +38,43 @@ interface ActiveRound {
 // ── Main Page ───────────────────────────────────────────────────────
 
 export default function JudgePage() {
-  const [token, setToken] = useState<string | null>(null);
+  const [authed, setAuthed] = useState(false);
   const [judgeName, setJudgeName] = useState("");
   const [compName, setCompName] = useState("");
 
-  // Persist token across page refreshes
+  // Restore display-only data from sessionStorage (token is in httpOnly cookie)
   useEffect(() => {
-    const saved = localStorage.getItem("judge_token");
-    if (saved) {
-      setToken(saved);
-      setJudgeName(localStorage.getItem("judge_name") ?? "");
-      setCompName(localStorage.getItem("judge_comp") ?? "");
+    const name = sessionStorage.getItem("judge_name");
+    const comp = sessionStorage.getItem("judge_comp");
+    if (name && comp) {
+      setAuthed(true);
+      setJudgeName(name);
+      setCompName(comp);
     }
   }, []);
 
-  function handleAuth(result: { token: string; judgeName: string; competitionName: string }) {
-    setToken(result.token);
+  function handleAuth(result: { judgeName: string; competitionName: string }) {
+    setAuthed(true);
     setJudgeName(result.judgeName);
     setCompName(result.competitionName);
-    localStorage.setItem("judge_token", result.token);
-    localStorage.setItem("judge_name", result.judgeName);
-    localStorage.setItem("judge_comp", result.competitionName);
+    sessionStorage.setItem("judge_name", result.judgeName);
+    sessionStorage.setItem("judge_comp", result.competitionName);
   }
 
   function handleLogout() {
-    setToken(null);
+    setAuthed(false);
     setJudgeName("");
     setCompName("");
-    localStorage.removeItem("judge_token");
-    localStorage.removeItem("judge_name");
-    localStorage.removeItem("judge_comp");
+    sessionStorage.removeItem("judge_name");
+    sessionStorage.removeItem("judge_comp");
   }
 
-  if (!token) {
+  if (!authed) {
     return <AuthScreen onAuth={handleAuth} />;
   }
 
   return (
     <JudgeView
-      token={token}
       judgeName={judgeName}
       compName={compName}
       onLogout={handleLogout}
@@ -91,31 +87,38 @@ export default function JudgePage() {
 function AuthScreen({
   onAuth,
 }: {
-  onAuth: (result: { token: string; judgeName: string; competitionName: string }) => void;
+  onAuth: (result: { judgeName: string; competitionName: string }) => void;
 }) {
   const [compCode, setCompCode] = useState("");
   const [password, setPassword] = useState("");
-  const [step, setStep] = useState<"credentials" | "judge-select">("credentials");
-  const [compData, setCompData] = useState<{ compCode: string; password: string } | null>(null);
-
-  // After credentials, we need to show judge selection.
-  // Use authenticate with a known judge — but we need to list judges first.
-  // The judge list comes from the judge router (public isn't available without comp ID).
-  // For now: credentials → judge ID input → authenticate.
-
   const [judgeId, setJudgeId] = useState("");
+  const [isPending, setIsPending] = useState(false);
 
-  const authMutation = trpc.judgeSession.authenticate.useMutation({
-    onSuccess: (data) => {
-      toast.success(`Welcome, ${data.judgeName}`);
-      onAuth({
-        token: data.token,
-        judgeName: data.judgeName,
-        competitionName: data.competitionName,
+  const handleSubmit = async () => {
+    setIsPending(true);
+    try {
+      const res = await fetch("/api/judge/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          compCode,
+          masterPassword: password,
+          judgeId: parseInt(judgeId),
+        }),
       });
-    },
-    onError: (err) => toast.error(err.message),
-  });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Authentication failed");
+        return;
+      }
+      toast.success(`Welcome, ${data.judgeName}`);
+      onAuth({ judgeName: data.judgeName, competitionName: data.competitionName });
+    } catch {
+      toast.error("Authentication failed");
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -162,16 +165,10 @@ function AuthScreen({
           <Button
             className="w-full"
             size="lg"
-            disabled={!compCode || !password || !judgeId || authMutation.isPending}
-            onClick={() =>
-              authMutation.mutate({
-                compCode,
-                masterPassword: password,
-                judgeId: parseInt(judgeId),
-              })
-            }
+            disabled={!compCode || !password || !judgeId || isPending}
+            onClick={handleSubmit}
           >
-            {authMutation.isPending ? (
+            {isPending ? (
               <Loader2 className="size-4 mr-2 animate-spin" />
             ) : (
               <Gavel className="size-4 mr-2" />
@@ -187,28 +184,29 @@ function AuthScreen({
 // ── Judge View (authenticated) ──────────────────────────────────────
 
 function JudgeView({
-  token,
   judgeName,
   compName,
   onLogout,
 }: {
-  token: string;
   judgeName: string;
   compName: string;
   onLogout: () => void;
 }) {
+  // Token is in httpOnly cookie — tRPC reads it from context automatically
   const { data: activeRound, isLoading, refetch } = trpc.judgeSession.getActiveRound.useQuery(
-    { token },
+    {},
     { refetchInterval: 5000 },
   );
 
-  const logoutMutation = trpc.judgeSession.logout.useMutation({
-    onSuccess: () => {
-      toast.success("Logged out");
-      onLogout();
-    },
-    onError: () => onLogout(), // Logout anyway
-  });
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/judge/logout", { method: "POST" });
+    } catch {
+      // Best-effort
+    }
+    toast.success("Logged out");
+    onLogout();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -221,7 +219,7 @@ function JudgeView({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => logoutMutation.mutate({ token })}
+          onClick={handleLogout}
         >
           <LogOut className="size-4 mr-1" />
           Logout
@@ -238,9 +236,9 @@ function JudgeView({
         ) : !activeRound ? (
           <WaitingScreen onRefresh={refetch} />
         ) : activeRound.isFinal ? (
-          <FinalMarkingPage token={token} round={activeRound} />
+          <FinalMarkingPage round={activeRound} />
         ) : (
-          <CallbackMarkingPage token={token} round={activeRound} />
+          <CallbackMarkingPage round={activeRound} />
         )}
       </div>
     </div>
@@ -267,10 +265,8 @@ function WaitingScreen({ onRefresh }: { onRefresh: () => void }) {
 // ── Callback Marking Page ───────────────────────────────────────────
 
 function CallbackMarkingPage({
-  token,
   round,
 }: {
-  token: string;
   round: ActiveRound;
 }) {
   const [marks, setMarks] = useState<Record<number, "marked" | "maybe" | "unmarked">>({});
@@ -279,7 +275,7 @@ function CallbackMarkingPage({
 
   // Load existing marks if re-entering
   const { data: existingSubmission } = trpc.judgeSession.getMySubmission.useQuery(
-    { token, roundId: round.roundId },
+    { roundId: round.roundId },
     { enabled: round.submissionStatus === "submitted" },
   );
 
@@ -335,7 +331,6 @@ function CallbackMarkingPage({
     }
 
     submitMutation.mutate({
-      token,
       roundId: round.roundId,
       marks: round.couples.map((c) => ({
         entryId: c.entryId,
@@ -441,10 +436,8 @@ function CallbackMarkingPage({
 // ── Final Marking Page ──────────────────────────────────────────────
 
 function FinalMarkingPage({
-  token,
   round,
 }: {
-  token: string;
   round: ActiveRound;
 }) {
   // Rankings: danceName -> entryId -> placement
@@ -458,7 +451,7 @@ function FinalMarkingPage({
 
   // Load existing marks
   const { data: existingSubmission } = trpc.judgeSession.getMySubmission.useQuery(
-    { token, roundId: round.roundId },
+    { roundId: round.roundId },
     { enabled: round.submissionStatus === "submitted" },
   );
 
@@ -550,7 +543,7 @@ function FinalMarkingPage({
       }
     }
 
-    submitMutation.mutate({ token, roundId: round.roundId, marks });
+    submitMutation.mutate({ roundId: round.roundId, marks });
   };
 
   return (

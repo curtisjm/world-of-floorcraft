@@ -29,6 +29,40 @@ import {
 } from "@competitions/lib/judge-auth";
 import { createJudgeAblyToken } from "@competitions/lib/ably-comp";
 
+// ── Rate limiter ──────────────────────────────────────────────────
+
+const AUTH_RATE_LIMIT = 5;
+const AUTH_RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+const authAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function checkAuthRateLimit(compCode: string): void {
+  const key = compCode.toUpperCase();
+  const now = Date.now();
+  const entry = authAttempts.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    authAttempts.set(key, { count: 1, resetAt: now + AUTH_RATE_WINDOW_MS });
+    return;
+  }
+
+  entry.count++;
+  if (entry.count > AUTH_RATE_LIMIT) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Too many authentication attempts. Please try again later.",
+    });
+  }
+}
+
+/** Resolve judge token from explicit input or context cookie. */
+function resolveToken(
+  inputToken: string | undefined,
+  ctx: { judgeToken: string | null },
+): string | undefined {
+  return inputToken ?? ctx.judgeToken ?? undefined;
+}
+
 export const judgeSessionRouter = router({
   // ── Authenticate ────────────────────────────────────────────────
 
@@ -41,21 +75,21 @@ export const judgeSessionRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
+      // Rate limit by competition code
+      checkAuthRateLimit(input.compCode);
+
       // Find competition by code
       const comp = await db.query.competitions.findFirst({
         where: eq(competitions.compCode, input.compCode.toUpperCase()),
       });
-      if (!comp) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Competition not found" });
-      }
-      if (!comp.masterPasswordHash) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Master password not set for this competition" });
+      if (!comp || !comp.masterPasswordHash) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
       }
 
       // Verify master password
       const valid = await compare(input.masterPassword, comp.masterPasswordHash);
       if (!valid) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid master password" });
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
       }
 
       // Verify judge is assigned to this competition
@@ -66,7 +100,7 @@ export const judgeSessionRouter = router({
         ),
       });
       if (!assignment) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Judge not assigned to this competition" });
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
       }
 
       // Get judge name
@@ -125,9 +159,9 @@ export const judgeSessionRouter = router({
   // ── Logout ──────────────────────────────────────────────────────
 
   logout: publicProcedure
-    .input(z.object({ token: z.string() }))
-    .mutation(async ({ input }) => {
-      const payload = await requireJudgeAuth(input.token);
+    .input(z.object({ token: z.string().optional() }))
+    .mutation(async ({ input, ctx }) => {
+      const payload = await requireJudgeAuth(resolveToken(input.token, ctx));
 
       await db
         .update(judgeSessions)
@@ -140,9 +174,9 @@ export const judgeSessionRouter = router({
   // ── Get active round ────────────────────────────────────────────
 
   getActiveRound: publicProcedure
-    .input(z.object({ token: z.string() }))
-    .query(async ({ input }) => {
-      const payload = await requireJudgeAuth(input.token);
+    .input(z.object({ token: z.string().optional() }))
+    .query(async ({ input, ctx }) => {
+      const payload = await requireJudgeAuth(resolveToken(input.token, ctx));
 
       const active = await db.query.activeRounds.findFirst({
         where: and(
@@ -240,9 +274,9 @@ export const judgeSessionRouter = router({
   // ── Get my submission (for edit flow) ───────────────────────────
 
   getMySubmission: publicProcedure
-    .input(z.object({ token: z.string(), roundId: z.number() }))
-    .query(async ({ input }) => {
-      const payload = await requireJudgeAuth(input.token);
+    .input(z.object({ token: z.string().optional(), roundId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const payload = await requireJudgeAuth(resolveToken(input.token, ctx));
 
       const round = await db.query.rounds.findFirst({
         where: eq(rounds.id, input.roundId),
@@ -295,7 +329,7 @@ export const judgeSessionRouter = router({
   submitCallbackMarks: publicProcedure
     .input(
       z.object({
-        token: z.string(),
+        token: z.string().optional(),
         roundId: z.number(),
         marks: z.array(z.object({
           entryId: z.number(),
@@ -303,8 +337,8 @@ export const judgeSessionRouter = router({
         })),
       }),
     )
-    .mutation(async ({ input }) => {
-      const payload = await requireJudgeAuth(input.token);
+    .mutation(async ({ input, ctx }) => {
+      const payload = await requireJudgeAuth(resolveToken(input.token, ctx));
 
       // Verify this is the active round
       const active = await db.query.activeRounds.findFirst({
@@ -396,7 +430,7 @@ export const judgeSessionRouter = router({
   submitFinalMarks: publicProcedure
     .input(
       z.object({
-        token: z.string(),
+        token: z.string().optional(),
         roundId: z.number(),
         marks: z.array(z.object({
           entryId: z.number(),
@@ -405,8 +439,8 @@ export const judgeSessionRouter = router({
         })),
       }),
     )
-    .mutation(async ({ input }) => {
-      const payload = await requireJudgeAuth(input.token);
+    .mutation(async ({ input, ctx }) => {
+      const payload = await requireJudgeAuth(resolveToken(input.token, ctx));
 
       // Verify this is the active round
       const active = await db.query.activeRounds.findFirst({
@@ -500,9 +534,9 @@ export const judgeSessionRouter = router({
   // ── Get Ably token ──────────────────────────────────────────────
 
   getAblyToken: publicProcedure
-    .input(z.object({ token: z.string() }))
-    .query(async ({ input }) => {
-      const payload = await requireJudgeAuth(input.token);
+    .input(z.object({ token: z.string().optional() }))
+    .query(async ({ input, ctx }) => {
+      const payload = await requireJudgeAuth(resolveToken(input.token, ctx));
       return createJudgeAblyToken(payload.competitionId, payload.judgeId);
     }),
 });

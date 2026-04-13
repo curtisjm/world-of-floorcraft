@@ -4,9 +4,21 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@shared/db";
 import { judgeSessions } from "@competitions/schema";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JUDGE_JWT_SECRET ?? "dev-judge-jwt-secret-change-in-prod",
-);
+let _jwtSecret: Uint8Array | null = null;
+
+function getJwtSecret(): Uint8Array {
+  if (!_jwtSecret) {
+    const secret = process.env.JUDGE_JWT_SECRET;
+    if (!secret) {
+      throw new Error(
+        "JUDGE_JWT_SECRET environment variable is required. " +
+        "Set it to a strong random string (min 32 characters).",
+      );
+    }
+    _jwtSecret = new TextEncoder().encode(secret);
+  }
+  return _jwtSecret;
+}
 
 export interface JudgeTokenPayload {
   competitionId: number;
@@ -19,12 +31,12 @@ export async function createJudgeToken(payload: JudgeTokenPayload): Promise<stri
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("24h")
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 export async function verifyJudgeToken(token: string): Promise<JudgeTokenPayload> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     return {
       competitionId: payload.competitionId as number,
       judgeId: payload.judgeId as number,
@@ -36,10 +48,10 @@ export async function verifyJudgeToken(token: string): Promise<JudgeTokenPayload
 }
 
 /**
- * Validate a judge JWT and check for an active session.
+ * Validate a judge JWT, verify token hash, and check for an active session.
  * Returns the decoded payload if valid.
  */
-export async function requireJudgeAuth(token: string | undefined): Promise<JudgeTokenPayload> {
+export async function requireJudgeAuth(token: string | null | undefined): Promise<JudgeTokenPayload> {
   if (!token) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Judge token required" });
   }
@@ -56,6 +68,12 @@ export async function requireJudgeAuth(token: string | undefined): Promise<Judge
 
   if (!session) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Judge session expired or ended" });
+  }
+
+  // Verify token hash matches stored hash
+  const currentHash = await hashToken(token);
+  if (currentHash !== session.tokenHash) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid judge token" });
   }
 
   return payload;
