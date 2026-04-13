@@ -106,7 +106,7 @@ export default function DashboardOverviewPage() {
     {
       label: "Open registration",
       done: setup?.registrationOpen ?? false,
-      href: `/competitions/${slug}/dashboard/registration`,
+      href: `/competitions/${slug}/dashboard/registrations`,
     },
     {
       label: "Assign competitor numbers",
@@ -115,7 +115,7 @@ export default function DashboardOverviewPage() {
         (setup?.numbersDetail?.total ?? 0) > 0
           ? `${setup!.numbersDetail.assigned}/${setup!.numbersDetail.total} assigned`
           : undefined,
-      href: `/competitions/${slug}/dashboard/registration`,
+      href: `/competitions/${slug}/dashboard/numbers`,
     },
     {
       label: "Finalize heats",
