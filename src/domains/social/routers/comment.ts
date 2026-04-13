@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "@shared/auth/trpc";
 import { db } from "@shared/db";
 import { users } from "@shared/schema";
@@ -117,6 +118,24 @@ export const commentRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Verify the post is accessible before allowing comment creation
+      const [post] = await db
+        .select({
+          authorId: posts.authorId,
+          visibility: posts.visibility,
+          visibilityOrgId: posts.visibilityOrgId,
+          publishedAt: posts.publishedAt,
+        })
+        .from(posts)
+        .where(eq(posts.id, input.postId));
+
+      if (!post || !(await isPostAccessible(post, ctx.userId))) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Post not found or not accessible",
+        });
+      }
+
       if (input.parentId) {
         const [parent] = await db
           .select({ parentId: comments.parentId })

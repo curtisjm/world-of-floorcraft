@@ -309,7 +309,7 @@ describe("post router", () => {
       expect(post.visibilityOrgId).toBe(org.id);
     });
 
-    it("returns visibilityOrgId from get", async () => {
+    it("returns visibilityOrgId from get for org members", async () => {
       const caller = createCaller(userId);
       const org = await createOrg(userId);
       const post = await caller.post.createArticle({
@@ -320,9 +320,26 @@ describe("post router", () => {
         publish: true,
       });
 
-      const publicCaller = createPublicCaller();
-      const result = await publicCaller.post.get({ id: post.id });
+      // Author (who is also org member) should see the post with visibilityOrgId
+      const result = await caller.post.get({ id: post.id });
+      expect(result).not.toBeNull();
       expect(result!.visibilityOrgId).toBe(org.id);
+    });
+
+    it("hides org-only posts from unauthenticated users", async () => {
+      const caller = createCaller(userId);
+      const org = await createOrg(userId);
+      await caller.post.createArticle({
+        title: "Org Article",
+        body: "Content",
+        visibility: "organization",
+        visibilityOrgId: org.id,
+        publish: true,
+      });
+
+      const publicCaller = createPublicCaller();
+      const result = await publicCaller.post.get({ id: 1 });
+      expect(result).toBeNull();
     });
   });
 });

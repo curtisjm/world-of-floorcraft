@@ -4,6 +4,7 @@ import {
   createPublicCaller,
   createUser,
   createPost,
+  createOrg,
   truncateAll,
 } from "../../setup/helpers";
 
@@ -86,6 +87,76 @@ describe("comment router", () => {
       const { comment } = await caller.comment.create({ postId, body: "ToDelete" });
       const result = await caller.comment.delete({ id: comment.id });
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe("create authorization", () => {
+    it("blocks comments on draft posts from non-authors", async () => {
+      const draftPost = await createPost(userId, { publishedAt: null });
+      const other = await createUser({ username: "intruder" });
+      const otherCaller = createCaller(other.id);
+      await expect(
+        otherCaller.comment.create({ postId: draftPost.id, body: "Sneaky" })
+      ).rejects.toThrow("Post not found or not accessible");
+    });
+
+    it("allows author to comment on their own draft", async () => {
+      const draftPost = await createPost(userId, { publishedAt: null });
+      const caller = createCaller(userId);
+      const result = await caller.comment.create({
+        postId: draftPost.id,
+        body: "My draft comment",
+      });
+      expect(result.comment).toBeDefined();
+    });
+
+    it("blocks comments on followers-only posts from non-followers", async () => {
+      const post = await createPost(userId, {
+        visibility: "followers",
+        publishedAt: new Date(),
+      });
+      const other = await createUser({ username: "stranger" });
+      const otherCaller = createCaller(other.id);
+      await expect(
+        otherCaller.comment.create({ postId: post.id, body: "Uninvited" })
+      ).rejects.toThrow("Post not found or not accessible");
+    });
+
+    it("allows followers to comment on followers-only posts", async () => {
+      const post = await createPost(userId, {
+        visibility: "followers",
+        publishedAt: new Date(),
+      });
+      const follower = await createUser({ username: "follower" });
+      const followerCaller = createCaller(follower.id);
+      await followerCaller.follow.follow({ targetUserId: userId });
+
+      const result = await followerCaller.comment.create({
+        postId: post.id,
+        body: "Follower comment",
+      });
+      expect(result.comment).toBeDefined();
+    });
+
+    it("blocks comments on org-only posts from non-members", async () => {
+      const org = await createOrg(userId);
+      const post = await createPost(userId, {
+        visibility: "organization",
+        visibilityOrgId: org.id,
+        publishedAt: new Date(),
+      });
+      const other = await createUser({ username: "outsider" });
+      const otherCaller = createCaller(other.id);
+      await expect(
+        otherCaller.comment.create({ postId: post.id, body: "Not a member" })
+      ).rejects.toThrow("Post not found or not accessible");
+    });
+
+    it("blocks comments on nonexistent posts", async () => {
+      const caller = createCaller(userId);
+      await expect(
+        caller.comment.create({ postId: 99999, body: "No such post" })
+      ).rejects.toThrow("Post not found or not accessible");
     });
   });
 
