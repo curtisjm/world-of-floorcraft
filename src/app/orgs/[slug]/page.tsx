@@ -2,10 +2,11 @@
 import { useParams } from "next/navigation";
 import { trpc } from "@shared/lib/trpc";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
-import { Card, CardContent } from "@shared/ui/card";
 import { OrgHeader } from "@orgs/components/org-header";
 import { MemberList } from "@orgs/components/member-list";
 import { OrgPostComposer } from "@orgs/components/org-post-composer";
+import { OrgPostCard } from "@orgs/components/org-post-card";
+import { OrgDraftList } from "@orgs/components/org-draft-list";
 
 function OrgPosts({ orgId, canPost }: { orgId: number; canPost: boolean }) {
   const { data, isLoading } = trpc.orgPost.listByOrg.useQuery({ orgId, limit: 20 });
@@ -19,18 +20,24 @@ function OrgPosts({ orgId, canPost }: { orgId: number; canPost: boolean }) {
   return (
     <div className="flex flex-col gap-3">
       {canPost && <OrgPostComposer orgId={orgId} />}
+      {canPost && <OrgDraftList orgId={orgId} />}
       {posts.length === 0 && !canPost && (
         <p className="text-muted-foreground text-sm">No posts yet.</p>
       )}
       {posts.map((post) => (
-        <Card key={post.id}>
-          <CardContent className="p-4">
-            {post.title && <p className="font-semibold mb-1">{post.title}</p>}
-            {post.body && (
-              <p className="text-sm text-muted-foreground line-clamp-3">{post.body}</p>
-            )}
-          </CardContent>
-        </Card>
+        <OrgPostCard
+          key={post.id}
+          post={{
+            id: post.id,
+            type: post.type,
+            title: post.title,
+            body: post.body,
+            publishedAt: post.publishedAt,
+            orgName: post.orgName,
+            orgSlug: post.orgSlug,
+            orgAvatarUrl: post.orgAvatarUrl,
+          }}
+        />
       ))}
     </div>
   );

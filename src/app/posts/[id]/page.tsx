@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getDb } from "@shared/db";
 import { users } from "@shared/schema";
 import { posts, follows } from "@social/schema";
-import { memberships } from "@orgs/schema";
+import { memberships, organizations } from "@orgs/schema";
 import { ArticleRenderer } from "@/domains/social/components/article-renderer";
 import { CommentThread } from "@/domains/social/components/comment-thread";
 import { Badge } from "@shared/ui/badge";
@@ -23,6 +23,7 @@ export default async function PostPage({
     .select({
       id: posts.id,
       authorId: posts.authorId,
+      orgId: posts.orgId,
       type: posts.type,
       visibility: posts.visibility,
       visibilityOrgId: posts.visibilityOrgId,
@@ -34,17 +35,43 @@ export default async function PostPage({
       authorUsername: users.username,
       authorDisplayName: users.displayName,
       authorAvatarUrl: users.avatarUrl,
+      orgName: organizations.name,
+      orgSlug: organizations.slug,
+      orgAvatarUrl: organizations.avatarUrl,
     })
     .from(posts)
     .leftJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(organizations, eq(posts.orgId, organizations.id))
     .where(eq(posts.id, parseInt(id, 10)));
 
   if (!post) notFound();
 
+  const isOrgPost = post.orgId !== null && post.authorId === null;
+
   // Author can always see their own posts
   const isAuthor = userId && post.authorId === userId;
 
-  if (!isAuthor) {
+  // Org admins/owners can see org drafts
+  let isOrgAdmin = false;
+  if (isOrgPost && userId && !post.publishedAt) {
+    const org = await db
+      .select({ ownerId: organizations.ownerId })
+      .from(organizations)
+      .where(eq(organizations.id, post.orgId!));
+    if (org[0]?.ownerId === userId) {
+      isOrgAdmin = true;
+    } else {
+      const [mem] = await db
+        .select({ role: memberships.role })
+        .from(memberships)
+        .where(
+          and(eq(memberships.orgId, post.orgId!), eq(memberships.userId, userId))
+        );
+      if (mem?.role === "admin") isOrgAdmin = true;
+    }
+  }
+
+  if (!isAuthor && !isOrgAdmin) {
     // Drafts are not visible to others
     if (!post.publishedAt) notFound();
 
@@ -78,13 +105,19 @@ export default async function PostPage({
     }
   }
 
-  const authorName = post.authorDisplayName ?? post.authorUsername ?? "Anonymous";
+  const authorName = isOrgPost
+    ? post.orgName ?? "Organization"
+    : post.authorDisplayName ?? post.authorUsername ?? "Anonymous";
+
+  const authorLink = isOrgPost
+    ? `/orgs/${post.orgSlug}`
+    : `/users/${post.authorUsername}`;
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <div className="flex items-center gap-3 mb-6">
         <Link
-          href={`/users/${post.authorUsername}`}
+          href={authorLink}
           className="text-sm font-medium hover:underline"
         >
           {authorName}
