@@ -16,6 +16,7 @@ import {
 } from "@shared/ui/select";
 import { JoinRequestList } from "@orgs/components/join-request-list";
 import { InviteManager } from "@orgs/components/invite-manager";
+import { SendInvite } from "@orgs/components/send-invite";
 import { AdminManager } from "@orgs/components/admin-manager";
 
 function TransferOwnership({ orgId, orgSlug }: { orgId: number; orgSlug: string }) {
@@ -224,7 +225,19 @@ export default function OrgSettingsPage() {
         <>
           <Separator className="my-6" />
           <section>
-            <h2 className="text-lg font-semibold mb-4">Invite Links</h2>
+            <h2 className="text-lg font-semibold mb-4">Invite Members</h2>
+            <p className="text-sm text-muted-foreground mb-3">
+              Search for users to send a direct invite.
+            </p>
+            <SendInvite orgId={org.id} />
+          </section>
+
+          <Separator className="my-6" />
+          <section>
+            <h2 className="text-lg font-semibold mb-4">Invite Link</h2>
+            <p className="text-sm text-muted-foreground mb-3">
+              Generate a shareable link that anyone can use to join.
+            </p>
             <InviteManager orgId={org.id} />
           </section>
         </>
