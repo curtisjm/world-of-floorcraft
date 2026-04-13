@@ -24,7 +24,7 @@ export async function createAblyTokenRequest(userId: string, conversationIds: nu
     capability[`conversation:${id}`] = ["subscribe", "presence", "publish"];
   }
   if (conversationIds.length === 0) {
-    capability["*"] = ["subscribe"];
+    capability["conversation:none"] = ["subscribe"];
   }
   return ably.auth.createTokenRequest({
     clientId: userId,
