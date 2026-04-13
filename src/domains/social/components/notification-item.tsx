@@ -132,8 +132,8 @@ const NOTIFICATION_CONFIG: Record<NotificationType, NotificationConfig> = {
   org_invite: {
     icon: Building2,
     iconClass: "text-indigo-400",
-    getMessage: () => "You've been invited to join an organization",
-    getHref: () => "/settings/profile",
+    getMessage: (name) => `${name} invited you to join an organization`,
+    getHref: () => "/invites",
   },
   join_request: {
     icon: Users,
