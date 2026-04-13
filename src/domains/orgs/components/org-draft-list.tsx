@@ -70,6 +70,19 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
     });
   };
 
+  const handleSaveAndPublish = async (draftId: number) => {
+    if (editingId !== null) {
+      await updateMutation.mutateAsync({
+        id: editingId,
+        orgId,
+        title: editTitle || undefined,
+        body: editBody || undefined,
+        visibility: editVisibility,
+      });
+    }
+    publishMutation.mutate({ id: draftId, orgId });
+  };
+
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-medium text-muted-foreground">Drafts</h3>
@@ -119,10 +132,7 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      handleSave();
-                      publishMutation.mutate({ id: draft.id, orgId });
-                    }}
+                    onClick={() => handleSaveAndPublish(draft.id)}
                     disabled={
                       updateMutation.isPending ||
                       publishMutation.isPending ||
