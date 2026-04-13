@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { trpc } from "@shared/lib/trpc";
 import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
+import { cn } from "@shared/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
@@ -18,13 +19,12 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { cn } from "@shared/lib/utils";
 
 export default function DeckCaptainPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
 
-  const { isConnected } = useCompLiveWithInvalidation(comp?.id);
+  const { connectionStatus } = useCompLiveWithInvalidation(comp?.id);
 
   if (!comp) {
     return (
@@ -43,9 +43,18 @@ export default function DeckCaptainPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Deck Captain</h2>
-        <span className={`text-xs flex items-center gap-1 ${isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
-          {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-          {isConnected ? "Live" : "Connecting..."}
+        <span className={cn(
+          "text-xs flex items-center gap-1",
+          connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+          connectionStatus === "disconnected" && "text-muted-foreground",
+          connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
+          connectionStatus === "failed" && "text-red-600 dark:text-red-400",
+        )}>
+          {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+          {connectionStatus === "connected" && "Live"}
+          {connectionStatus === "disconnected" && "Connecting..."}
+          {connectionStatus === "suspended" && "Reconnecting..."}
+          {connectionStatus === "failed" && "Disconnected"}
         </span>
       </div>
 

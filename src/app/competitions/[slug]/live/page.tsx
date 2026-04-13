@@ -54,17 +54,23 @@ export default function CompetitorLiveViewPage() {
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
   const utils = trpc.useUtils();
 
-  const { isConnected } = useCompLive(comp?.id, {
-    "schedule:updated": () => utils.liveView.getSchedule.invalidate(),
-    "event:completed": () => utils.liveView.getSchedule.invalidate(),
-    "announcement:created": () => utils.liveView.getSchedule.invalidate(),
-    "announcement:updated": () => utils.liveView.getSchedule.invalidate(),
-    "announcement:deleted": () => utils.liveView.getSchedule.invalidate(),
-    "results:published": () => {
-      utils.liveView.getSchedule.invalidate();
-      utils.liveView.getPublishedResults.invalidate();
+  const invalidateAll = () => {
+    utils.liveView.getSchedule.invalidate();
+    utils.liveView.getPublishedResults.invalidate();
+  };
+
+  const { isConnected, connectionStatus } = useCompLive(
+    comp?.id,
+    {
+      "schedule:updated": () => utils.liveView.getSchedule.invalidate(),
+      "event:completed": () => utils.liveView.getSchedule.invalidate(),
+      "announcement:created": () => utils.liveView.getSchedule.invalidate(),
+      "announcement:updated": () => utils.liveView.getSchedule.invalidate(),
+      "announcement:deleted": () => utils.liveView.getSchedule.invalidate(),
+      "results:published": invalidateAll,
     },
-  });
+    { onReconnect: invalidateAll },
+  );
 
   const { data: schedule, isLoading: scheduleLoading } =
     trpc.liveView.getSchedule.useQuery(
@@ -153,10 +159,16 @@ export default function CompetitorLiveViewPage() {
           </p>
           <p className={cn(
             "text-xs flex items-center gap-1",
-            isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground",
+            connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+            connectionStatus === "disconnected" && "text-muted-foreground",
+            connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
+            connectionStatus === "failed" && "text-red-600 dark:text-red-400",
           )}>
             {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-            {isConnected ? "Live" : "Connecting..."}
+            {connectionStatus === "connected" && "Live"}
+            {connectionStatus === "disconnected" && "Connecting..."}
+            {connectionStatus === "suspended" && "Reconnecting..."}
+            {connectionStatus === "failed" && "Disconnected"}
           </p>
         </div>
       </div>

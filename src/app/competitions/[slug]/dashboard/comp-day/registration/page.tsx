@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { trpc } from "@shared/lib/trpc";
 import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
+import { cn } from "@shared/lib/utils";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -49,7 +50,7 @@ export default function RegistrationTablePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
 
-  const { isConnected } = useCompLiveWithInvalidation(comp?.id);
+  const { connectionStatus } = useCompLiveWithInvalidation(comp?.id);
 
   const utils = trpc.useUtils();
 
@@ -190,9 +191,18 @@ export default function RegistrationTablePage() {
           <h2 className="text-xl font-semibold tracking-tight">
             Registration Table
           </h2>
-          <span className={`text-xs flex items-center gap-1 ${isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
-            {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-            {isConnected ? "Live" : "Connecting..."}
+          <span className={cn(
+            "text-xs flex items-center gap-1",
+            connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+            connectionStatus === "disconnected" && "text-muted-foreground",
+            connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
+            connectionStatus === "failed" && "text-red-600 dark:text-red-400",
+          )}>
+            {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+            {connectionStatus === "connected" && "Live"}
+            {connectionStatus === "disconnected" && "Connecting..."}
+            {connectionStatus === "suspended" && "Reconnecting..."}
+            {connectionStatus === "failed" && "Disconnected"}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">

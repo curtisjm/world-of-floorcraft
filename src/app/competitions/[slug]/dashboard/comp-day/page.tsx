@@ -66,7 +66,7 @@ export default function CompDayDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
 
-  const { isConnected } = useCompLiveWithInvalidation(comp?.id);
+  const { connectionStatus } = useCompLiveWithInvalidation(comp?.id);
 
   const { data: dashboard, isLoading } =
     trpc.scrutineerDashboard.getDashboard.useQuery(
@@ -99,10 +99,16 @@ export default function CompDayDashboardPage() {
         </h2>
         <p className={cn(
           "text-xs flex items-center gap-1",
-          isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground",
+          connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+          connectionStatus === "disconnected" && "text-muted-foreground",
+          connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
+          connectionStatus === "failed" && "text-red-600 dark:text-red-400",
         )}>
-          {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-          {isConnected ? "Live" : "Connecting..."}
+          {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+          {connectionStatus === "connected" && "Live"}
+          {connectionStatus === "disconnected" && "Connecting..."}
+          {connectionStatus === "suspended" && "Reconnecting..."}
+          {connectionStatus === "failed" && "Disconnected"}
         </p>
       </div>
 

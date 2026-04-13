@@ -21,14 +21,19 @@ export default function ProjectorDisplayPage() {
   );
 
   const utils = trpc.useUtils();
-  const { isConnected } = useCompLive(schedule?.competition.id, {
-    "schedule:updated": () => utils.liveView.getSchedule.invalidate(),
-    "event:completed": () => utils.liveView.getSchedule.invalidate(),
-    "announcement:created": () => utils.liveView.getSchedule.invalidate(),
-    "announcement:updated": () => utils.liveView.getSchedule.invalidate(),
-    "announcement:deleted": () => utils.liveView.getSchedule.invalidate(),
-    "results:published": () => utils.liveView.getSchedule.invalidate(),
-  });
+  const invalidateAll = () => utils.liveView.getSchedule.invalidate();
+  const { isConnected } = useCompLive(
+    schedule?.competition.id,
+    {
+      "schedule:updated": invalidateAll,
+      "event:completed": invalidateAll,
+      "announcement:created": invalidateAll,
+      "announcement:updated": invalidateAll,
+      "announcement:deleted": invalidateAll,
+      "results:published": invalidateAll,
+    },
+    { onReconnect: invalidateAll },
+  );
 
   const activeRef = useRef<HTMLDivElement>(null);
   const activeEventId = schedule?.activeEventId ?? null;
