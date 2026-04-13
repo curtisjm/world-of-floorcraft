@@ -40,6 +40,11 @@ data/raw/
 .claude/
 .playwright-mcp/
 
+# Playwright test artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+
 # Gas Town runtime
 .runtime/
 .beads/
