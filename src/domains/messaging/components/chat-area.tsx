@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { trpc } from "@shared/lib/trpc";
 import { useAuth } from "@clerk/nextjs";
 import { MessageBubble } from "./message-bubble";
@@ -72,6 +72,25 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
   // Typing indicator
   const { typingUsers, sendTyping } = useTypingIndicator(conversationId);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTyping = useCallback(() => {
+    sendTyping(true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => sendTyping(false), 2000);
+  }, [sendTyping]);
+
+  const handleStopTyping = useCallback(() => {
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = null;
+    sendTyping(false);
+  }, [sendTyping]);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
 
   const allDbItems = data?.pages.flatMap((p) => p.items) ?? [];
 
@@ -150,7 +169,9 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
 
       <MessageInput
         conversationId={conversationId}
-        onTyping={() => sendTyping(true)}
+        onTyping={handleTyping}
+        onBlur={handleStopTyping}
+        onSend={handleStopTyping}
       />
     </div>
   );

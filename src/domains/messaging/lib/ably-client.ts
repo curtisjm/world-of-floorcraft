@@ -134,7 +134,10 @@ export function useTypingIndicator(conversationId: number) {
   }, [conversationId]);
 
   const sendTyping = useCallback((isTyping: boolean) => {
-    channelRef.current?.publish("typing", { isTyping });
+    channelRef.current?.publish("typing", {
+      userId: ablyClient?.auth.clientId,
+      isTyping,
+    });
   }, []);
 
   return { typingUsers, sendTyping };

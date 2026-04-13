@@ -9,9 +9,11 @@ import { trpc } from "@shared/lib/trpc";
 interface MessageInputProps {
   conversationId: number;
   onTyping?: () => void;
+  onBlur?: () => void;
+  onSend?: () => void;
 }
 
-export function MessageInput({ conversationId, onTyping }: MessageInputProps) {
+export function MessageInput({ conversationId, onTyping, onBlur, onSend }: MessageInputProps) {
   const [text, setText] = useState("");
   const utils = trpc.useUtils();
 
@@ -28,8 +30,9 @@ export function MessageInput({ conversationId, onTyping }: MessageInputProps) {
       const trimmed = text.trim();
       if (!trimmed) return;
       sendMutation.mutate({ conversationId, body: trimmed });
+      onSend?.();
     },
-    [text, conversationId, sendMutation]
+    [text, conversationId, sendMutation, onSend]
   );
 
   const handleChange = useCallback(
@@ -45,6 +48,7 @@ export function MessageInput({ conversationId, onTyping }: MessageInputProps) {
       <Input
         value={text}
         onChange={handleChange}
+        onBlur={onBlur}
         placeholder="Type a message..."
         className="flex-1"
         autoComplete="off"
