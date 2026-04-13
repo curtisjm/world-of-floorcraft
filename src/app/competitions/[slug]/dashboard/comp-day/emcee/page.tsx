@@ -37,6 +37,8 @@ import {
   ChevronDown,
   ChevronRight,
   Megaphone,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 
 // ── Main page ────────────────────────────────────────────────────────
@@ -45,7 +47,7 @@ export default function EmceePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
 
-  useCompLiveWithInvalidation(comp?.id);
+  const { isConnected } = useCompLiveWithInvalidation(comp?.id);
 
   const { data: emceeView, isLoading } = trpc.emcee.getEmceeView.useQuery(
     { competitionId: comp?.id ?? 0 },
@@ -138,6 +140,10 @@ export default function EmceePage() {
           <div className="flex items-center gap-3">
             <Mic className="h-6 w-6 text-primary" />
             <h2 className="text-2xl font-bold">Emcee</h2>
+            <span className={`text-xs flex items-center gap-1 ${isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+              {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+              {isConnected ? "Live" : "Connecting..."}
+            </span>
           </div>
           {currentEvent && (
             <div className="flex items-center gap-2 text-lg">

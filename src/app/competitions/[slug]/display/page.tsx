@@ -21,7 +21,7 @@ export default function ProjectorDisplayPage() {
   );
 
   const utils = trpc.useUtils();
-  useCompLive(schedule?.competition.id, {
+  const { isConnected } = useCompLive(schedule?.competition.id, {
     "schedule:updated": () => utils.liveView.getSchedule.invalidate(),
     "event:completed": () => utils.liveView.getSchedule.invalidate(),
     "announcement:created": () => utils.liveView.getSchedule.invalidate(),
@@ -87,7 +87,12 @@ export default function ProjectorDisplayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white px-8 py-10">
+    <div className="min-h-screen bg-black text-white px-8 py-10 relative">
+      {/* Connection status indicator */}
+      <div className="absolute top-4 right-4">
+        <span className={`inline-block size-3 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500 animate-pulse"}`} />
+      </div>
+
       {/* Competition name */}
       <h1 className="text-4xl font-bold text-center mb-10 tracking-tight">
         {schedule.competition.name}

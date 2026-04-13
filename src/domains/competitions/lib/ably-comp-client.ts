@@ -76,11 +76,15 @@ export function useCompLive(
     liveChannel.subscribe(handler);
     resultsChannel.subscribe(handler);
 
-    client.connection.on("connected", () => setIsConnected(true));
-    client.connection.on("disconnected", () => setIsConnected(false));
+    const onConnected = () => setIsConnected(true);
+    const onDisconnected = () => setIsConnected(false);
+    client.connection.on("connected", onConnected);
+    client.connection.on("disconnected", onDisconnected);
     setIsConnected(client.connection.state === "connected");
 
     return () => {
+      client.connection.off("connected", onConnected);
+      client.connection.off("disconnected", onDisconnected);
       liveChannel.unsubscribe(handler);
       resultsChannel.unsubscribe(handler);
       releaseCompAblyClient();
@@ -97,7 +101,7 @@ export function useCompLive(
 export function useCompLiveWithInvalidation(competitionId: number | undefined) {
   const utils = trpc.useUtils();
 
-  return useCompLive(competitionId, {
+  const { isConnected } = useCompLive(competitionId, {
     "checkin:registration": () => {
       utils.registrationTable.getRegistrationTable.invalidate();
       utils.scrutineerDashboard.getDashboard.invalidate();
@@ -135,4 +139,6 @@ export function useCompLiveWithInvalidation(competitionId: number | undefined) {
       utils.scrutineerDashboard.getDashboard.invalidate();
     },
   });
+
+  return { isConnected };
 }

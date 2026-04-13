@@ -18,6 +18,8 @@ import {
   Megaphone,
   Star,
   Users,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────
@@ -52,7 +54,7 @@ export default function CompetitorLiveViewPage() {
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
   const utils = trpc.useUtils();
 
-  useCompLive(comp?.id, {
+  const { isConnected } = useCompLive(comp?.id, {
     "schedule:updated": () => utils.liveView.getSchedule.invalidate(),
     "event:completed": () => utils.liveView.getSchedule.invalidate(),
     "announcement:created": () => utils.liveView.getSchedule.invalidate(),
@@ -144,10 +146,19 @@ export default function CompetitorLiveViewPage() {
         <h1 className="text-2xl font-bold tracking-tight">
           {schedule?.competition?.name ?? comp.name}
         </h1>
-        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-          <Radio className="size-4" />
-          Live Schedule
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <Radio className="size-4" />
+            Live Schedule
+          </p>
+          <p className={cn(
+            "text-xs flex items-center gap-1",
+            isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground",
+          )}>
+            {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+            {isConnected ? "Live" : "Connecting..."}
+          </p>
+        </div>
       </div>
 
       {/* My Events toggle */}

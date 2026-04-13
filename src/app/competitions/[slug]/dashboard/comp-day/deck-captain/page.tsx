@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@shared/lib/utils";
 
@@ -22,7 +24,7 @@ export default function DeckCaptainPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
 
-  useCompLiveWithInvalidation(comp?.id);
+  const { isConnected } = useCompLiveWithInvalidation(comp?.id);
 
   if (!comp) {
     return (
@@ -39,7 +41,13 @@ export default function DeckCaptainPage() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Deck Captain</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Deck Captain</h2>
+        <span className={`text-xs flex items-center gap-1 ${isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+          {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+          {isConnected ? "Live" : "Connecting..."}
+        </span>
+      </div>
 
       <Tabs defaultValue="checkin">
         <TabsList>

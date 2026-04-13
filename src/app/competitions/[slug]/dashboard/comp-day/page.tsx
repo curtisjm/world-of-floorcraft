@@ -18,6 +18,8 @@ import {
   ChevronDown,
   ChevronRight,
   Circle,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@shared/lib/utils";
 
@@ -64,7 +66,7 @@ export default function CompDayDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
 
-  useCompLiveWithInvalidation(comp?.id);
+  const { isConnected } = useCompLiveWithInvalidation(comp?.id);
 
   const { data: dashboard, isLoading } =
     trpc.scrutineerDashboard.getDashboard.useQuery(
@@ -90,10 +92,19 @@ export default function CompDayDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold flex items-center gap-2">
-        <Activity className="size-5" />
-        Comp Day Dashboard
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Activity className="size-5" />
+          Comp Day Dashboard
+        </h2>
+        <p className={cn(
+          "text-xs flex items-center gap-1",
+          isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground",
+        )}>
+          {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+          {isConnected ? "Live" : "Connecting..."}
+        </p>
+      </div>
 
       {/* Active Round */}
       <ActiveRoundCard

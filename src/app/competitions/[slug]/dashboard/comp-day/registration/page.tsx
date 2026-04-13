@@ -41,13 +41,15 @@ import {
   XCircle,
   Users,
   FileText,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 
 export default function RegistrationTablePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
 
-  useCompLiveWithInvalidation(comp?.id);
+  const { isConnected } = useCompLiveWithInvalidation(comp?.id);
 
   const utils = trpc.useUtils();
 
@@ -184,9 +186,15 @@ export default function RegistrationTablePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">
-          Registration Table
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Registration Table
+          </h2>
+          <span className={`text-xs flex items-center gap-1 ${isConnected ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+            {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+            {isConnected ? "Live" : "Connecting..."}
+          </span>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="gap-1.5 px-3 py-1">
             <Users className="size-3.5" />
