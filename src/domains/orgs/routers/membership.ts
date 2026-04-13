@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "@shared/auth/trpc";
 import { db } from "@shared/db";
@@ -29,6 +29,24 @@ async function requireAdminOrOwner(orgId: number, userId: string) {
   }
 
   return org;
+}
+
+async function removeFromOrgChannels(orgId: number, userId: string) {
+  const orgChannels = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(and(eq(conversations.orgId, orgId), eq(conversations.type, "org_channel")));
+
+  if (orgChannels.length > 0) {
+    await db
+      .delete(conversationMembers)
+      .where(
+        and(
+          inArray(conversationMembers.conversationId, orgChannels.map((ch) => ch.id)),
+          eq(conversationMembers.userId, userId)
+        )
+      );
+  }
 }
 
 export const membershipRouter = router({
@@ -105,6 +123,8 @@ export const membershipRouter = router({
           )
         );
 
+      await removeFromOrgChannels(input.orgId, ctx.userId);
+
       return { success: true };
     }),
 
@@ -125,6 +145,8 @@ export const membershipRouter = router({
             eq(memberships.userId, input.targetUserId)
           )
         );
+
+      await removeFromOrgChannels(input.orgId, input.targetUserId);
 
       return { success: true };
     }),

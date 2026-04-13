@@ -71,6 +71,46 @@ describe("membership router", () => {
       expect(result.success).toBe(true);
     });
 
+    it("removes member from org channels on leave", async () => {
+      const org = await createOrg(owner.id, { membershipModel: "open" });
+      const db = getTestDb();
+
+      // Create an org channel
+      const [channel] = await db
+        .insert(conversations)
+        .values({ type: "org_channel", name: "General", orgId: org.id })
+        .returning();
+      await db.insert(conversationMembers).values({
+        conversationId: channel.id,
+        userId: owner.id,
+      });
+
+      // Member joins org (also gets added to channel)
+      const caller = createCaller(member.id);
+      await caller.membership.join({ orgId: org.id });
+
+      // Verify member is in channel
+      let channelMember = await db.query.conversationMembers.findFirst({
+        where: and(
+          eq(conversationMembers.conversationId, channel.id),
+          eq(conversationMembers.userId, member.id)
+        ),
+      });
+      expect(channelMember).not.toBeUndefined();
+
+      // Member leaves
+      await caller.membership.leave({ orgId: org.id });
+
+      // Verify member is removed from channel
+      channelMember = await db.query.conversationMembers.findFirst({
+        where: and(
+          eq(conversationMembers.conversationId, channel.id),
+          eq(conversationMembers.userId, member.id)
+        ),
+      });
+      expect(channelMember).toBeUndefined();
+    });
+
     it("prevents owner from leaving", async () => {
       const org = await createOrg(owner.id);
       const caller = createCaller(owner.id);
@@ -92,6 +132,50 @@ describe("membership router", () => {
         targetUserId: member.id,
       });
       expect(result.success).toBe(true);
+    });
+
+    it("removes kicked member from org channels", async () => {
+      const org = await createOrg(owner.id, { membershipModel: "open" });
+      const db = getTestDb();
+
+      // Create an org channel
+      const [channel] = await db
+        .insert(conversations)
+        .values({ type: "org_channel", name: "General", orgId: org.id })
+        .returning();
+      await db.insert(conversationMembers).values({
+        conversationId: channel.id,
+        userId: owner.id,
+      });
+
+      // Member joins org (also gets added to channel)
+      const memberCaller = createCaller(member.id);
+      await memberCaller.membership.join({ orgId: org.id });
+
+      // Verify member is in channel
+      let channelMember = await db.query.conversationMembers.findFirst({
+        where: and(
+          eq(conversationMembers.conversationId, channel.id),
+          eq(conversationMembers.userId, member.id)
+        ),
+      });
+      expect(channelMember).not.toBeUndefined();
+
+      // Owner kicks member
+      const ownerCaller = createCaller(owner.id);
+      await ownerCaller.membership.kick({
+        orgId: org.id,
+        targetUserId: member.id,
+      });
+
+      // Verify member is removed from channel
+      channelMember = await db.query.conversationMembers.findFirst({
+        where: and(
+          eq(conversationMembers.conversationId, channel.id),
+          eq(conversationMembers.userId, member.id)
+        ),
+      });
+      expect(channelMember).toBeUndefined();
     });
   });
 
