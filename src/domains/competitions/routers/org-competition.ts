@@ -12,6 +12,7 @@ import {
   competitionRegistrations,
   finalResults,
   roundResultsMeta,
+  addDropRequests,
   payments,
 } from "@competitions/schema";
 import { users } from "@shared/schema";
@@ -33,6 +34,22 @@ async function requireOrgMember(orgId: number, userId: string) {
   }
 
   return org;
+}
+
+async function requireOrgAdmin(orgId: number, userId: string) {
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, orgId),
+  });
+  if (!org) throw new TRPCError({ code: "NOT_FOUND", message: "Organization not found" });
+
+  if (org.ownerId === userId) return org;
+
+  const membership = await db.query.memberships.findFirst({
+    where: and(eq(memberships.orgId, orgId), eq(memberships.userId, userId)),
+  });
+  if (membership?.role === "admin") return org;
+
+  throw new TRPCError({ code: "FORBIDDEN", message: "Org admin required" });
 }
 
 export const orgCompetitionRouter = router({
@@ -392,5 +409,54 @@ export const orgCompetitionRouter = router({
       }
 
       return eventResults;
+    }),
+
+  // ── Submit add/drop on behalf of org member ─────────────────────
+  submitAddDrop: protectedProcedure
+    .input(
+      z.object({
+        competitionId: z.number(),
+        orgId: z.number(),
+        type: z.enum(["add", "drop"]),
+        eventId: z.number(),
+        leaderRegistrationId: z.number(),
+        followerRegistrationId: z.number(),
+        reason: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await requireOrgAdmin(input.orgId, ctx.userId);
+
+      // Verify at least one partner is from this org
+      const leaderReg = await db.query.competitionRegistrations.findFirst({
+        where: eq(competitionRegistrations.id, input.leaderRegistrationId),
+      });
+      const followerReg = await db.query.competitionRegistrations.findFirst({
+        where: eq(competitionRegistrations.id, input.followerRegistrationId),
+      });
+
+      const isOrgMember =
+        leaderReg?.orgId === input.orgId || followerReg?.orgId === input.orgId;
+      if (!isOrgMember) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "At least one partner must be a member of this organization",
+        });
+      }
+
+      const [request] = await db
+        .insert(addDropRequests)
+        .values({
+          competitionId: input.competitionId,
+          submittedBy: ctx.userId,
+          type: input.type,
+          eventId: input.eventId,
+          leaderRegistrationId: input.leaderRegistrationId,
+          followerRegistrationId: input.followerRegistrationId,
+          reason: input.reason ?? null,
+        })
+        .returning();
+
+      return request;
     }),
 });

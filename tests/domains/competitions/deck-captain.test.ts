@@ -4,7 +4,6 @@ import {
   createPublicCaller,
   createUser,
   createOrg,
-  createEntry,
   truncateAll,
 } from "../../setup/helpers";
 
@@ -53,7 +52,11 @@ describe("deck-captain router", () => {
       partnerUsername: "follower_dc",
     });
 
-    const entry = await createEntry(eventId, regResult.self.id, regResult.partner!.id);
+    const entry = await leaderCaller.entry.create({
+      eventId,
+      leaderRegistrationId: regResult.self.id,
+      followerRegistrationId: regResult.partner!.id,
+    });
     entryId = entry.id;
 
     // Close entries and set up rounds

@@ -3,7 +3,6 @@ import {
   createCaller,
   createUser,
   createOrg,
-  createEntry,
   truncateAll,
 } from "../../setup/helpers";
 
@@ -52,7 +51,11 @@ describe("add-drop router", () => {
     followerRegId = regResult.partner!.id;
 
     // Create an entry, then close entries
-    await createEntry(eventId, leaderRegId, followerRegId);
+    await leaderCaller.entry.create({
+      eventId,
+      leaderRegistrationId: leaderRegId,
+      followerRegistrationId: followerRegId,
+    });
     await ownerCaller.competition.updateStatus({ competitionId: compId, status: "entries_closed" });
   });
 

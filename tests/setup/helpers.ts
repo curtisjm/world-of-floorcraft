@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { getTestDb, getTestPool } from "./test-db";
 import { appRouter } from "@shared/auth/routers";
 import { users } from "@shared/schema";
@@ -220,32 +219,6 @@ export async function createRegistration(
     })
     .returning();
   return reg;
-}
-
-export async function createEntry(
-  eventId: number,
-  leaderRegistrationId: number,
-  followerRegistrationId: number,
-  overrides: Partial<typeof entries.$inferInsert> = {},
-) {
-  let createdBy = overrides.createdBy;
-  if (!createdBy) {
-    const reg = await db().query.competitionRegistrations.findFirst({
-      where: eq(competitionRegistrations.id, leaderRegistrationId),
-    });
-    createdBy = reg!.userId;
-  }
-  const [entry] = await db()
-    .insert(entries)
-    .values({
-      eventId,
-      leaderRegistrationId,
-      followerRegistrationId,
-      createdBy,
-      ...overrides,
-    })
-    .returning();
-  return entry;
 }
 
 // ---------- Cleanup ----------

@@ -4,7 +4,6 @@ import {
   createPublicCaller,
   createUser,
   createOrg,
-  createEntry,
   truncateAll,
 } from "../../setup/helpers";
 
@@ -65,7 +64,11 @@ describe("schedule-estimation router", () => {
         competitionId: compId,
         partnerUsername: "est_follower",
       });
-      await createEntry(eventId, reg.self.id, reg.partner!.id);
+      await leaderCaller.entry.create({
+        eventId,
+        leaderRegistrationId: reg.self.id,
+        followerRegistrationId: reg.partner!.id,
+      });
 
       const publicCaller = createPublicCaller();
       const result = await publicCaller.scheduleEstimation.getEstimatedSchedule({

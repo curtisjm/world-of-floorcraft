@@ -289,4 +289,44 @@ export const conversationRouter = router({
 
       return { success: true };
     }),
+
+  addMember: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.number(),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const conversation = await db.query.conversations.findFirst({
+        where: eq(conversations.id, input.conversationId),
+      });
+
+      if (!conversation) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
+      }
+
+      if (conversation.type === "direct") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot add members to a DM conversation" });
+      }
+
+      // Verify caller is a member
+      const callerMember = await db.query.conversationMembers.findFirst({
+        where: and(
+          eq(conversationMembers.conversationId, input.conversationId),
+          eq(conversationMembers.userId, ctx.userId)
+        ),
+      });
+
+      if (!callerMember) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not a member of this conversation" });
+      }
+
+      await db
+        .insert(conversationMembers)
+        .values({ conversationId: input.conversationId, userId: input.userId })
+        .onConflictDoNothing();
+
+      return { success: true };
+    }),
 });

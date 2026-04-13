@@ -117,4 +117,32 @@ describe("conversation router", () => {
     });
   });
 
+  describe("addMember", () => {
+    it("adds a member to a group conversation", async () => {
+      const charlie = await createUser({ username: "charlie" });
+      const conv = await createConversation("group", [alice.id, bob.id], {
+        name: "Group",
+      });
+
+      const caller = createCaller(alice.id);
+      const result = await caller.conversation.addMember({
+        conversationId: conv.id,
+        userId: charlie.id,
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects adding member to DM", async () => {
+      const charlie = await createUser({ username: "charlie" });
+      const conv = await createConversation("direct", [alice.id, bob.id]);
+
+      const caller = createCaller(alice.id);
+      await expect(
+        caller.conversation.addMember({
+          conversationId: conv.id,
+          userId: charlie.id,
+        })
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    });
+  });
 });

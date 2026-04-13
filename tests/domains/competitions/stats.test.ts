@@ -3,7 +3,6 @@ import {
   createCaller,
   createUser,
   createOrg,
-  createEntry,
   truncateAll,
 } from "../../setup/helpers";
 
@@ -63,8 +62,16 @@ describe("stats router", () => {
         partnerUsername: "stat_follower",
       });
 
-      await createEntry(event1.id, reg.self.id, reg.partner!.id);
-      await createEntry(event2.id, reg.self.id, reg.partner!.id);
+      await leaderCaller.entry.create({
+        eventId: event1.id,
+        leaderRegistrationId: reg.self.id,
+        followerRegistrationId: reg.partner!.id,
+      });
+      await leaderCaller.entry.create({
+        eventId: event2.id,
+        leaderRegistrationId: reg.self.id,
+        followerRegistrationId: reg.partner!.id,
+      });
 
       const stats = await ownerCaller.stats.getCompetitionStats({ competitionId: compId });
       expect(stats.totalRegistrations).toBe(2); // leader + follower

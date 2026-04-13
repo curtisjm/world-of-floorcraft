@@ -3,7 +3,6 @@ import {
   createCaller,
   createUser,
   createOrg,
-  createEntry,
   truncateAll,
 } from "../../setup/helpers";
 
@@ -44,7 +43,11 @@ describe("round router", () => {
       partnerUsername: follower.username!,
     });
 
-    await createEntry(eventId, reg.self.id, reg.partner!.id);
+    await leaderCaller.entry.create({
+      eventId,
+      leaderRegistrationId: reg.self.id,
+      followerRegistrationId: reg.partner!.id,
+    });
 
     return { leader, follower, reg };
   }

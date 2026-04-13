@@ -5,7 +5,6 @@ import {
   createUser,
   createOrg,
   createJudge,
-  createEntry,
   truncateAll,
 } from "../../setup/helpers";
 import { getTestDb } from "../../setup/test-db";
@@ -55,7 +54,11 @@ describe("scrutineer router", () => {
       competitionId: compId,
       partnerUsername: follower.username!,
     });
-    const entry = await createEntry(eventId, reg.self.id, reg.partner!.id);
+    const entry = await leaderCaller.entry.create({
+      eventId,
+      leaderRegistrationId: reg.self.id,
+      followerRegistrationId: reg.partner!.id,
+    });
     return { leader, follower, reg, entry };
   }
 

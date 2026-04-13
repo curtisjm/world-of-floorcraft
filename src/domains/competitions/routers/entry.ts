@@ -9,6 +9,7 @@ import {
   competitionRegistrations,
   entries,
 } from "@competitions/schema";
+import { users } from "@shared/schema";
 import { requireCompStaffRole } from "@competitions/lib/auth";
 
 async function recalcAmountOwed(registrationId: number) {
@@ -74,6 +75,41 @@ export const entryRouter = router({
       return results;
     }),
 
+  listByRegistration: protectedProcedure
+    .input(z.object({ registrationId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const reg = await db.query.competitionRegistrations.findFirst({
+        where: eq(competitionRegistrations.id, input.registrationId),
+      });
+      if (!reg) throw new TRPCError({ code: "NOT_FOUND", message: "Registration not found" });
+
+      // User can view their own or staff can view any
+      if (reg.userId !== ctx.userId) {
+        await requireCompStaffRole(reg.competitionId, ctx.userId, ["registration"]);
+      }
+
+      const entryList = await db
+        .select({
+          id: entries.id,
+          eventId: entries.eventId,
+          eventName: competitionEvents.name,
+          eventStyle: competitionEvents.style,
+          eventLevel: competitionEvents.level,
+          scratched: entries.scratched,
+          leaderRegistrationId: entries.leaderRegistrationId,
+          followerRegistrationId: entries.followerRegistrationId,
+        })
+        .from(entries)
+        .innerJoin(competitionEvents, eq(competitionEvents.id, entries.eventId))
+        .where(
+          sql`${entries.leaderRegistrationId} = ${input.registrationId}
+              OR ${entries.followerRegistrationId} = ${input.registrationId}`,
+        )
+        .orderBy(asc(competitionEvents.position));
+
+      return entryList;
+    }),
+
   listByCompetition: publicProcedure
     .input(z.object({ competitionId: z.number() }))
     .query(async ({ input }) => {
@@ -115,6 +151,97 @@ export const entryRouter = router({
         ...event,
         entries: allEntries.filter((e) => e.eventId === event.id),
       }));
+    }),
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        eventId: z.number(),
+        leaderRegistrationId: z.number(),
+        followerRegistrationId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const event = await db.query.competitionEvents.findFirst({
+        where: eq(competitionEvents.id, input.eventId),
+      });
+      if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+
+      const comp = await db.query.competitions.findFirst({
+        where: eq(competitions.id, event.competitionId),
+      });
+      if (!comp) throw new TRPCError({ code: "NOT_FOUND", message: "Competition not found" });
+
+      if (comp.status !== "accepting_entries") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Competition is not accepting entries",
+        });
+      }
+
+      // Validate both registrations exist and belong to this competition
+      const leaderReg = await db.query.competitionRegistrations.findFirst({
+        where: and(
+          eq(competitionRegistrations.id, input.leaderRegistrationId),
+          eq(competitionRegistrations.competitionId, event.competitionId),
+        ),
+      });
+      const followerReg = await db.query.competitionRegistrations.findFirst({
+        where: and(
+          eq(competitionRegistrations.id, input.followerRegistrationId),
+          eq(competitionRegistrations.competitionId, event.competitionId),
+        ),
+      });
+
+      if (!leaderReg || !followerReg) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Both registrations must belong to this competition",
+        });
+      }
+
+      if (leaderReg.userId === followerReg.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Leader and follower cannot be the same person",
+        });
+      }
+
+      // Check the user is one of the couple or staff
+      const isParticipant = leaderReg.userId === ctx.userId || followerReg.userId === ctx.userId;
+      if (!isParticipant) {
+        await requireCompStaffRole(event.competitionId, ctx.userId, ["registration"]);
+      }
+
+      // Check for duplicate
+      const existing = await db.query.entries.findFirst({
+        where: and(
+          eq(entries.eventId, input.eventId),
+          eq(entries.leaderRegistrationId, input.leaderRegistrationId),
+          eq(entries.followerRegistrationId, input.followerRegistrationId),
+        ),
+      });
+      if (existing) {
+        throw new TRPCError({ code: "CONFLICT", message: "Entry already exists" });
+      }
+
+      const [entry] = await db
+        .insert(entries)
+        .values({
+          eventId: input.eventId,
+          leaderRegistrationId: input.leaderRegistrationId,
+          followerRegistrationId: input.followerRegistrationId,
+          createdBy: ctx.userId,
+        })
+        .returning();
+
+      // Recalculate amount owed if per-event pricing
+      if (comp.pricingModel === "per_event") {
+        await recalcAmountOwed(input.leaderRegistrationId);
+        await recalcAmountOwed(input.followerRegistrationId);
+      }
+
+      return entry;
     }),
 
   remove: protectedProcedure
