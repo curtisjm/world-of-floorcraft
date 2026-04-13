@@ -40,18 +40,17 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
   });
 
   const updateMutation = trpc.post.update.useMutation();
-  const publishMutation = trpc.post.publish.useMutation({
-    onSuccess: (post) => {
-      if (post) router.push(`/posts/${post.id}`);
-    },
-  });
+
+  // Guard: prevent autosave from firing during publish
+  const isPublishingRef = useRef(false);
 
   // Auto-save for existing drafts (debounced)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const autoSave = useCallback(() => {
-    if (!existingPost) return;
+    if (!existingPost || isPublishingRef.current) return;
     clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => {
+      if (isPublishingRef.current) return;
       updateMutation.mutate({
         id: existingPost.id,
         title: title || undefined,
@@ -89,14 +88,17 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
 
   const handlePublish = async () => {
     if (existingPost) {
+      isPublishingRef.current = true;
       clearTimeout(saveTimeoutRef.current);
-      await updateMutation.mutateAsync({
+      const post = await updateMutation.mutateAsync({
         id: existingPost.id,
         title: title || undefined,
         body: body || undefined,
         visibility,
+        visibilityOrgId: visibility === "organization" ? visibilityOrgId : null,
+        publish: true,
       });
-      publishMutation.mutate({ id: existingPost.id });
+      if (post) router.push(`/posts/${post.id}`);
     } else {
       createMutation.mutate({
         title,
@@ -109,7 +111,7 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
   };
 
   const isPending =
-    createMutation.isPending || updateMutation.isPending || publishMutation.isPending;
+    createMutation.isPending || updateMutation.isPending;
   const isPublished = !!existingPost?.publishedAt;
 
   return (

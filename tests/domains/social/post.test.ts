@@ -180,6 +180,41 @@ describe("post router", () => {
     });
   });
 
+  describe("update with publish", () => {
+    it("atomically saves content and publishes in a single call", async () => {
+      const caller = createCaller(userId);
+      const post = await caller.post.createArticle({
+        title: "Draft",
+        body: "Old content",
+      });
+      expect(post.publishedAt).toBeNull();
+
+      const updated = await caller.post.update({
+        id: post.id,
+        title: "Final Title",
+        body: "Final content",
+        publish: true,
+      });
+      expect(updated!.title).toBe("Final Title");
+      expect(updated!.body).toBe("Final content");
+      expect(updated!.publishedAt).not.toBeNull();
+    });
+
+    it("does not set publishedAt when publish is not specified", async () => {
+      const caller = createCaller(userId);
+      const post = await caller.post.createArticle({
+        title: "Draft",
+        body: "Content",
+      });
+      const updated = await caller.post.update({
+        id: post.id,
+        title: "Updated Draft",
+      });
+      expect(updated!.title).toBe("Updated Draft");
+      expect(updated!.publishedAt).toBeNull();
+    });
+  });
+
   describe("delete", () => {
     it("deletes a post", async () => {
       const caller = createCaller(userId);

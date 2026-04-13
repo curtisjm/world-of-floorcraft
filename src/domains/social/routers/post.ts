@@ -128,10 +128,11 @@ export const postRouter = router({
         body: z.string().optional(),
         visibility: z.enum(["public", "followers", "organization"]).optional(),
         visibilityOrgId: z.number().nullable().optional(),
+        publish: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, visibilityOrgId, ...updates } = input;
+      const { id, visibilityOrgId, publish, ...updates } = input;
       if (input.visibility === "organization") {
         if (visibilityOrgId === undefined || visibilityOrgId === null) {
           throw new TRPCError({
@@ -149,6 +150,9 @@ export const postRouter = router({
         setValues.visibilityOrgId = visibilityOrgId;
       } else if (input.visibility) {
         setValues.visibilityOrgId = null;
+      }
+      if (publish) {
+        setValues.publishedAt = new Date();
       }
       const [post] = await db
         .update(posts)
