@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Newsreader, Source_Sans_3 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "@shared/components/providers";
 import { OnboardingGuard } from "@shared/components/onboarding-guard";
@@ -8,21 +8,27 @@ import { MainNav } from "@shared/components/main-nav";
 import { cn } from "@shared/lib/utils";
 import "./globals.css";
 
-const inter = Inter({
+const sourceSans = Source_Sans_3({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-body",
+  weight: "variable",
+  display: "swap",
 });
 
-const fraunces = Fraunces({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  variable: "--font-heading",
-  weight: ["300", "400", "500", "600"],
+  variable: "--font-display",
+  weight: "variable",
   style: ["normal", "italic"],
+  axes: ["opsz"],
+  display: "swap",
 });
 
-const jetBrainsMono = JetBrains_Mono({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-code",
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -41,7 +47,11 @@ export default function RootLayout({
       <html
         lang="en"
         suppressHydrationWarning
-        className={cn(inter.variable, fraunces.variable, jetBrainsMono.variable)}
+        className={cn(
+          sourceSans.variable,
+          newsreader.variable,
+          ibmPlexMono.variable,
+        )}
       >
         <body className="font-sans antialiased">
           <Providers>

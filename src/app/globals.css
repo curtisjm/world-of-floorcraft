@@ -192,9 +192,9 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  --font-sans: var(--font-sans);
-  --font-heading: var(--font-heading);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-code);
 }
 
 @layer base {
@@ -204,16 +204,23 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "ss01", "cv11";
+    font-feature-settings: "kern";
+    font-kerning: normal;
+    font-optical-sizing: auto;
+    font-synthesis-weight: none;
     text-rendering: geometricPrecision;
   }
   html {
+    --font-sans: var(--font-body);
+    --font-heading: var(--font-display);
+    --font-mono: var(--font-code);
     @apply font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 500;
     letter-spacing: 0;
+    line-height: 1.08;
   }
   ::selection {
     background: var(--foreground);
@@ -278,7 +285,7 @@
   .atelier-display-title {
     font-family: var(--font-heading);
     font-size: clamp(3.25rem, 7.2vw, 6.5rem);
-    font-weight: 500;
+    font-weight: 400;
     line-height: 0.94;
     letter-spacing: 0;
   }
