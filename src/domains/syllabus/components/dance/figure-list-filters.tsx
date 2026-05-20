@@ -124,7 +124,7 @@ export function FigureListFilters({ danceSlug, figures }: FigureListFiltersProps
                   </span>
                 )}
                 <div>
-                  <span className="font-heading text-lg font-medium">{figure.name}</span>
+                  <span className="text-lg font-medium">{figure.name}</span>
                   {figure.variantName && (
                     <span className="ml-2 text-sm text-muted-foreground">
                       ({figure.variantName})

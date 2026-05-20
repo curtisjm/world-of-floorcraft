@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Newsreader, Source_Sans_3 } from "next/font/google";
+import { Inter, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "@shared/components/providers";
 import { OnboardingGuard } from "@shared/components/onboarding-guard";
@@ -8,14 +8,15 @@ import { MainNav } from "@shared/components/main-nav";
 import { cn } from "@shared/lib/utils";
 import "./globals.css";
 
-const sourceSans = Source_Sans_3({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
   weight: "variable",
+  axes: ["opsz"],
   display: "swap",
 });
 
-const newsreader = Newsreader({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
   variable: "--font-display",
   weight: "variable",
@@ -24,10 +25,10 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-code",
-  weight: ["400", "500", "600"],
+  weight: "variable",
   display: "swap",
 });
 
@@ -48,9 +49,9 @@ export default function RootLayout({
         lang="en"
         suppressHydrationWarning
         className={cn(
-          sourceSans.variable,
-          newsreader.variable,
-          ibmPlexMono.variable,
+          inter.variable,
+          sourceSerif.variable,
+          jetBrainsMono.variable,
         )}
       >
         <body className="font-sans antialiased">
