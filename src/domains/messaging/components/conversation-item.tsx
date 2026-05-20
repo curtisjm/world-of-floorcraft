@@ -43,8 +43,8 @@ export function ConversationItem({
     <Link
       href={`/messages/${conversation.id}`}
       className={cn(
-        "flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors rounded-lg",
-        isActive && "bg-accent"
+        "flex items-center gap-3 border border-transparent p-3 transition-colors hover:border-border hover:bg-secondary",
+        isActive && "border-border bg-secondary"
       )}
     >
       <Avatar className="h-10 w-10">

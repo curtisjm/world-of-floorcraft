@@ -18,21 +18,21 @@
   --popover-foreground: oklch(0.07 0 0);
   --primary: oklch(0.07 0 0);            /* ink */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.965 0 0);         /* layer */
+  --secondary: oklch(0.945 0 0);         /* layer */
   --secondary-foreground: oklch(0.07 0 0);
-  --muted: oklch(0.965 0 0);
-  --muted-foreground: oklch(0.38 0 0);   /* graphite */
-  --accent: oklch(0.94 0 0);
+  --muted: oklch(0.945 0 0);
+  --muted-foreground: oklch(0.32 0 0);   /* graphite */
+  --accent: oklch(0.90 0 0);
   --accent-foreground: oklch(0.07 0 0);
 
   /* Destructive maps to wine */
   --destructive: oklch(0.40 0.10 18);
   --destructive-foreground: oklch(0.985 0 0);
 
-  --border: oklch(0.91 0 0);             /* rule */
-  --input: oklch(0.91 0 0);
-  --input-surface: oklch(0.965 0 0);
-  --ring: oklch(0.55 0 0);
+  --border: oklch(0.84 0 0);             /* rule */
+  --input: oklch(0.84 0 0);
+  --input-surface: oklch(0.94 0 0);
+  --ring: oklch(0.44 0 0);
 
   /* Charts — monochrome graphite scale */
   --chart-1: oklch(0.14 0 0);
@@ -80,44 +80,44 @@
   --sidebar-foreground: oklch(0.07 0 0);
   --sidebar-primary: oklch(0.07 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.965 0 0);
+  --sidebar-accent: oklch(0.945 0 0);
   --sidebar-accent-foreground: oklch(0.07 0 0);
-  --sidebar-border: oklch(0.91 0 0);
-  --sidebar-ring: oklch(0.55 0 0);
+  --sidebar-border: oklch(0.84 0 0);
+  --sidebar-ring: oklch(0.44 0 0);
 }
 
 .dark {
   color-scheme: dark;
 
   /* ── Atelier palette · dark ── */
-  --background: oklch(0.07 0 0);         /* carbon */
-  --foreground: oklch(0.985 0 0);        /* chalk */
-  --card: oklch(0.15 0 0);               /* surface */
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.15 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
+  --background: oklch(0.06 0 0);         /* carbon */
+  --foreground: oklch(0.995 0 0);        /* chalk */
+  --card: oklch(0.18 0 0);               /* surface */
+  --card-foreground: oklch(0.995 0 0);
+  --popover: oklch(0.18 0 0);
+  --popover-foreground: oklch(0.995 0 0);
+  --primary: oklch(0.995 0 0);
   --primary-foreground: oklch(0.07 0 0);
-  --secondary: oklch(0.19 0 0);          /* layer */
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.19 0 0);
-  --muted-foreground: oklch(0.72 0 0);
-  --accent: oklch(0.23 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.245 0 0);         /* layer */
+  --secondary-foreground: oklch(0.995 0 0);
+  --muted: oklch(0.245 0 0);
+  --muted-foreground: oklch(0.80 0 0);
+  --accent: oklch(0.30 0 0);
+  --accent-foreground: oklch(0.995 0 0);
 
   --destructive: oklch(0.55 0.10 18);
   --destructive-foreground: oklch(0.985 0 0);
 
-  --border: oklch(0.22 0 0);
-  --input: oklch(0.22 0 0);
-  --input-surface: oklch(0.19 0 0);
-  --ring: oklch(0.55 0 0);
+  --border: oklch(0.34 0 0);
+  --input: oklch(0.36 0 0);
+  --input-surface: oklch(0.225 0 0);
+  --ring: oklch(0.72 0 0);
 
   --chart-1: oklch(0.95 0 0);
   --chart-2: oklch(0.78 0 0);
   --chart-3: oklch(0.60 0 0);
   --chart-4: oklch(0.42 0 0);
-  --chart-5: oklch(0.25 0 0);
+  --chart-5: oklch(0.30 0 0);
 
   /* Semantics — lighter for dark backgrounds */
   --wine: oklch(0.64 0.10 18);
@@ -129,14 +129,14 @@
 
   /* Metals stay absolute across modes — they're materials, not surfaces */
 
-  --sidebar: oklch(0.07 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.985 0 0);
+  --sidebar: oklch(0.06 0 0);
+  --sidebar-foreground: oklch(0.995 0 0);
+  --sidebar-primary: oklch(0.995 0 0);
   --sidebar-primary-foreground: oklch(0.07 0 0);
-  --sidebar-accent: oklch(0.19 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.22 0 0);
-  --sidebar-ring: oklch(0.55 0 0);
+  --sidebar-accent: oklch(0.245 0 0);
+  --sidebar-accent-foreground: oklch(0.995 0 0);
+  --sidebar-border: oklch(0.34 0 0);
+  --sidebar-ring: oklch(0.72 0 0);
 }
 
 @theme inline {
@@ -392,7 +392,26 @@
   }
 
   [data-slot="card"] {
+    border-color: var(--border);
     box-shadow: none;
+  }
+
+  [data-slot="card"] > [data-slot="card-header"]:first-child {
+    border-bottom: 1px solid var(--border);
+    background-color: var(--secondary);
+  }
+
+  [data-slot="table-container"] {
+    border-color: var(--border);
+  }
+
+  [data-slot="table-head"] {
+    background-color: var(--secondary);
+    color: var(--muted-foreground);
+  }
+
+  [data-slot="table-row"] {
+    border-color: var(--border);
   }
 
   [data-slot="button"],

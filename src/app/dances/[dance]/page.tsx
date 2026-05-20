@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { eq, asc } from "drizzle-orm";
 import { Button } from "@shared/ui/button";
-import { Separator } from "@shared/ui/separator";
 import { getDb } from "@shared/db";
 import { dances, figures } from "@syllabus/schema";
 import { FigureListFilters } from "@syllabus/components/dance/figure-list-filters";
@@ -35,20 +34,21 @@ export default async function DancePage({
     .orderBy(asc(figures.figureNumber), asc(figures.name));
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+    <div className="atelier-shell py-10 sm:py-14">
+      <div className="space-y-10">
+        <div className="border-b border-border pb-10">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <p className="atelier-eyebrow mb-5">syllabus index</p>
+            <h1 className="atelier-display-title">
               {dance.displayName}
             </h1>
           </div>
           <Button asChild variant="outline">
             <Link href={`/dances/${danceSlug}/graph`}>View Graph</Link>
           </Button>
+          </div>
         </div>
-
-        <Separator />
 
         <FigureListFilters danceSlug={danceSlug} figures={danceFigures} />
       </div>
