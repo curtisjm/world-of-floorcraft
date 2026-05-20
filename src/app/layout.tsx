@@ -47,7 +47,7 @@ export default function RootLayout({
           <Providers>
             <div className="min-h-screen flex flex-col">
               <MainNav />
-              <main className="flex-1">
+              <main className="flex-1 bg-background">
                 <OnboardingGuard>{children}</OnboardingGuard>
               </main>
             </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Card, CardContent, CardHeader } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
 import { InteractionBar } from "./interaction-bar";
@@ -25,22 +26,19 @@ export function PostCard({ post }: PostCardProps) {
     : null;
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="atelier-link-card">
+      <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-            {post.authorAvatarUrl ? (
-              <img
-                src={post.authorAvatarUrl}
-                alt={authorName}
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            ) : (
-              authorName[0]?.toUpperCase() ?? "?"
+          <Avatar className="size-9 border" size="lg">
+            {post.authorAvatarUrl && (
+              <AvatarImage src={post.authorAvatarUrl} alt={authorName} />
             )}
-          </div>
+            <AvatarFallback className="font-mono text-xs font-medium">
+              {authorName[0]?.toUpperCase() ?? "?"}
+            </AvatarFallback>
+          </Avatar>
 
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <Link
               href={`/users/${post.authorUsername}`}
               className="text-sm font-medium hover:underline"
@@ -63,7 +61,9 @@ export function PostCard({ post }: PostCardProps) {
       <CardContent>
         <Link href={`/posts/${post.id}`} className="block">
           {post.title && (
-            <h3 className="font-semibold mb-1 hover:underline">{post.title}</h3>
+            <h3 className="mb-2 font-heading text-xl font-medium hover:underline">
+              {post.title}
+            </h3>
           )}
           {preview && (
             <p className="text-sm text-muted-foreground line-clamp-3">

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { StatusBadge } from "./status-badge";
-import { MapPin, Calendar } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 interface CompetitionCardProps {
   competition: {
@@ -26,10 +26,10 @@ export function CompetitionCard({ competition, orgName }: CompetitionCardProps) 
 
   return (
     <Link href={`/competitions/${competition.slug}`}>
-      <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
-        <CardHeader className="pb-2">
+      <Card className="atelier-link-card h-full cursor-pointer">
+        <CardHeader>
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base font-semibold leading-tight">
+            <CardTitle className="font-heading text-xl font-medium leading-tight">
               {competition.name}
             </CardTitle>
             <StatusBadge status={competition.status} />
@@ -38,7 +38,7 @@ export function CompetitionCard({ competition, orgName }: CompetitionCardProps) 
             <p className="text-sm text-muted-foreground">{orgName}</p>
           )}
         </CardHeader>
-        <CardContent className="space-y-1.5">
+        <CardContent className="flex flex-col gap-1.5">
           {competition.description && (
             <p className="text-sm text-muted-foreground line-clamp-2">
               {competition.description}

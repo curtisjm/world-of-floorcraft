@@ -14,9 +14,9 @@ const LEVEL_TO_GROUP: Record<string, LevelGroup> = {
 };
 
 const TOGGLE_CONFIG: { key: LevelGroup; label: string; color: string }[] = [
-  { key: "bronze", label: "Bronze", color: "#CD7F32" },
-  { key: "silver", label: "Silver", color: "#C0C0C0" },
-  { key: "gold", label: "Gold", color: "#FFD700" },
+  { key: "bronze", label: "Bronze", color: "var(--bronze-base)" },
+  { key: "silver", label: "Silver", color: "var(--silver-matte)" },
+  { key: "gold", label: "Gold", color: "var(--gold-base)" },
 ];
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -71,25 +71,25 @@ export function FigureListFilters({ danceSlug, figures }: FigureListFiltersProps
   }, [figures, search, enabledLevels]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search figures..."
-          className="flex-1 rounded-md border border-border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex-1 rounded-sm border border-border bg-input-surface px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <div className="flex gap-2">
           {TOGGLE_CONFIG.map(({ key, label, color }) => (
             <button
               key={key}
               onClick={() => toggleLevel(key)}
-              className="px-3 py-1.5 rounded-md text-xs font-medium border-2 transition-all"
+              className="rounded-sm border px-3 py-1.5 text-xs font-medium transition-all"
               style={{
                 borderColor: color,
                 backgroundColor: enabledLevels[key] ? color : "transparent",
-                color: enabledLevels[key] ? "#000" : color,
+                color: enabledLevels[key] ? "oklch(0.07 0 0)" : color,
                 opacity: enabledLevels[key] ? 1 : 0.5,
               }}
             >
@@ -106,11 +106,11 @@ export function FigureListFilters({ danceSlug, figures }: FigureListFiltersProps
       </p>
 
       {filtered.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">
+        <p className="py-8 text-center text-muted-foreground">
           No figures match your search.
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {filtered.map((figure) => (
             <Link
               key={figure.id}

@@ -60,7 +60,7 @@ function SheetContent({
       <DialogPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "fixed z-50 flex flex-col gap-4 bg-background shadow-lg transition ease-in-out duration-300 data-[state=closed]:animate-out data-[state=open]:animate-in",
+          "fixed z-50 flex flex-col gap-4 bg-card shadow-none transition ease-in-out duration-300 data-[state=closed]:animate-out data-[state=open]:animate-in",
           side === "right" &&
             "inset-y-0 right-0 h-full w-3/4 max-w-sm border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
           side === "left" &&
