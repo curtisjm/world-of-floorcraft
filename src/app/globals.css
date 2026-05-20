@@ -10,43 +10,43 @@
 
   /* ── Atelier palette · light ──
      Cool surfaces, no chromatic accent. The metals carry the brand. */
-  --background: oklch(0.985 0 0);        /* paper */
-  --foreground: oklch(0.07 0 0);         /* ink */
-  --card: oklch(1 0 0);                  /* surface */
-  --card-foreground: oklch(0.07 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.07 0 0);
-  --primary: oklch(0.07 0 0);            /* ink */
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.945 0 0);         /* layer */
-  --secondary-foreground: oklch(0.07 0 0);
-  --muted: oklch(0.945 0 0);
-  --muted-foreground: oklch(0.32 0 0);   /* graphite */
-  --accent: oklch(0.90 0 0);
-  --accent-foreground: oklch(0.07 0 0);
+  --background: #fafaf9;                 /* paper */
+  --foreground: #0a0a0a;                 /* ink */
+  --card: #ffffff;                       /* surface */
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;                    /* ink */
+  --primary-foreground: #fafaf9;
+  --secondary: #f4f4f3;                  /* layer */
+  --secondary-foreground: #0a0a0a;
+  --muted: #f4f4f3;
+  --muted-foreground: #404040;           /* graphite */
+  --accent: #e5e5e5;                     /* rule */
+  --accent-foreground: #0a0a0a;
 
   /* Destructive maps to wine */
-  --destructive: oklch(0.40 0.10 18);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive: #7a2228;
+  --destructive-foreground: #fafaf9;
 
-  --border: oklch(0.84 0 0);             /* rule */
-  --input: oklch(0.84 0 0);
-  --input-surface: oklch(0.94 0 0);
-  --ring: oklch(0.44 0 0);
+  --border: #e5e5e5;                     /* rule */
+  --input: #d4d4d4;                      /* rule strong */
+  --input-surface: #f4f4f3;
+  --ring: #737373;                       /* smoke */
 
   /* Charts — monochrome graphite scale */
-  --chart-1: oklch(0.14 0 0);
-  --chart-2: oklch(0.36 0 0);
-  --chart-3: oklch(0.55 0 0);
-  --chart-4: oklch(0.72 0 0);
-  --chart-5: oklch(0.87 0 0);
+  --chart-1: #0a0a0a;
+  --chart-2: #404040;
+  --chart-3: #737373;
+  --chart-4: #d4d4d4;
+  --chart-5: #e5e5e5;
 
   /* ── Refined semantics · material names, not signals ── */
-  --wine: oklch(0.40 0.10 18);       /* destructive · aged Bordeaux */
+  --wine: #7a2228;                   /* destructive · aged Bordeaux */
   --wine-tint: rgba(122, 34, 40, 0.07);
-  --sage: oklch(0.43 0.04 145);      /* success · dusty herb */
+  --sage: #4d6651;                   /* success · dusty herb */
   --sage-tint: rgba(77, 102, 81, 0.08);
-  --clay: oklch(0.54 0.10 52);       /* warning · burnt terracotta */
+  --clay: #a55a32;                   /* warning · burnt terracotta */
   --clay-tint: rgba(165, 90, 50, 0.08);
 
   /* ── The Metals · full stacks (base · highlight · shadow · gleam · matte) ── */
@@ -76,67 +76,67 @@
   --radius: 0.125rem;
 
   /* Sidebar tokens */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.07 0 0);
-  --sidebar-primary: oklch(0.07 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.945 0 0);
-  --sidebar-accent-foreground: oklch(0.07 0 0);
-  --sidebar-border: oklch(0.84 0 0);
-  --sidebar-ring: oklch(0.44 0 0);
+  --sidebar: #fafaf9;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #0a0a0a;
+  --sidebar-primary-foreground: #fafaf9;
+  --sidebar-accent: #f4f4f3;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #737373;
 }
 
 .dark {
   color-scheme: dark;
 
   /* ── Atelier palette · dark ── */
-  --background: oklch(0.06 0 0);         /* carbon */
-  --foreground: oklch(0.995 0 0);        /* chalk */
-  --card: oklch(0.18 0 0);               /* surface */
-  --card-foreground: oklch(0.995 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(0.995 0 0);
-  --primary: oklch(0.995 0 0);
-  --primary-foreground: oklch(0.07 0 0);
-  --secondary: oklch(0.245 0 0);         /* layer */
-  --secondary-foreground: oklch(0.995 0 0);
-  --muted: oklch(0.245 0 0);
-  --muted-foreground: oklch(0.80 0 0);
-  --accent: oklch(0.30 0 0);
-  --accent-foreground: oklch(0.995 0 0);
+  --background: #0a0a0a;                 /* carbon */
+  --foreground: #fafafa;                 /* chalk */
+  --card: #141414;                       /* surface */
+  --card-foreground: #fafafa;
+  --popover: #141414;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1c1c1c;                  /* layer from the preview */
+  --secondary-foreground: #fafafa;
+  --muted: #1c1c1c;
+  --muted-foreground: #d4d4d4;           /* mist */
+  --accent: #262626;                     /* rule */
+  --accent-foreground: #fafafa;
 
-  --destructive: oklch(0.55 0.10 18);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive: #7a2228;
+  --destructive-foreground: #fafafa;
 
-  --border: oklch(0.34 0 0);
-  --input: oklch(0.36 0 0);
-  --input-surface: oklch(0.225 0 0);
-  --ring: oklch(0.72 0 0);
+  --border: #262626;                     /* rule */
+  --input: #262626;
+  --input-surface: #1c1c1c;
+  --ring: #737373;                       /* smoke */
 
-  --chart-1: oklch(0.95 0 0);
-  --chart-2: oklch(0.78 0 0);
-  --chart-3: oklch(0.60 0 0);
-  --chart-4: oklch(0.42 0 0);
-  --chart-5: oklch(0.30 0 0);
+  --chart-1: #fafafa;
+  --chart-2: #d4d4d4;
+  --chart-3: #737373;
+  --chart-4: #262626;
+  --chart-5: #141414;
 
   /* Semantics — lighter for dark backgrounds */
-  --wine: oklch(0.64 0.10 18);
-  --wine-tint: rgba(181, 87, 92, 0.12);
-  --sage: oklch(0.72 0.04 145);
-  --sage-tint: rgba(155, 178, 159, 0.10);
-  --clay: oklch(0.72 0.09 52);
-  --clay-tint: rgba(212, 152, 116, 0.10);
+  --wine: #7a2228;
+  --wine-tint: rgba(122, 34, 40, 0.16);
+  --sage: #4d6651;
+  --sage-tint: rgba(77, 102, 81, 0.16);
+  --clay: #a55a32;
+  --clay-tint: rgba(165, 90, 50, 0.16);
 
   /* Metals stay absolute across modes — they're materials, not surfaces */
 
-  --sidebar: oklch(0.06 0 0);
-  --sidebar-foreground: oklch(0.995 0 0);
-  --sidebar-primary: oklch(0.995 0 0);
-  --sidebar-primary-foreground: oklch(0.07 0 0);
-  --sidebar-accent: oklch(0.245 0 0);
-  --sidebar-accent-foreground: oklch(0.995 0 0);
-  --sidebar-border: oklch(0.34 0 0);
-  --sidebar-ring: oklch(0.72 0 0);
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1c1c1c;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #737373;
 }
 
 @theme inline {
