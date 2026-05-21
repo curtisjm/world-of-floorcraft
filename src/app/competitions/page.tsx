@@ -146,11 +146,12 @@ function ActiveTab({
           ))}
         </div>
       ) : !data?.items.length ? (
-        <div className="atelier-panel flex flex-col items-center gap-4 rounded-lg px-6 py-12 text-center">
+        <div className="atelier-empty-state atelier-empty-state-centered px-6 py-12">
+          <span className="atelier-empty-glyph" aria-hidden="true" />
           <p className="text-muted-foreground">
             {statusFilter
               ? "No competitions match this filter."
-              : "No competitions yet. Create the first one!"}
+              : "Create the first competition when the syllabus is ready for the floor."}
           </p>
           {!statusFilter && (
             <Link href="/competitions/create">

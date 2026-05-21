@@ -190,6 +190,12 @@ This system is flat by default. It conveys depth through surface contrast, borde
 
 - **Style:** Top navigation uses a translucent blurred background with a bottom rule. Active dashboard items have a border and accent fill. Dropdowns, popovers, and selects use opaque surfaces with full borders so underlying text never competes with menu text.
 
+### Delight Moments
+
+- **Loading:** Skeletons use a subtle moving rule line instead of a pulse. The motion is short, quiet, and disabled for reduced-motion users.
+- **Empty states:** Use the small atelier diamond glyph and specific guidance about what the surface becomes once populated. Avoid generic "nothing here" copy.
+- **Brand mark:** The home mark may respond softly on hover or keyboard focus. Do not extend this into decorative logo animation elsewhere.
+
 ### Figure Graph
 
 Graph nodes use square surfaces, full borders, and metal borders for syllabus level. The center node gets an outline, not a glow.

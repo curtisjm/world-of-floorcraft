@@ -122,7 +122,7 @@ export function MainNav() {
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="mr-2 flex items-center gap-3 text-foreground md:mr-6"
+            className="brand-link mr-2 flex items-center gap-3 text-foreground md:mr-6"
           >
             <span className="brand-mark" aria-hidden="true" />
             <span className="font-heading text-[1.0625rem] font-medium leading-none">

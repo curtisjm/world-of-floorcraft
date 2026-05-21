@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { trpc } from "@shared/lib/trpc";
 import { Button } from "@shared/ui/button";
+import { Skeleton } from "@shared/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { PostCard } from "./post-card";
 
@@ -39,14 +40,23 @@ function FollowingFeed() {
   const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return (
+      <div className="grid gap-3">
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+      </div>
+    );
   }
 
   if (allPosts.length === 0) {
     return (
-      <p className="atelier-panel px-5 py-6 text-sm text-muted-foreground">
-        No posts yet. Follow other dancers to see their posts here.
-      </p>
+      <div className="atelier-empty-state">
+        <span className="atelier-empty-glyph" aria-hidden="true" />
+        <p className="text-sm">
+          Follow dancers, studios, or competitors and this becomes your
+          floor-side notebook.
+        </p>
+      </div>
     );
   }
 
@@ -81,14 +91,20 @@ function ExploreFeed() {
   const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return (
+      <div className="grid gap-3">
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+      </div>
+    );
   }
 
   if (allPosts.length === 0) {
     return (
-      <p className="atelier-panel px-5 py-6 text-sm text-muted-foreground">
-        No public posts yet. Be the first to share something!
-      </p>
+      <div className="atelier-empty-state">
+        <span className="atelier-empty-glyph" aria-hidden="true" />
+        <p className="text-sm">No public notes yet. The first one sets the tone.</p>
+      </div>
     );
   }
 

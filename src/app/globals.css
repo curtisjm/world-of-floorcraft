@@ -357,6 +357,10 @@
     transform: translateY(-1px);
   }
 
+  .brand-link {
+    transition: color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   .tracking-tight,
   .tracking-tighter,
   .tracking-wider,
@@ -384,6 +388,74 @@
   .brand-mark::after {
     inset: 0.5rem;
     background: currentColor;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .brand-link:hover .brand-mark::after,
+  .brand-link:focus-visible .brand-mark::after {
+    opacity: 0.72;
+    transform: rotate(45deg) scale(0.68);
+  }
+
+  .atelier-empty-state {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 1.25rem;
+    color: var(--muted-foreground);
+  }
+
+  .atelier-empty-state-centered {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .atelier-empty-glyph {
+    position: relative;
+    display: inline-block;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .atelier-empty-glyph::before,
+  .atelier-empty-glyph::after {
+    content: "";
+    position: absolute;
+    inset: 0.25rem;
+    border: 1px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  .atelier-empty-glyph::after {
+    inset: 0.7rem;
+    background: currentColor;
+    opacity: 0.44;
+  }
+
+  .atelier-skeleton {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .atelier-skeleton::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: -45%;
+    width: 45%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklch, var(--foreground) 10%, transparent),
+      transparent
+    );
+    transform: skewX(-12deg);
+    animation: atelier-skeleton-rule 1.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   }
 
   .atelier-panel,
@@ -396,6 +468,29 @@
 
   [data-slot="skeleton"] {
     background-color: var(--secondary);
+  }
+
+  @keyframes atelier-skeleton-rule {
+    from {
+      transform: translateX(0) skewX(-12deg);
+    }
+
+    to {
+      transform: translateX(320%) skewX(-12deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-mark::after,
+    .atelier-link-card,
+    .brand-link {
+      transition: none;
+    }
+
+    .atelier-skeleton::after {
+      animation: none;
+      opacity: 0;
+    }
   }
 
   [data-slot="card"] {

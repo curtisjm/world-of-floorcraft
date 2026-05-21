@@ -5,6 +5,7 @@ import { trpc } from "@shared/lib/trpc";
 import { ConversationItem } from "./conversation-item";
 import { NewConversation } from "./new-conversation";
 import { ScrollArea } from "@shared/ui/scroll-area";
+import { Skeleton } from "@shared/ui/skeleton";
 
 export function ConversationSidebar() {
   const params = useParams();
@@ -24,7 +25,20 @@ export function ConversationSidebar() {
         <NewConversation />
       </div>
       <ScrollArea className="flex-1">
-        {isLoading && <p className="p-4 text-sm text-muted-foreground">Loading...</p>}
+        {isLoading && (
+          <div className="grid gap-2 p-3">
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-14 w-full" />
+          </div>
+        )}
+
+        {!isLoading && dms.length === 0 && channels.length === 0 && (
+          <div className="atelier-empty-state m-3">
+            <span className="atelier-empty-glyph" aria-hidden="true" />
+            <p className="text-sm">New conversations will collect here.</p>
+          </div>
+        )}
 
         {dms.length > 0 && (
           <div className="p-2">

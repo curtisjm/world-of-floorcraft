@@ -48,7 +48,7 @@ export function NotificationBell() {
         align="end"
         sideOffset={8}
       >
-        <NotificationPanel onClose={() => setOpen(false)} />
+        <NotificationPanel />
       </PopoverContent>
     </Popover>
   );

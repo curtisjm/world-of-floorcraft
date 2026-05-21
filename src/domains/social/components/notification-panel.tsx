@@ -3,11 +3,8 @@
 import { trpc } from "@shared/lib/trpc";
 import { Button } from "@shared/ui/button";
 import { ScrollArea } from "@shared/ui/scroll-area";
+import { Skeleton } from "@shared/ui/skeleton";
 import { NotificationItem } from "./notification-item";
-
-interface NotificationPanelProps {
-  onClose: () => void;
-}
 
 // ── Time-group helpers ─────────────────────────────────────────────────────────
 
@@ -29,7 +26,7 @@ type Group = (typeof GROUP_ORDER)[number];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function NotificationPanel({ onClose: _onClose }: NotificationPanelProps) {
+export function NotificationPanel() {
   const utils = trpc.useUtils();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -90,15 +87,18 @@ export function NotificationPanel({ onClose: _onClose }: NotificationPanelProps)
       {/* Content */}
       <ScrollArea className="max-h-[500px]">
         {isLoading && (
-          <p className="text-muted-foreground text-sm px-4 py-6 text-center">
-            Loading…
-          </p>
+          <div className="grid gap-2 p-3">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
         )}
 
         {!isLoading && allNotifications.length === 0 && (
-          <p className="text-muted-foreground text-sm px-4 py-6 text-center">
-            No notifications yet.
-          </p>
+          <div className="atelier-empty-state atelier-empty-state-centered border-0 border-b border-border bg-popover px-4 py-8">
+            <span className="atelier-empty-glyph" aria-hidden="true" />
+            <p className="text-sm">No notices are waiting.</p>
+          </div>
         )}
 
         {GROUP_ORDER.map((group) => {

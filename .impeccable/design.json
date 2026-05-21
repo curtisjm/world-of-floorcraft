@@ -86,6 +86,12 @@
       "menus": "Dropdowns, popovers, and selects use opaque surfaces so underlying text cannot compete.",
       "blur": "Use blur for sticky chrome and modal/sheet overlays only, never as a general card or menu aesthetic."
     },
+    "delightRules": {
+      "strategy": "Subtle product moments only. Delight should appear in completion, loading, empty states, and precise hover feedback.",
+      "loading": "Skeletons use a quiet moving rule line, respect reduced motion, and never delay content.",
+      "emptyStates": "Use the atelier diamond glyph with specific guidance about what the surface becomes once populated.",
+      "brandMark": "The brand mark may respond softly on hover or keyboard focus. Keep it brief and non-decorative."
+    },
     "antiReferences": [
       "beige or brown shadcn stone defaults",
       "rounded card-heavy SaaS layouts",
