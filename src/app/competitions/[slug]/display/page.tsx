@@ -46,8 +46,8 @@ export default function ProjectorDisplayPage() {
 
   if (!comp || !schedule) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-zinc-500 text-2xl animate-pulse">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+        <div className="animate-pulse text-2xl text-[#737373]">Loading...</div>
       </div>
     );
   }
@@ -92,10 +92,10 @@ export default function ProjectorDisplayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white px-8 py-10 relative">
+    <div className="relative min-h-screen bg-[#0a0a0a] px-8 py-10 text-[#fafafa]">
       {/* Connection status indicator */}
       <div className="absolute top-4 right-4">
-        <span className={`inline-block size-3 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500 animate-pulse"}`} />
+        <span className={`inline-block size-3 rounded-full ${isConnected ? "bg-sage" : "animate-pulse bg-wine"}`} />
       </div>
 
       {/* Competition name */}
@@ -116,7 +116,7 @@ export default function ProjectorDisplayPage() {
           return (
             <div key={day.id}>
               {days.length > 1 && (
-                <h2 className="text-2xl font-semibold text-zinc-400 mb-4 border-b border-zinc-800 pb-2">
+                <h2 className="mb-4 border-b border-[#262626] pb-2 text-2xl font-semibold text-[#d4d4d4]">
                   {day.label ?? `Day ${day.position + 1}`}
                 </h2>
               )}
@@ -127,7 +127,7 @@ export default function ProjectorDisplayPage() {
               ))}
 
               {dayEvents.length === 0 && (
-                <p className="text-zinc-600 text-xl text-center py-8">
+                <p className="py-8 text-center text-xl text-[#737373]">
                   No events scheduled.
                 </p>
               )}
@@ -141,17 +141,17 @@ export default function ProjectorDisplayPage() {
                     <div key={evt.id}>
                       <div
                         ref={isActive ? activeRef : undefined}
-                        className={`rounded-lg px-6 py-5 transition-all ${
+                        className={`rounded-[2px] border px-6 py-5 transition-colors ${
                           isActive
-                            ? "border-l-4 border-yellow-400 bg-zinc-900 shadow-lg shadow-yellow-400/10"
+                            ? "border-gold/60 bg-[#141414]"
                             : isCompleted
-                              ? "opacity-40"
-                              : "bg-zinc-950 border-l-4 border-zinc-800"
+                              ? "border-[#262626] bg-[#141414] opacity-40"
+                              : "border-[#262626] bg-[#141414]"
                         }`}
                       >
                         <div className="flex items-center gap-4">
                           {isActive && (
-                            <Badge className="bg-yellow-400 text-black font-bold text-sm px-3 py-1 animate-pulse">
+                            <Badge className="animate-pulse bg-gold px-3 py-1 text-sm font-bold text-[#0a0a0a]">
                               NOW
                             </Badge>
                           )}
@@ -159,7 +159,7 @@ export default function ProjectorDisplayPage() {
                             {evt.name}
                           </span>
                           {isCompleted && (
-                            <span className="text-zinc-500 text-lg ml-auto">
+                            <span className="ml-auto text-lg text-[#737373]">
                               Completed
                             </span>
                           )}
@@ -171,7 +171,7 @@ export default function ProjectorDisplayPage() {
                               <Badge
                                 key={num}
                                 variant="outline"
-                                className="font-mono text-lg px-3 py-1 border-zinc-600 text-zinc-300"
+                                className="border-[#737373] px-3 py-1 font-mono text-lg text-[#d4d4d4]"
                               >
                                 {num}
                               </Badge>
@@ -203,9 +203,9 @@ export default function ProjectorDisplayPage() {
 
 function AnnouncementBanner({ content }: { content: string }) {
   return (
-    <div className="my-3 rounded-lg border border-amber-500 bg-amber-900/30 px-6 py-4 flex items-start gap-4">
-      <Megaphone className="h-6 w-6 text-amber-400 mt-0.5 shrink-0" />
-      <p className="text-xl text-amber-100 leading-relaxed whitespace-pre-wrap">
+    <div className="my-3 flex items-start gap-4 rounded-[2px] border border-clay/50 bg-clay/15 px-6 py-4">
+      <Megaphone className="mt-0.5 h-6 w-6 shrink-0 text-clay" />
+      <p className="whitespace-pre-wrap text-xl leading-relaxed text-[#fafafa]">
         {content}
       </p>
     </div>

@@ -59,7 +59,7 @@ export function SendInvite({ orgId }: SendInviteProps) {
       </div>
 
       {debouncedQuery.length >= 1 && (
-        <div className="rounded-md border">
+        <div className="rounded-[2px] border bg-popover">
           {searchResults.isLoading ? (
             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -80,7 +80,7 @@ export function SendInvite({ orgId }: SendInviteProps) {
                         (sendMutation.isPending &&
                           sendMutation.variables?.userId === user.id)
                       }
-                      className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-default"
+                      className="flex w-full items-center gap-3 rounded-[2px] px-3 py-2 text-left transition-colors hover:bg-accent disabled:cursor-default disabled:opacity-50"
                     >
                       <Avatar size="sm">
                         {user.avatarUrl && (
@@ -104,7 +104,7 @@ export function SendInvite({ orgId }: SendInviteProps) {
                       </div>
                       <div className="shrink-0">
                         {alreadySent ? (
-                          <span className="flex items-center gap-1 text-xs text-emerald-500">
+                          <span className="flex items-center gap-1 text-xs text-sage">
                             <Check className="h-3 w-3" />
                             Sent
                           </span>

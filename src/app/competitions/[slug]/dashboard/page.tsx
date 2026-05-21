@@ -61,10 +61,10 @@ export default function DashboardOverviewPage() {
       <div className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-lg" />
+            <Skeleton key={i} className="h-24 rounded-none" />
           ))}
         </div>
-        <Skeleton className="h-48 rounded-lg" />
+        <Skeleton className="h-48 rounded-none" />
       </div>
     );
   }
@@ -211,10 +211,10 @@ export default function DashboardOverviewPage() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                className="flex items-center gap-3 rounded-[2px] border border-transparent p-2 transition-colors hover:border-border hover:bg-accent/50"
               >
                 {item.done ? (
-                  <CheckCircle2 className="size-5 text-green-500 shrink-0" />
+                  <CheckCircle2 className="size-5 shrink-0 text-sage" />
                 ) : (
                   <Circle className="size-5 text-muted-foreground/40 shrink-0" />
                 )}
@@ -235,9 +235,9 @@ export default function DashboardOverviewPage() {
           </div>
 
           {comp.status === "draft" && completedSteps < checklist.length && (
-            <div className="mt-4 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/10 flex items-start gap-2">
-              <AlertTriangle className="size-4 text-yellow-600 dark:text-yellow-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-yellow-800 dark:text-yellow-400">
+            <div className="mt-4 flex items-start gap-2 rounded-[2px] border border-clay/40 bg-clay/10 p-3">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-clay" />
+              <p className="text-sm text-clay">
                 Complete all setup steps before advertising your competition.
               </p>
             </div>

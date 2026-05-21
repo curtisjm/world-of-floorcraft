@@ -25,7 +25,7 @@ export function MemberList({ orgId }: MemberListProps) {
         <Link
           key={member.userId}
           href={`/users/${member.username}`}
-          className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors"
+          className="flex items-center gap-3 rounded-[2px] border border-transparent p-3 transition-colors hover:border-border hover:bg-accent/50"
         >
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={member.avatarUrl ?? undefined} />

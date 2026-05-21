@@ -41,7 +41,7 @@ export default function ResultsBrowsePage() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
       <div className="flex items-center gap-3">
-        <Trophy className="size-6 text-amber-500" />
+        <Trophy className="size-6 text-gold" />
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Competition Results</h1>
           <p className="text-sm text-muted-foreground">

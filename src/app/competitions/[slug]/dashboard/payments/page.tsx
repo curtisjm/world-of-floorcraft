@@ -35,7 +35,7 @@ export default function PaymentsPage() {
         <Skeleton className="h-10 w-48" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-lg" />
+            <Skeleton key={i} className="h-24 rounded-none" />
           ))}
         </div>
       </div>
@@ -55,7 +55,7 @@ export default function PaymentsPage() {
                 <p className="text-sm text-muted-foreground">Total Collected</p>
                 <p className="text-2xl font-bold">${summary?.totalCollected ?? "0.00"}</p>
               </div>
-              <DollarSign className="size-8 text-green-500/50" />
+              <DollarSign className="size-8 text-sage/70" />
             </div>
           </CardContent>
         </Card>
@@ -66,7 +66,7 @@ export default function PaymentsPage() {
                 <p className="text-sm text-muted-foreground">Total Owed</p>
                 <p className="text-2xl font-bold">${summary?.totalOwed ?? "0.00"}</p>
               </div>
-              <Banknote className="size-8 text-yellow-500/50" />
+              <Banknote className="size-8 text-clay/70" />
             </div>
           </CardContent>
         </Card>
@@ -77,7 +77,7 @@ export default function PaymentsPage() {
                 <p className="text-sm text-muted-foreground">Net Collected</p>
                 <p className="text-2xl font-bold">${summary?.netCollected ?? "0.00"}</p>
               </div>
-              <CreditCard className="size-8 text-blue-500/50" />
+              <CreditCard className="size-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -128,7 +128,7 @@ export default function PaymentsPage() {
             </div>
           ) : connectStatus?.connected ? (
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-5 text-green-500" />
+              <CheckCircle2 className="size-5 text-sage" />
               <span className="text-sm">
                 Stripe connected
                 {connectStatus.chargesEnabled ? " — charges enabled" : " — pending verification"}
@@ -137,7 +137,7 @@ export default function PaymentsPage() {
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <AlertCircle className="size-5 text-yellow-500" />
+                <AlertCircle className="size-5 text-clay" />
                 <span className="text-sm">Not connected to Stripe</span>
               </div>
               <Button

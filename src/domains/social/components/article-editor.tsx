@@ -131,7 +131,7 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
         <select
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full sm:w-auto"
+          className="w-full rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35 sm:w-auto"
           value={visibility}
           onChange={(e) => {
             const v = e.target.value as typeof visibility;
@@ -146,7 +146,7 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
 
         {visibility === "organization" && userOrgs && userOrgs.length > 0 && (
           <select
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full sm:w-auto"
+            className="w-full rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35 sm:w-auto"
             value={visibilityOrgId ?? ""}
             onChange={(e) => setVisibilityOrgId(e.target.value ? Number(e.target.value) : null)}
           >

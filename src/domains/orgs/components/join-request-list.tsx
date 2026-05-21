@@ -29,7 +29,7 @@ export function JoinRequestList({ orgId }: JoinRequestListProps) {
       {data.map((request) => (
         <div
           key={request.id}
-          className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+          className="flex items-center gap-3 border bg-card p-3"
         >
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={request.avatarUrl ?? undefined} />

@@ -411,8 +411,8 @@ function NoteCard<
   });
 
   return (
-    <div className="ml-2 sm:ml-6 my-2 flex items-start gap-2 sm:gap-3 rounded-lg border-l-4 border-amber-500 bg-amber-50/10 dark:bg-amber-950/10 px-3 sm:px-4 py-2 sm:py-3">
-      <Megaphone className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+    <div className="my-2 ml-2 flex items-start gap-2 rounded-[2px] border border-clay/40 bg-clay/10 px-3 py-2 sm:ml-6 sm:gap-3 sm:px-4 sm:py-3">
+      <Megaphone className="mt-0.5 h-5 w-5 shrink-0 text-clay" />
       <div className="flex-1 min-w-0">
         <p className="text-base sm:text-lg leading-relaxed whitespace-pre-wrap">
           {note.content}

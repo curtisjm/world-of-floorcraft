@@ -21,7 +21,7 @@ export function ShareButton({ postId }: ShareButtonProps) {
   return (
     <Button variant="ghost" size="sm" onClick={handleCopy}>
       {copied ? (
-        <Check className="h-4 w-4 text-green-500" />
+        <Check className="h-4 w-4 text-sage" />
       ) : (
         <Share2 className="h-4 w-4" />
       )}

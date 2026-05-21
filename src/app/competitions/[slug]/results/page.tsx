@@ -132,7 +132,7 @@ function ResultsHeader({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <Trophy className="size-6 text-amber-500" />
+      <Trophy className="size-6 text-gold" />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{compName}</h1>
         <p className="text-sm text-muted-foreground">
@@ -159,10 +159,10 @@ function PlacementRow({
   const isMedal = placement <= 3;
   const medalColor =
     placement === 1
-      ? "text-amber-600 dark:text-amber-400"
+      ? "text-gold"
       : placement === 2
-        ? "text-gray-500 dark:text-gray-400"
-        : "text-orange-600 dark:text-orange-400";
+        ? "text-silver"
+        : "text-bronze";
 
   return (
     <div className="flex items-center gap-3 text-sm">

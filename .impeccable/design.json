@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-21T19:35:44Z",
+  "title": "Design System: World of Floorcraft",
+  "extensions": {
+    "northStar": "The Atelier Syllabus",
+    "colorMeta": {
+      "carbon": {
+        "role": "background",
+        "displayName": "Carbon",
+        "canonical": "#0a0a0a",
+        "usage": "Dark page background."
+      },
+      "surface": {
+        "role": "surface",
+        "displayName": "Surface",
+        "canonical": "#141414",
+        "usage": "Cards, panels, menus, and framed tools in dark mode."
+      },
+      "chalk": {
+        "role": "foreground",
+        "displayName": "Chalk",
+        "canonical": "#fafafa",
+        "usage": "Primary text on dark surfaces."
+      },
+      "mist": {
+        "role": "body",
+        "displayName": "Mist",
+        "canonical": "#d4d4d4",
+        "usage": "Body and secondary text on dark surfaces."
+      },
+      "smoke": {
+        "role": "meta",
+        "displayName": "Smoke",
+        "canonical": "#737373",
+        "usage": "Meta text, disabled text, and focus rings."
+      },
+      "rule": {
+        "role": "border",
+        "displayName": "Rule",
+        "canonical": "#262626",
+        "usage": "Borders, dividers, and component edges."
+      },
+      "wine": {
+        "role": "destructive",
+        "displayName": "Wine",
+        "canonical": "#7a2228",
+        "usage": "Errors, withdrawals, destructive actions, and failed live states."
+      },
+      "sage": {
+        "role": "success",
+        "displayName": "Sage",
+        "canonical": "#4d6651",
+        "usage": "Confirmed, saved, connected, checked in, and registered states."
+      },
+      "clay": {
+        "role": "warning",
+        "displayName": "Clay",
+        "canonical": "#a55a32",
+        "usage": "Pending, warning, incomplete, deferred, and attention states."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Source Serif 4",
+        "purpose": "Brand, page titles, major headings, and editorial content titles only."
+      },
+      "body": {
+        "displayName": "Inter",
+        "purpose": "Body text, controls, tables, lists, navigation, and operational UI."
+      },
+      "label": {
+        "displayName": "JetBrains Mono",
+        "purpose": "Eyebrows, metadata, badges, table headers, and identifiers."
+      }
+    },
+    "elevationMeta": {
+      "strategy": "Flat by default. Use tonal contrast, borders, and rule lines instead of shadows or blur.",
+      "shadowDefault": "none"
+    },
+    "componentRules": {
+      "shape": "Square or 2px radius for most UI. Preserve circles for avatars, toggles, progress dots, and familiar round indicators.",
+      "color": "Metals and semantic colors require domain meaning. Neutrals carry inactive UI.",
+      "alerts": "Use full borders and tonal tints. Do not use side stripes.",
+      "navigation": "Solid background plus bottom rule. No backdrop blur."
+    },
+    "antiReferences": [
+      "beige or brown shadcn stone defaults",
+      "rounded card-heavy SaaS layouts",
+      "decorative gradients",
+      "glassmorphism",
+      "neon dashboards",
+      "purple-blue product palettes",
+      "serif in dense operational UI",
+      "side-stripe alert cards"
+    ]
+  }
+}

@@ -112,10 +112,10 @@ export function DashboardNav({ slug }: { slug: string }) {
                 key={item.label}
                 href={href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                  "flex items-center gap-3 rounded-[2px] border border-transparent px-3 py-2 text-sm transition-colors",
                   isActive
-                    ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                    ? "border-border bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:border-border hover:bg-accent/50 hover:text-foreground",
                 )}
               >
                 <item.icon className="size-4 shrink-0" />
@@ -129,7 +129,7 @@ export function DashboardNav({ slug }: { slug: string }) {
       <div className="mt-4 pt-4 border-t border-border">
         <Link
           href={`/competitions/${slug}`}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
+          className="flex items-center gap-3 rounded-[2px] border border-transparent px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-border hover:bg-accent/50 hover:text-foreground"
         >
           <ArrowLeft className="size-4 shrink-0" />
           Back to competition

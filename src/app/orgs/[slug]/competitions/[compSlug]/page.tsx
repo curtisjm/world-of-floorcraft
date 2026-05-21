@@ -83,7 +83,7 @@ export default function OrgCompetitionPage() {
 
         <TabsContent value="schedule">
           {schedLoading ? (
-            <Skeleton className="h-64 rounded-lg mt-4" />
+            <Skeleton className="mt-4 h-64 rounded-none" />
           ) : schedule && schedule.events.length > 0 ? (
             <div className="mt-4 space-y-3">
               {schedule.events.map((event) => (
@@ -131,7 +131,7 @@ export default function OrgCompetitionPage() {
 
         <TabsContent value="entries">
           {entriesLoading ? (
-            <Skeleton className="h-64 rounded-lg mt-4" />
+            <Skeleton className="mt-4 h-64 rounded-none" />
           ) : entries && entries.length > 0 ? (
             <Card className="mt-4">
               <div className="overflow-x-auto">
@@ -160,7 +160,7 @@ export default function OrgCompetitionPage() {
                         </TableCell>
                         <TableCell className="text-center">
                           {entry.checkedIn ? (
-                            <CheckCircle2 className="size-4 text-green-500 mx-auto" />
+                            <CheckCircle2 className="mx-auto size-4 text-sage" />
                           ) : (
                             <XCircle className="size-4 text-muted-foreground/40 mx-auto" />
                           )}
@@ -184,7 +184,7 @@ export default function OrgCompetitionPage() {
 
         <TabsContent value="results">
           {resultsLoading ? (
-            <Skeleton className="h-64 rounded-lg mt-4" />
+            <Skeleton className="mt-4 h-64 rounded-none" />
           ) : results && results.length > 0 ? (
             <div className="mt-4 space-y-4">
               {results.map((event) => (
@@ -237,16 +237,16 @@ export default function OrgCompetitionPage() {
 function PlacementBadge({ placement }: { placement: number }) {
   const color =
     placement === 1
-      ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30"
+      ? "border-gold/50 bg-card text-gold"
       : placement === 2
-        ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30"
+        ? "border-silver/50 bg-card text-silver"
         : placement === 3
-          ? "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30"
-          : "text-muted-foreground bg-muted";
+          ? "border-bronze/50 bg-card text-bronze"
+          : "border-border bg-secondary text-muted-foreground";
 
   return (
     <span
-      className={`inline-flex items-center justify-center size-6 rounded-full text-xs font-bold tabular-nums shrink-0 ${color}`}
+      className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold tabular-nums ${color}`}
     >
       {placement}
     </span>
@@ -279,7 +279,7 @@ function OrgCompSkeleton() {
         <Skeleton className="h-4 w-40" />
       </div>
       <Skeleton className="h-10 w-64" />
-      <Skeleton className="h-64 rounded-lg" />
+      <Skeleton className="h-64 rounded-none" />
     </div>
   );
 }

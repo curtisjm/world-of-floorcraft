@@ -99,10 +99,10 @@ export default function CompDayDashboardPage() {
         </h2>
         <p className={cn(
           "text-xs flex items-center gap-1",
-          connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+          connectionStatus === "connected" && "text-sage",
           connectionStatus === "disconnected" && "text-muted-foreground",
-          connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
-          connectionStatus === "failed" && "text-red-600 dark:text-red-400",
+          connectionStatus === "suspended" && "text-clay",
+          connectionStatus === "failed" && "text-wine",
         )}>
           {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
           {connectionStatus === "connected" && "Live"}
@@ -121,7 +121,7 @@ export default function CompDayDashboardPage() {
       {/* Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          icon={<Users className="size-4 text-blue-500" />}
+          icon={<Users className="size-4 text-muted-foreground" />}
           label="Check-In"
           value={`${dashboard.registrations.checkedIn} / ${dashboard.registrations.total}`}
           sub={
@@ -136,14 +136,14 @@ export default function CompDayDashboardPage() {
           }
         />
         <StatCard
-          icon={<AlertCircle className="size-4 text-amber-500" />}
+          icon={<AlertCircle className="size-4 text-clay" />}
           label="Pending Add/Drops"
           value={String(dashboard.pendingAddDrops)}
           sub={dashboard.pendingAddDrops > 0 ? "Needs attention" : "All clear"}
           highlight={dashboard.pendingAddDrops > 0}
         />
         <StatCard
-          icon={<CheckCircle2 className="size-4 text-green-500" />}
+          icon={<CheckCircle2 className="size-4 text-sage" />}
           label="Events"
           value={`${completedEvents} / ${dashboard.events.length}`}
           sub={
@@ -212,12 +212,7 @@ function ActiveRoundCard({
     submissions.length > 0 && submittedCount === submissions.length;
 
   return (
-    <Card
-      className={cn(
-        "border-l-4",
-        allSubmitted ? "border-l-green-500" : "border-l-blue-500",
-      )}
-    >
+    <Card className={cn(allSubmitted ? "border-sage/50" : "border-foreground/25")}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">
@@ -243,12 +238,12 @@ function ActiveRoundCard({
               <div
                 key={sub.judgeId}
                 className={cn(
-                  "flex items-center gap-2 rounded-md px-3 py-2 text-sm",
-                  done ? "bg-green-500/10" : "bg-muted/40",
+                  "flex items-center gap-2 rounded-[2px] border px-3 py-2 text-sm",
+                  done ? "border-sage/30 bg-sage/10" : "border-border bg-muted/40",
                 )}
               >
                 {done ? (
-                  <CheckCircle2 className="size-4 text-green-500 shrink-0" />
+                  <CheckCircle2 className="size-4 shrink-0 text-sage" />
                 ) : (
                   <Circle className="size-4 text-muted-foreground shrink-0" />
                 )}
@@ -285,7 +280,7 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <Card className={cn(highlight && "border-amber-500/50")}>
+    <Card className={cn(highlight && "border-clay/50")}>
       <CardContent className="pt-5 pb-4">
         <div className="flex items-center gap-2 mb-1">
           {icon}

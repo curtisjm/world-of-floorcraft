@@ -31,7 +31,7 @@ export function DanceRoutinesList({
 
   if (!routines || routines.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 rounded-lg border border-dashed border-border">
+      <div className="flex h-64 items-center justify-center border border-dashed border-border bg-card">
         <div className="text-center space-y-2">
           <p className="text-muted-foreground">No routines yet.</p>
           <p className="text-sm text-muted-foreground">

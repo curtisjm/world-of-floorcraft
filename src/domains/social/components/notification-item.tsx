@@ -87,69 +87,69 @@ type NotificationConfig = {
 const NOTIFICATION_CONFIG: Record<NotificationType, NotificationConfig> = {
   like: {
     icon: Heart,
-    iconClass: "text-rose-400",
+    iconClass: "text-wine",
     getMessage: (name) => `${name} liked your post`,
     getHref: (n) => `/posts/${n.postId}`,
   },
   comment: {
     icon: MessageCircle,
-    iconClass: "text-blue-400",
+    iconClass: "text-muted-foreground",
     getMessage: (name) => `${name} commented on your post`,
     getHref: (n) => `/posts/${n.postId}`,
   },
   reply: {
     icon: Reply,
-    iconClass: "text-sky-400",
+    iconClass: "text-muted-foreground",
     getMessage: (name) => `${name} replied to your comment`,
     getHref: (n) => `/posts/${n.postId}`,
   },
   follow: {
     icon: UserPlus,
-    iconClass: "text-emerald-400",
+    iconClass: "text-sage",
     getMessage: (name) => `${name} started following you`,
     getHref: (_n, actor) =>
       actor?.username ? `/users/${actor.username}` : "/",
   },
   follow_request: {
     icon: UserPlus,
-    iconClass: "text-amber-400",
+    iconClass: "text-clay",
     getMessage: (name) => `${name} requested to follow you`,
     getHref: () => "/settings/profile",
   },
   follow_accepted: {
     icon: UserCheck,
-    iconClass: "text-emerald-400",
+    iconClass: "text-sage",
     getMessage: (name) => `${name} accepted your follow request`,
     getHref: (_n, actor) =>
       actor?.username ? `/users/${actor.username}` : "/",
   },
   message: {
     icon: Mail,
-    iconClass: "text-violet-400",
+    iconClass: "text-muted-foreground",
     getMessage: (name) => `${name} sent you a message`,
     getHref: (n) => `/messages/${n.conversationId}`,
   },
   org_invite: {
     icon: Building2,
-    iconClass: "text-indigo-400",
+    iconClass: "text-muted-foreground",
     getMessage: (name) => `${name} invited you to join an organization`,
     getHref: () => "/invites",
   },
   join_request: {
     icon: Users,
-    iconClass: "text-orange-400",
+    iconClass: "text-clay",
     getMessage: (name) => `${name} requested to join your organization`,
     getHref: (n) => `/orgs/${n.orgId}`,
   },
   join_approved: {
     icon: UserCheck,
-    iconClass: "text-emerald-400",
+    iconClass: "text-sage",
     getMessage: () => "You've been accepted into an organization",
     getHref: (n) => `/orgs/${n.orgId}`,
   },
   org_post: {
     icon: Bell,
-    iconClass: "text-yellow-400",
+    iconClass: "text-clay",
     getMessage: () => "Your organization published a new post",
     getHref: (n) => `/posts/${n.postId}`,
   },
@@ -188,7 +188,7 @@ export function NotificationItem({
     >
       {/* Unread dot */}
       {!notification.read && (
-        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-blue-500 shrink-0" />
+        <span className="absolute left-1.5 top-1/2 size-1.5 shrink-0 -translate-y-1/2 rounded-full bg-sage" />
       )}
 
       {/* Avatar with icon badge */}

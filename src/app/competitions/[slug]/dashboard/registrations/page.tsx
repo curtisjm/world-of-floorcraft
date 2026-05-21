@@ -82,7 +82,7 @@ export default function RegistrationsPage() {
       <div className="space-y-4">
         <Skeleton className="h-10 w-48" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          <Skeleton key={i} className="h-16 w-full rounded-none" />
         ))}
       </div>
     );
@@ -116,7 +116,7 @@ export default function RegistrationsPage() {
           {registrations.map((reg) => (
             <div
               key={reg.id}
-              className="flex items-center justify-between p-3 rounded-md border hover:bg-accent/30 transition-colors"
+              className="flex items-center justify-between rounded-[2px] border p-3 transition-colors hover:bg-accent/30"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <button
@@ -125,7 +125,7 @@ export default function RegistrationsPage() {
                   title={reg.checkedIn ? "Uncheck" : "Check in"}
                 >
                   {reg.checkedIn ? (
-                    <CheckCircle2 className="size-5 text-green-500" />
+                    <CheckCircle2 className="size-5 text-sage" />
                   ) : (
                     <Circle className="size-5 text-muted-foreground" />
                   )}
@@ -145,7 +145,7 @@ export default function RegistrationsPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className={reg.amountOwed > reg.totalPaid ? "text-yellow-600" : "text-green-600"}>
+                    <span className={reg.amountOwed > reg.totalPaid ? "text-clay" : "text-sage"}>
                       ${reg.totalPaid ?? "0"} / ${reg.amountOwed ?? "0"}
                     </span>
                   </div>

@@ -117,7 +117,7 @@ export function MainNav() {
     pathname.startsWith("/saved");
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/92 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
       <nav className="atelier-shell flex items-center justify-between py-4">
         <div className="flex items-center gap-2">
           <Link

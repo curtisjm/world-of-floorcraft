@@ -64,14 +64,14 @@ export default function PartnersPage() {
   const items = data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
-      <h1 className="text-2xl font-bold mb-6">Find a Partner</h1>
+    <div className="mx-auto max-w-3xl px-6 py-8">
+      <h1 className="mb-6 text-2xl font-semibold">Find a Partner</h1>
 
       <div className="flex flex-wrap gap-3 mb-6">
         <select
           value={styleFilter}
           onChange={(e) => setStyleFilter(e.target.value as DanceStyle | "")}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35"
         >
           <option value="">All styles</option>
           {DANCE_STYLES.map((s) => (
@@ -84,7 +84,7 @@ export default function PartnersPage() {
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value as RolePreference | "")}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35"
         >
           <option value="">All roles</option>
           {ROLE_PREFERENCES.map((r) => (
@@ -113,7 +113,7 @@ export default function PartnersPage() {
         <div className="flex flex-col gap-3">
           {items.map((item) => (
             <Link key={item.userId} href={`/users/${item.username}`}>
-              <div className="rounded-lg border bg-card p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+              <div className="border bg-card p-4 transition-colors hover:border-foreground/25 hover:bg-secondary/80">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground shrink-0">
                     {item.avatarUrl ? (

@@ -44,7 +44,7 @@ function FollowingFeed() {
 
   if (allPosts.length === 0) {
     return (
-      <p className="atelier-panel rounded-lg px-5 py-6 text-sm text-muted-foreground">
+      <p className="atelier-panel px-5 py-6 text-sm text-muted-foreground">
         No posts yet. Follow other dancers to see their posts here.
       </p>
     );
@@ -86,7 +86,7 @@ function ExploreFeed() {
 
   if (allPosts.length === 0) {
     return (
-      <p className="atelier-panel rounded-lg px-5 py-6 text-sm text-muted-foreground">
+      <p className="atelier-panel px-5 py-6 text-sm text-muted-foreground">
         No public posts yet. Be the first to share something!
       </p>
     );
