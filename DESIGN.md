@@ -202,6 +202,13 @@ This system is flat by default. It conveys depth through surface contrast, borde
 - **Empty states:** Use the small atelier diamond glyph and specific guidance about what the surface becomes once populated. Avoid generic "nothing here" copy.
 - **Brand mark:** The home mark may respond softly on hover or keyboard focus. Do not extend this into decorative logo animation elsewhere.
 
+### Motion
+
+- **Timing:** 150ms for direct feedback, 220ms for reveals, and 260ms for modal or sheet overlays.
+- **Easing:** Use ease-out-quint for controls and menus. Use ease-out-expo for larger overlay transitions.
+- **Purpose:** Motion acknowledges interaction, clarifies reveal, or preserves context. It is not page-load choreography.
+- **Reduced motion:** Respect `prefers-reduced-motion` globally. State changes should remain instant and understandable.
+
 ### Figure Graph
 
 Graph nodes use square surfaces, full borders, and metal borders for syllabus level. The center node gets an outline, not a glow.
@@ -216,6 +223,7 @@ Graph nodes use square surfaces, full borders, and metal borders for syllabus le
 - **Do** keep body, table, list, and form text in Inter.
 - **Do** reserve Source Serif 4 for true titles and editorial content.
 - **Do** map success to sage, warning to clay, and destructive states to wine with enough saturation and border contrast to stay legible on dark surfaces.
+- **Do** keep animation short, state-based, and disabled for reduced-motion users.
 
 ### Don't:
 
@@ -227,3 +235,4 @@ Graph nodes use square surfaces, full borders, and metal borders for syllabus le
 - **Don't** use shadows as a default separator.
 - **Don't** put Source Serif 4 in tables, buttons, badges, form controls, figure list rows, or dense operational lists.
 - **Don't** scatter raw blue, green, amber, orange, or red Tailwind status colors through inactive UI.
+- **Don't** add page-load choreography, bounce easing, elastic easing, or hover motion on non-interactive badges.
