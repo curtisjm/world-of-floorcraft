@@ -43,30 +43,30 @@
 
   /* ── Refined semantics · material names, not signals ── */
   --wine: #7a2228;                   /* destructive · aged Bordeaux */
-  --wine-tint: rgba(122, 34, 40, 0.07);
+  --wine-tint: rgba(122, 34, 40, 0.11);
   --sage: #4d6651;                   /* success · dusty herb */
-  --sage-tint: rgba(77, 102, 81, 0.08);
+  --sage-tint: rgba(77, 102, 81, 0.12);
   --clay: #a55a32;                   /* warning · burnt terracotta */
-  --clay-tint: rgba(165, 90, 50, 0.08);
+  --clay-tint: rgba(165, 90, 50, 0.12);
 
   /* ── The Metals · full stacks (base · highlight · shadow · gleam · matte) ── */
-  --bronze-base: oklch(0.48 0.08 62);
-  --bronze-highlight: oklch(0.72 0.08 67);
-  --bronze-shadow: oklch(0.29 0.052 57);
-  --bronze-gleam: oklch(0.83 0.065 72);
-  --bronze-matte: oklch(0.44 0.045 62);
+  --bronze-base: oklch(0.58 0.11 58);
+  --bronze-highlight: oklch(0.84 0.105 66);
+  --bronze-shadow: oklch(0.36 0.075 54);
+  --bronze-gleam: oklch(0.93 0.075 73);
+  --bronze-matte: oklch(0.53 0.082 58);
 
-  --silver-base: oklch(0.70 0 0);
-  --silver-highlight: oklch(0.93 0 0);
-  --silver-shadow: oklch(0.42 0 0);
-  --silver-gleam: oklch(0.975 0 0);
-  --silver-matte: oklch(0.59 0 0);
+  --silver-base: oklch(0.76 0.006 245);
+  --silver-highlight: oklch(0.96 0.004 245);
+  --silver-shadow: oklch(0.50 0.006 245);
+  --silver-gleam: oklch(0.99 0.002 245);
+  --silver-matte: oklch(0.66 0.004 245);
 
-  --gold-base: oklch(0.72 0.075 83);       /* champagne, not trophy yellow */
-  --gold-highlight: oklch(0.83 0.075 86);
-  --gold-shadow: oklch(0.49 0.052 80);
-  --gold-gleam: oklch(0.90 0.052 88);
-  --gold-matte: oklch(0.61 0.052 82);
+  --gold-base: oklch(0.79 0.115 86);       /* luminous champagne, not trophy yellow */
+  --gold-highlight: oklch(0.91 0.095 91);
+  --gold-shadow: oklch(0.56 0.085 80);
+  --gold-gleam: oklch(0.97 0.065 94);
+  --gold-matte: oklch(0.69 0.08 84);
 
   /* Legacy aliases so existing text-bronze / border-bronze etc. still resolve */
   --bronze: var(--bronze-base);
@@ -121,11 +121,11 @@
 
   /* Semantics — lighter for dark backgrounds */
   --wine: #7a2228;
-  --wine-tint: rgba(122, 34, 40, 0.16);
+  --wine-tint: rgba(122, 34, 40, 0.24);
   --sage: #4d6651;
-  --sage-tint: rgba(77, 102, 81, 0.16);
+  --sage-tint: rgba(77, 102, 81, 0.24);
   --clay: #a55a32;
-  --clay-tint: rgba(165, 90, 50, 0.16);
+  --clay-tint: rgba(165, 90, 50, 0.24);
 
   /* Metals stay absolute across modes — they're materials, not surfaces */
 
@@ -485,54 +485,69 @@
   }
 
   .status-sage {
-    border-color: color-mix(in oklch, var(--sage) 42%, var(--border));
+    border-color: color-mix(in oklch, var(--sage) 62%, var(--border));
     background: var(--sage-tint);
-    color: color-mix(in oklch, var(--sage) 78%, var(--foreground));
+    color: color-mix(in oklch, var(--sage) 92%, var(--foreground));
   }
 
   .status-clay {
-    border-color: color-mix(in oklch, var(--clay) 46%, var(--border));
+    border-color: color-mix(in oklch, var(--clay) 64%, var(--border));
     background: var(--clay-tint);
-    color: color-mix(in oklch, var(--clay) 82%, var(--foreground));
+    color: color-mix(in oklch, var(--clay) 94%, var(--foreground));
   }
 
   .status-wine {
-    border-color: color-mix(in oklch, var(--wine) 48%, var(--border));
+    border-color: color-mix(in oklch, var(--wine) 66%, var(--border));
     background: var(--wine-tint);
-    color: color-mix(in oklch, var(--wine) 74%, var(--foreground));
+    color: color-mix(in oklch, var(--wine) 88%, var(--foreground));
   }
 
   .text-status-sage {
-    color: color-mix(in oklch, var(--sage) 78%, var(--foreground));
+    color: color-mix(in oklch, var(--sage) 92%, var(--foreground));
   }
 
   .text-status-clay {
-    color: color-mix(in oklch, var(--clay) 82%, var(--foreground));
+    color: color-mix(in oklch, var(--clay) 94%, var(--foreground));
   }
 
   .text-status-wine {
-    color: color-mix(in oklch, var(--wine) 74%, var(--foreground));
+    color: color-mix(in oklch, var(--wine) 88%, var(--foreground));
   }
 
-  .status-dot-sage { background: color-mix(in oklch, var(--sage) 86%, var(--foreground)); }
-  .status-dot-clay { background: color-mix(in oklch, var(--clay) 86%, var(--foreground)); }
-  .status-dot-wine { background: color-mix(in oklch, var(--wine) 82%, var(--foreground)); }
+  .status-dot-sage { background: color-mix(in oklch, var(--sage) 96%, var(--foreground)); }
+  .status-dot-clay { background: color-mix(in oklch, var(--clay) 96%, var(--foreground)); }
+  .status-dot-wine { background: color-mix(in oklch, var(--wine) 94%, var(--foreground)); }
+
+  .dark .status-sage,
+  .dark .text-status-sage {
+    color: color-mix(in oklch, var(--sage) 62%, var(--foreground));
+  }
+
+  .dark .status-clay,
+  .dark .text-status-clay {
+    color: color-mix(in oklch, var(--clay) 64%, var(--foreground));
+  }
+
+  .dark .status-wine,
+  .dark .text-status-wine {
+    color: color-mix(in oklch, var(--wine) 60%, var(--foreground));
+  }
 
   .placement-gold {
-    border-color: color-mix(in oklch, var(--gold-base) 54%, var(--border));
-    background: color-mix(in oklch, var(--gold-base) 13%, var(--card));
+    border-color: color-mix(in oklch, var(--gold-base) 70%, var(--border));
+    background: color-mix(in oklch, var(--gold-base) 21%, var(--card));
     color: var(--gold-matte);
   }
 
   .placement-silver {
-    border-color: color-mix(in oklch, var(--silver-matte) 46%, var(--border));
-    background: color-mix(in oklch, var(--silver-base) 12%, var(--card));
-    color: color-mix(in oklch, var(--silver-shadow) 72%, var(--foreground));
+    border-color: color-mix(in oklch, var(--silver-matte) 64%, var(--border));
+    background: color-mix(in oklch, var(--silver-base) 18%, var(--card));
+    color: color-mix(in oklch, var(--silver-shadow) 52%, var(--foreground));
   }
 
   .placement-bronze {
-    border-color: color-mix(in oklch, var(--bronze-base) 48%, var(--border));
-    background: color-mix(in oklch, var(--bronze-base) 11%, var(--card));
+    border-color: color-mix(in oklch, var(--bronze-base) 66%, var(--border));
+    background: color-mix(in oklch, var(--bronze-base) 19%, var(--card));
     color: var(--bronze-base);
   }
 
@@ -685,15 +700,15 @@
 
   /* ─── Treatment 3: MATTE — desaturated, contemporary hardware ─── */
   .metal-bronze-matte {
-    background: linear-gradient(160deg, oklch(0.21 0.04 58) 0%, var(--bronze-matte) 50%, oklch(0.21 0.04 58) 100%);
+    background: linear-gradient(160deg, var(--bronze-shadow) 0%, var(--bronze-matte) 48%, var(--bronze-highlight) 58%, var(--bronze-shadow) 100%);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.1);
   }
   .metal-silver-matte {
-    background: linear-gradient(160deg, oklch(0.34 0 0) 0%, var(--silver-matte) 50%, oklch(0.34 0 0) 100%);
+    background: linear-gradient(160deg, var(--silver-shadow) 0%, var(--silver-matte) 48%, var(--silver-highlight) 58%, var(--silver-shadow) 100%);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.15);
   }
   .metal-gold-matte {
-    background: linear-gradient(160deg, oklch(0.38 0.05 82) 0%, var(--gold-matte) 50%, oklch(0.38 0.05 82) 100%);
+    background: linear-gradient(160deg, var(--gold-shadow) 0%, var(--gold-matte) 48%, var(--gold-highlight) 58%, var(--gold-shadow) 100%);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.1);
   }
 
@@ -707,10 +722,10 @@
     color: var(--bronze-base);
   }
   .metal-text-silver {
-    color: var(--silver-shadow);
+    color: var(--silver-matte);
   }
   .metal-text-gold {
-    color: var(--gold-shadow);
+    color: var(--gold-matte);
   }
 
   .dark .metal-text-bronze { color: var(--bronze-highlight); }
@@ -740,22 +755,22 @@
     flex-shrink: 0;
   }
   .metal-bronze-whisper {
-    background: color-mix(in oklch, var(--bronze-base) 8%, var(--card));
-    border-color: color-mix(in oklch, var(--bronze-base) 35%, var(--border));
+    background: color-mix(in oklch, var(--bronze-base) 16%, var(--card));
+    border-color: color-mix(in oklch, var(--bronze-base) 58%, var(--border));
     color: var(--bronze-base);
   }
   .metal-bronze-whisper::before { background: var(--bronze-base); }
 
   .metal-silver-whisper {
-    background: var(--muted);
-    border-color: var(--border);
-    color: var(--muted-foreground);
+    background: color-mix(in oklch, var(--silver-base) 15%, var(--card));
+    border-color: color-mix(in oklch, var(--silver-matte) 52%, var(--border));
+    color: var(--silver-matte);
   }
   .metal-silver-whisper::before { background: var(--silver-matte); }
 
   .metal-gold-whisper {
-    background: color-mix(in oklch, var(--gold-base) 8%, var(--card));
-    border-color: color-mix(in oklch, var(--gold-base) 35%, var(--border));
+    background: color-mix(in oklch, var(--gold-base) 18%, var(--card));
+    border-color: color-mix(in oklch, var(--gold-base) 60%, var(--border));
     color: var(--gold-matte);
   }
   .metal-gold-whisper::before { background: var(--gold-base); }

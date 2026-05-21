@@ -115,11 +115,11 @@ The palette is black, white, and three tiers of graphite. Semantic color is rare
 - **Sage** (#4d6651): Confirmed, saved, connected, checked in, and registered states.
 - **Clay** (#a55a32): Pending, warning, incomplete, deferred, and attention states.
 
-Use `status-sage`, `status-clay`, and `status-wine` for operational badges, notices, check-in states, and live connection states. Use `placement-gold`, `placement-silver`, and `placement-bronze` for awarded placements only.
+Use `status-sage`, `status-clay`, and `status-wine` for operational badges, notices, check-in states, and live connection states. These utilities should carry enough tint and border strength to read clearly against carbon and surface panels. Use `placement-gold`, `placement-silver`, and `placement-bronze` for awarded placements only.
 
 ### Named Rules
 
-**The Metals Rule.** Bronze, silver, and gold are materials, not decoration. Use them only for syllabus levels, placements, earned status, membership, and comparable domain meaning.
+**The Metals Rule.** Bronze, silver, and gold are materials, not decoration. Use them only for syllabus levels, placements, earned status, membership, and comparable domain meaning. They should feel polished and luminous, with clean highlights and visible gleam, not muddy, dusty, or brown.
 
 **The No Stone Rule.** Do not use Tailwind stone, beige, tan, or brown default neutrals for product surfaces.
 
@@ -215,7 +215,7 @@ Graph nodes use square surfaces, full borders, and metal borders for syllabus le
 - **Do** use `rounded-none` or `rounded-[2px]` for cards, panels, menus, inputs, and buttons.
 - **Do** keep body, table, list, and form text in Inter.
 - **Do** reserve Source Serif 4 for true titles and editorial content.
-- **Do** map success to sage, warning to clay, and destructive states to wine.
+- **Do** map success to sage, warning to clay, and destructive states to wine with enough saturation and border contrast to stay legible on dark surfaces.
 
 ### Don't:
 
