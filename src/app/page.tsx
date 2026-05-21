@@ -6,7 +6,7 @@ import { ArrowRight, Route, Trophy } from "lucide-react";
 export default function HomePage() {
   return (
     <div className="atelier-shell">
-      <section className="grid min-h-[calc(100vh-4.1rem)] items-center gap-10 border-b border-border py-12 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,27rem)] lg:py-20">
+      <section className="grid min-h-[min(44rem,calc(100vh-4.1rem))] items-start gap-10 border-b border-border py-12 pt-16 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,27rem)] lg:items-center lg:py-16">
         <div className="flex max-w-4xl flex-col gap-8">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="metal-bronze-whisper metal-whisper" variant="outline">

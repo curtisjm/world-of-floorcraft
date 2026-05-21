@@ -3,6 +3,7 @@
 import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import { Badge } from "@shared/ui/badge";
+import { cn } from "@shared/lib/utils";
 
 type LevelGroup = "bronze" | "silver" | "gold";
 
@@ -13,10 +14,10 @@ const LEVEL_TO_GROUP: Record<string, LevelGroup> = {
   fellow: "gold",
 };
 
-const TOGGLE_CONFIG: { key: LevelGroup; label: string; color: string }[] = [
-  { key: "bronze", label: "Bronze", color: "var(--bronze-base)" },
-  { key: "silver", label: "Silver", color: "var(--silver-matte)" },
-  { key: "gold", label: "Gold", color: "var(--gold-base)" },
+const TOGGLE_CONFIG: { key: LevelGroup; label: string; className: string }[] = [
+  { key: "bronze", label: "Bronze", className: "metal-bronze-whisper" },
+  { key: "silver", label: "Silver", className: "metal-silver-whisper" },
+  { key: "gold", label: "Gold", className: "metal-gold-whisper" },
 ];
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -81,17 +82,17 @@ export function FigureListFilters({ danceSlug, figures }: FigureListFiltersProps
           className="flex-1 rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <div className="flex gap-2">
-          {TOGGLE_CONFIG.map(({ key, label, color }) => (
+          {TOGGLE_CONFIG.map(({ key, label, className }) => (
             <button
               key={key}
               onClick={() => toggleLevel(key)}
-              className="rounded-[2px] border px-3 py-1.5 font-mono text-xs font-medium lowercase transition-all"
-              style={{
-                borderColor: color,
-                backgroundColor: enabledLevels[key] ? color : "transparent",
-                color: enabledLevels[key] ? "oklch(0.07 0 0)" : color,
-                opacity: enabledLevels[key] ? 1 : 0.5,
-              }}
+              aria-pressed={enabledLevels[key]}
+              className={cn(
+                "metal-whisper transition-[background-color,border-color,color,opacity]",
+                enabledLevels[key]
+                  ? className
+                  : "border-border bg-transparent text-muted-foreground opacity-55"
+              )}
             >
               {label}
             </button>
@@ -117,17 +118,17 @@ export function FigureListFilters({ danceSlug, figures }: FigureListFiltersProps
               href={`/dances/${danceSlug}/figures/${figure.id}`}
               className="grid gap-4 border-b border-border px-5 py-4 transition-colors last:border-b-0 hover:bg-secondary sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
             >
-              <div className="flex items-center gap-4">
-                {figure.figureNumber != null && (
-                  <span className="text-muted-foreground text-sm font-mono w-6">
-                    {figure.figureNumber}
+              <div className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-start gap-4">
+                <span className="pt-0.5 font-mono text-sm text-muted-foreground">
+                  {figure.figureNumber ?? ""}
+                </span>
+                <div className="min-w-0">
+                  <span className="block truncate text-base font-medium text-foreground">
+                    {figure.name}
                   </span>
-                )}
-                <div>
-                  <span className="text-lg font-medium">{figure.name}</span>
                   {figure.variantName && (
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      ({figure.variantName})
+                    <span className="mt-1 block truncate text-sm text-muted-foreground">
+                      {figure.variantName}
                     </span>
                   )}
                 </div>

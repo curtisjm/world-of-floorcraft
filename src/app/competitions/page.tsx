@@ -63,16 +63,16 @@ export default function CompetitionsPage() {
 
   return (
     <div className="atelier-shell">
-      <div className="atelier-section flex max-w-5xl flex-col gap-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
+      <div className="atelier-section flex max-w-4xl flex-col gap-7">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-2xl">
             <p className="atelier-eyebrow mb-4">competition desk</p>
             <h1 className="atelier-page-title">Competitions</h1>
             <p className="mt-3 text-muted-foreground">
               Browse upcoming events, live rounds, and historical results.
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="sm:mt-9">
             <Link href="/competitions/create">
               <Plus data-icon="inline-start" />
               Create competition
@@ -80,7 +80,7 @@ export default function CompetitionsPage() {
           </Button>
         </div>
 
-        <div className="flex w-fit flex-wrap gap-1 rounded-sm border bg-muted p-1">
+        <div className="flex w-fit max-w-full flex-wrap gap-1 rounded-sm border bg-muted p-1">
           {statusFilters.map((filter) => (
             <Button
               key={filter.label}
@@ -132,7 +132,7 @@ function ActiveTab({
   return (
     <>
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} className="gap-3 p-4">
               <div className="flex items-start justify-between">
@@ -161,7 +161,7 @@ function ActiveTab({
         </div>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]">
             {data.items.map((comp) => (
               <CompetitionCard
                 key={comp.id}

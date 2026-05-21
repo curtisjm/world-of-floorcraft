@@ -283,7 +283,7 @@ export default async function FigureDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="px-6 py-6">
-              <ul className="space-y-4 text-[0.95rem] leading-relaxed text-muted-foreground">
+              <ul className="max-w-[62ch] space-y-4 text-[0.95rem] leading-relaxed text-muted-foreground">
                 {(figure.notes as string[]).map((note, i) => (
                   <li key={i}>{note}</li>
                 ))}
@@ -300,7 +300,7 @@ export default async function FigureDetailPage({
                 preceded by ({precedeEdges.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-0">
+            <CardContent className="max-h-[36rem] overflow-y-auto px-0">
               {precedeEdges.length > 0 ? (
                 <ul className="divide-y divide-border">
                   {precedeEdges.map((edge) => {
@@ -309,14 +309,20 @@ export default async function FigureDetailPage({
                       <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                         <Link
                           href={`/dances/${danceSlug}/figures/${edge.sourceFigureId}`}
-                          className="font-heading text-base font-medium text-foreground transition-colors hover:text-muted-foreground"
+                          className="min-w-0 text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
-                          {neighbor?.name ?? `Figure #${edge.sourceFigureId}`}
-                          {neighbor?.variantName && ` (${neighbor.variantName})`}
+                          <span className="block truncate">
+                            {neighbor?.name ?? `Figure #${edge.sourceFigureId}`}
+                          </span>
+                          {neighbor?.variantName && (
+                            <span className="mt-1 block truncate text-sm font-normal text-muted-foreground">
+                              {neighbor.variantName}
+                            </span>
+                          )}
                         </Link>
-                        <div className="flex items-center gap-2 sm:justify-end">
+                        <div className="flex min-w-0 items-center gap-2 sm:justify-end">
                           {edge.conditions && (
-                            <span className="max-w-[20rem] text-xs text-muted-foreground">
+                            <span className="min-w-0 max-w-[20rem] text-xs leading-relaxed text-muted-foreground">
                               {edge.conditions}
                             </span>
                           )}
@@ -345,7 +351,7 @@ export default async function FigureDetailPage({
                 followed by ({followEdges.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-0">
+            <CardContent className="max-h-[36rem] overflow-y-auto px-0">
               {followEdges.length > 0 ? (
                 <ul className="divide-y divide-border">
                   {followEdges.map((edge) => {
@@ -354,14 +360,20 @@ export default async function FigureDetailPage({
                       <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                         <Link
                           href={`/dances/${danceSlug}/figures/${edge.targetFigureId}`}
-                          className="font-heading text-base font-medium text-foreground transition-colors hover:text-muted-foreground"
+                          className="min-w-0 text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
-                          {neighbor?.name ?? `Figure #${edge.targetFigureId}`}
-                          {neighbor?.variantName && ` (${neighbor.variantName})`}
+                          <span className="block truncate">
+                            {neighbor?.name ?? `Figure #${edge.targetFigureId}`}
+                          </span>
+                          {neighbor?.variantName && (
+                            <span className="mt-1 block truncate text-sm font-normal text-muted-foreground">
+                              {neighbor.variantName}
+                            </span>
+                          )}
                         </Link>
-                        <div className="flex items-center gap-2 sm:justify-end">
+                        <div className="flex min-w-0 items-center gap-2 sm:justify-end">
                           {edge.conditions && (
-                            <span className="max-w-[20rem] text-xs text-muted-foreground">
+                            <span className="min-w-0 max-w-[20rem] text-xs leading-relaxed text-muted-foreground">
                               {edge.conditions}
                             </span>
                           )}

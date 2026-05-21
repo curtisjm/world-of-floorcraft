@@ -33,6 +33,7 @@
   --input: #d4d4d4;                      /* rule strong */
   --input-surface: #f4f4f3;
   --ring: #737373;                       /* smoke */
+  --overlay: color-mix(in oklch, #0a0a0a 58%, transparent);
 
   /* Charts — monochrome graphite scale */
   --chart-1: #0a0a0a;
@@ -112,6 +113,7 @@
   --input: #262626;
   --input-surface: #1c1c1c;
   --ring: #737373;                       /* smoke */
+  --overlay: color-mix(in oklch, #0a0a0a 64%, transparent);
 
   --chart-1: #fafafa;
   --chart-2: #d4d4d4;
@@ -485,33 +487,33 @@
   }
 
   .status-sage {
-    border-color: color-mix(in oklch, var(--sage) 62%, var(--border));
+    border-color: color-mix(in oklch, var(--sage) 78%, var(--border));
     background: var(--sage-tint);
-    color: color-mix(in oklch, var(--sage) 92%, var(--foreground));
+    color: color-mix(in oklch, var(--sage) 82%, var(--foreground));
   }
 
   .status-clay {
-    border-color: color-mix(in oklch, var(--clay) 64%, var(--border));
+    border-color: color-mix(in oklch, var(--clay) 80%, var(--border));
     background: var(--clay-tint);
-    color: color-mix(in oklch, var(--clay) 94%, var(--foreground));
+    color: color-mix(in oklch, var(--clay) 86%, var(--foreground));
   }
 
   .status-wine {
-    border-color: color-mix(in oklch, var(--wine) 66%, var(--border));
+    border-color: color-mix(in oklch, var(--wine) 82%, var(--border));
     background: var(--wine-tint);
-    color: color-mix(in oklch, var(--wine) 88%, var(--foreground));
+    color: color-mix(in oklch, var(--wine) 80%, var(--foreground));
   }
 
   .text-status-sage {
-    color: color-mix(in oklch, var(--sage) 92%, var(--foreground));
+    color: color-mix(in oklch, var(--sage) 82%, var(--foreground));
   }
 
   .text-status-clay {
-    color: color-mix(in oklch, var(--clay) 94%, var(--foreground));
+    color: color-mix(in oklch, var(--clay) 86%, var(--foreground));
   }
 
   .text-status-wine {
-    color: color-mix(in oklch, var(--wine) 88%, var(--foreground));
+    color: color-mix(in oklch, var(--wine) 80%, var(--foreground));
   }
 
   .status-dot-sage { background: color-mix(in oklch, var(--sage) 96%, var(--foreground)); }
@@ -520,17 +522,17 @@
 
   .dark .status-sage,
   .dark .text-status-sage {
-    color: color-mix(in oklch, var(--sage) 62%, var(--foreground));
+    color: color-mix(in oklch, var(--sage) 74%, var(--foreground));
   }
 
   .dark .status-clay,
   .dark .text-status-clay {
-    color: color-mix(in oklch, var(--clay) 64%, var(--foreground));
+    color: color-mix(in oklch, var(--clay) 76%, var(--foreground));
   }
 
   .dark .status-wine,
   .dark .text-status-wine {
-    color: color-mix(in oklch, var(--wine) 60%, var(--foreground));
+    color: color-mix(in oklch, var(--wine) 72%, var(--foreground));
   }
 
   .placement-gold {
