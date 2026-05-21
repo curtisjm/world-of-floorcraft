@@ -85,7 +85,7 @@
       "navigation": "Translucent blurred background plus bottom rule.",
       "menus": "Dropdowns, popovers, and selects use opaque surfaces so underlying text cannot compete.",
       "blur": "Use blur for sticky chrome and modal/sheet overlays only, never as a general card or menu aesthetic.",
-      "bolder": "Amplify through larger title scale, sharper full-width rules, darker active states, and stronger surface contrast. Do not add neon, gradients, shadows, or extra decorative color."
+      "bolder": "Amplify through clearer hierarchy, darker active states, and stronger surface contrast. Do not overscale product titles, thicken header rules, add neon, gradients, shadows, or extra decorative color."
     },
     "delightRules": {
       "strategy": "Subtle product moments only. Delight should appear in completion, loading, empty states, and precise hover feedback.",

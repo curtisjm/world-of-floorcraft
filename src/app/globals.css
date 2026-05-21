@@ -275,11 +275,11 @@
 
   .atelier-page-title {
     font-family: var(--font-heading);
-    font-size: clamp(3rem, 6.5vw, 5.75rem);
+    font-size: clamp(2rem, 3.2vw, 3rem);
     font-weight: 500;
-    line-height: 0.94;
+    line-height: 1;
     letter-spacing: 0;
-    max-width: 11ch;
+    max-width: 14ch;
   }
 
   .atelier-page-title em,
@@ -309,9 +309,9 @@
 
   .atelier-display-title {
     font-family: var(--font-heading);
-    font-size: clamp(3.75rem, 8.4vw, 7.75rem);
+    font-size: clamp(2.5rem, 4.8vw, 4.5rem);
     font-weight: 400;
-    line-height: 0.9;
+    line-height: 1.02;
     letter-spacing: 0;
   }
 
@@ -367,7 +367,7 @@
     }
 
     .atelier-display-title {
-      font-size: clamp(2.65rem, 15vw, 4.5rem);
+      font-size: clamp(2.25rem, 10vw, 3.25rem);
     }
   }
 
@@ -591,13 +591,12 @@
   }
 
   [data-slot="card"] {
-    border-color: color-mix(in oklch, var(--foreground) 10%, var(--border));
+    border-color: var(--border);
     box-shadow: none;
   }
 
   [data-slot="card"] > [data-slot="card-header"]:first-child {
-    border-top: 1px solid color-mix(in oklch, var(--foreground) 18%, var(--border));
-    border-bottom: 1px solid color-mix(in oklch, var(--foreground) 12%, var(--border));
+    border-bottom: 1px solid var(--border);
     background-color: var(--secondary);
   }
 
