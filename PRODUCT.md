@@ -32,7 +32,7 @@ The brand is editorial, disciplined, expert, and quiet. It should feel like an a
 - Neutrals do the work. The interface is mostly carbon, surface, chalk, mist, smoke, and rule lines.
 - Serif is ceremony. Source Serif 4 belongs to brand marks, page titles, and major content headings. Inter carries body, controls, lists, tables, and operational UI.
 - Square by default. Most panels, cards, inputs, menus, tables, and buttons use square corners or a 2px radius. Rounded shapes are reserved for avatars, toggles, progress dots, and other familiar circular controls.
-- Flat by default. Depth comes from contrast, borders, bands, and rule lines. Blur is reserved for sticky chrome and floating overlays where it preserves context.
+- Flat by default. Depth comes from contrast, borders, bands, and rule lines. Blur is reserved for sticky chrome and modal/sheet overlays where it preserves context; menus stay opaque for readability.
 - Dense but calm. Product screens should support repeated work and scanning. Prefer quiet structure over marketing composition.
 
 ## Accessibility & Inclusion

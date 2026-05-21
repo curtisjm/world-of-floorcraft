@@ -75,7 +75,7 @@
       }
     },
     "elevationMeta": {
-      "strategy": "Flat by default. Use tonal contrast, borders, rule lines, and occasional contextual blur instead of shadows.",
+      "strategy": "Flat by default. Use tonal contrast, borders, rule lines, and occasional contextual blur instead of shadows. Menus stay opaque for readability.",
       "shadowDefault": "none"
     },
     "componentRules": {
@@ -83,7 +83,8 @@
       "color": "Metals and semantic colors require domain meaning. Neutrals carry inactive UI.",
       "alerts": "Use full borders and tonal tints. Do not use side stripes.",
       "navigation": "Translucent blurred background plus bottom rule.",
-      "blur": "Use blur for sticky chrome and floating overlays only, never as a general card aesthetic."
+      "menus": "Dropdowns, popovers, and selects use opaque surfaces so underlying text cannot compete.",
+      "blur": "Use blur for sticky chrome and modal/sheet overlays only, never as a general card or menu aesthetic."
     },
     "antiReferences": [
       "beige or brown shadcn stone defaults",
