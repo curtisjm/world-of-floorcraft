@@ -67,7 +67,7 @@ export default function CompetitionsPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="atelier-eyebrow mb-4">competition desk</p>
-            <h1 className="text-4xl font-medium">Competitions</h1>
+            <h1 className="atelier-page-title">Competitions</h1>
             <p className="mt-3 text-muted-foreground">
               Browse upcoming events, live rounds, and historical results.
             </p>

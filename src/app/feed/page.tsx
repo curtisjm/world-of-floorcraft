@@ -10,7 +10,7 @@ export default function FeedPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="atelier-eyebrow mb-4">community floor</p>
-            <h1 className="text-4xl font-medium">Feed</h1>
+            <h1 className="atelier-page-title">Feed</h1>
           </div>
           <Button asChild>
             <Link href="/posts/new">

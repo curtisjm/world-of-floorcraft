@@ -158,6 +158,8 @@ This system is flat by default. It conveys depth through surface contrast, borde
 
 **The No Decorative Glass Rule.** Blur is allowed when it solves a layering problem. It should not become a translucent card aesthetic, and menu surfaces must stay opaque enough to block underlying text.
 
+**The Bolder Product Rule.** Increase impact through stronger hierarchy, larger title scale, darker active states, and sharper full-width rules. Do not introduce neon, gradients, shadows, or extra color to make the interface feel louder.
+
 ## 5. Components
 
 ### Buttons
@@ -177,7 +179,7 @@ This system is flat by default. It conveys depth through surface contrast, borde
 - **Corner Style:** Square by default.
 - **Background:** Use surface against carbon or paper. Use layer for headers and selected states.
 - **Shadow Strategy:** No shadows.
-- **Border:** Full 1px rule border.
+- **Border:** Full 1px rule border, slightly strengthened for card and panel edges.
 - **Internal Padding:** 16px to 24px depending on density.
 
 ### Inputs / Fields

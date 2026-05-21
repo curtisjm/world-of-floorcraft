@@ -6,7 +6,7 @@ import { ArrowRight, Route, Trophy } from "lucide-react";
 export default function HomePage() {
   return (
     <div className="atelier-shell">
-      <section className="grid min-h-[calc(100vh-4.1rem)] items-center gap-10 border-b border-border py-12 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,27rem)] lg:py-20">
+      <section className="grid min-h-[calc(100vh-4.1rem)] items-center gap-12 border-b border-border py-12 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,30rem)] lg:py-20">
         <div className="flex max-w-4xl flex-col gap-8">
           <div className="flex flex-wrap items-center gap-2">
             <Badge className="metal-bronze-whisper metal-whisper" variant="outline">
@@ -21,11 +21,11 @@ export default function HomePage() {
           </div>
           <div className="flex flex-col gap-5">
             <p className="atelier-eyebrow">standard syllabus studio</p>
-            <h1 className="max-w-4xl text-5xl font-medium leading-[0.96] sm:text-6xl lg:text-7xl">
+            <h1 className="max-w-5xl text-6xl font-medium leading-[0.9] sm:text-7xl lg:text-8xl">
               World <span className="italic font-light">of</span> Floorcraft
             </h1>
           </div>
-          <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
+          <p className="max-w-2xl text-xl leading-9 text-muted-foreground">
             Explore the ISTD ballroom syllabus as a precise working graph. Browse
             figures, study transitions, compose routines, and follow competition
             results from the same quiet workspace.
@@ -41,15 +41,15 @@ export default function HomePage() {
               <Link href="/routines">Build routines</Link>
             </Button>
           </div>
-          <dl className="grid max-w-2xl grid-cols-2 border-y border-border sm:grid-cols-4">
+          <dl className="grid max-w-3xl grid-cols-2 border-y border-border sm:grid-cols-4">
             {[
               ["5", "dances"],
               ["3", "medal levels"],
               ["graph", "transitions"],
               ["live", "results"],
             ].map(([value, label]) => (
-              <div key={label} className="border-border py-4 pr-4 sm:border-r sm:last:border-r-0">
-                <dt className="font-heading text-xl italic">{value}</dt>
+              <div key={label} className="border-border py-5 pr-4 sm:border-r sm:last:border-r-0">
+                <dt className="font-heading text-2xl italic leading-none">{value}</dt>
                 <dd className="font-mono text-xs lowercase text-muted-foreground">
                   {label}
                 </dd>
@@ -58,7 +58,7 @@ export default function HomePage() {
           </dl>
         </div>
 
-        <div className="atelier-panel atelier-rule-grid relative min-h-[28rem] overflow-hidden rounded-lg p-5">
+        <div className="atelier-panel atelier-rule-grid relative min-h-[31rem] overflow-hidden p-5">
           <div className="absolute inset-x-5 top-5 flex items-center justify-between border-b border-border pb-3">
             <span className="font-mono text-xs lowercase text-muted-foreground">
               routine plate

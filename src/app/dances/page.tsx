@@ -41,7 +41,7 @@ export default async function DancesPage() {
       <div className="atelier-section flex flex-col gap-10">
         <div className="max-w-2xl">
           <p className="atelier-eyebrow mb-4">syllabus index</p>
-          <h1 className="text-4xl font-medium">Dances</h1>
+          <h1 className="atelier-page-title">Dances</h1>
           <p className="mt-3 text-muted-foreground">
             Select a dance to explore its figures and transitions.
           </p>

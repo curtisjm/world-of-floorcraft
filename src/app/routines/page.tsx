@@ -22,7 +22,7 @@ export default async function RoutinesPage() {
       <div className="atelier-section flex flex-col gap-10">
         <div className="max-w-2xl">
           <p className="atelier-eyebrow mb-4">routine workshop</p>
-          <h1 className="text-4xl font-medium">My Routines</h1>
+          <h1 className="atelier-page-title">My Routines</h1>
           <p className="mt-3 text-muted-foreground">
             Select a dance to view and manage your routines.
           </p>
