@@ -365,7 +365,7 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
   useEffect(() => { setEdges(displayEdges); }, [displayEdges, setEdges]);
 
   return (
-    <div className="h-[calc(100vh-200px)] min-h-[500px] rounded-lg border border-border overflow-hidden">
+    <div className="h-[calc(100vh-200px)] min-h-[500px] overflow-hidden border border-border bg-card">
       <ReactFlow
         nodes={nodes}
         edges={flowEdges}
@@ -383,7 +383,7 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
         }}
       >
         <Background color="var(--border)" gap={20} />
-        <Controls className="!bg-card !border-border !shadow-lg [&>button]:!bg-card [&>button]:!border-border [&>button]:!text-foreground [&>button:hover]:!bg-secondary" />
+        <Controls className="!border-border !bg-card !shadow-none [&>button]:!border-border [&>button]:!bg-card [&>button]:!text-foreground [&>button:hover]:!bg-secondary" />
         <MiniMap
           nodeColor={(node) => {
             const level = (node.data as FigureNodeData)?.level;
@@ -397,7 +397,7 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
             <button
               key={key}
               onClick={() => toggleLevel(key)}
-              className="px-3 py-1.5 rounded-md text-xs font-medium border-2 transition-all"
+              className="rounded-[2px] border px-3 py-1.5 text-xs font-medium transition-all"
               style={{
                 borderColor: color,
                 backgroundColor: enabledLevels[key] ? color : "transparent",
@@ -412,7 +412,7 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
         {isFullGraph && (
           <Panel
             position="top-left"
-            className="rounded-md border border-border bg-card/90 px-3 py-2 shadow-sm backdrop-blur"
+            className="border border-border bg-card px-3 py-2"
           >
             <p className="mb-2 font-mono text-[11px] font-medium lowercase text-muted-foreground">
               Levels
@@ -421,7 +421,7 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
               {LEVEL_LEGEND.map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-xs">
                   <span
-                    className="h-2.5 w-2.5 rounded-full"
+                    className="h-2.5 w-2.5 rounded-[2px]"
                     style={{ backgroundColor: item.color }}
                   />
                   <span className="text-foreground">{item.label}</span>
