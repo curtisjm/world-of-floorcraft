@@ -20,7 +20,7 @@ The brand is editorial, disciplined, expert, and quiet. It should feel like an a
 
 - Beige or brown shadcn stone defaults.
 - Rounded card-heavy SaaS layouts.
-- Decorative gradients, glassmorphism, blur, or neon dashboards.
+- Decorative gradients, default glassmorphism, or neon dashboards.
 - Purple-blue product palettes.
 - Full-saturation status colors scattered across inactive UI.
 - Display serif in tables, buttons, badges, form controls, list rows, or dense operational data.
@@ -32,7 +32,7 @@ The brand is editorial, disciplined, expert, and quiet. It should feel like an a
 - Neutrals do the work. The interface is mostly carbon, surface, chalk, mist, smoke, and rule lines.
 - Serif is ceremony. Source Serif 4 belongs to brand marks, page titles, and major content headings. Inter carries body, controls, lists, tables, and operational UI.
 - Square by default. Most panels, cards, inputs, menus, tables, and buttons use square corners or a 2px radius. Rounded shapes are reserved for avatars, toggles, progress dots, and other familiar circular controls.
-- Flat by default. Depth comes from contrast, borders, bands, and rule lines, not shadows or blur.
+- Flat by default. Depth comes from contrast, borders, bands, and rule lines. Blur is reserved for sticky chrome and floating overlays where it preserves context.
 - Dense but calm. Product screens should support repeated work and scanning. Prefer quiet structure over marketing composition.
 
 ## Accessibility & Inclusion

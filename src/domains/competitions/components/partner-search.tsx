@@ -78,7 +78,7 @@ export function PartnerSearch({
       </div>
 
       {showResults && debouncedQuery.length >= 1 && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-[2px] border bg-popover shadow-none">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-[2px] border bg-popover/95 shadow-none backdrop-blur-md">
           {filtered.length === 0 && !isLoading ? (
             <div className="p-3 text-sm text-muted-foreground text-center">
               No users found

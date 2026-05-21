@@ -75,20 +75,21 @@
       }
     },
     "elevationMeta": {
-      "strategy": "Flat by default. Use tonal contrast, borders, and rule lines instead of shadows or blur.",
+      "strategy": "Flat by default. Use tonal contrast, borders, rule lines, and occasional contextual blur instead of shadows.",
       "shadowDefault": "none"
     },
     "componentRules": {
       "shape": "Square or 2px radius for most UI. Preserve circles for avatars, toggles, progress dots, and familiar round indicators.",
       "color": "Metals and semantic colors require domain meaning. Neutrals carry inactive UI.",
       "alerts": "Use full borders and tonal tints. Do not use side stripes.",
-      "navigation": "Solid background plus bottom rule. No backdrop blur."
+      "navigation": "Translucent blurred background plus bottom rule.",
+      "blur": "Use blur for sticky chrome and floating overlays only, never as a general card aesthetic."
     },
     "antiReferences": [
       "beige or brown shadcn stone defaults",
       "rounded card-heavy SaaS layouts",
       "decorative gradients",
-      "glassmorphism",
+      "default glassmorphism",
       "neon dashboards",
       "purple-blue product palettes",
       "serif in dense operational UI",

@@ -78,7 +78,7 @@ components:
 
 World of Floorcraft should feel like a working reference manual built for people who care about craft. The interface is quiet, squared, and exact: carbon pages, lighter surface panels, crisp rules, and a typography system that separates editorial ceremony from operational work.
 
-This is a product interface, so consistency and task flow matter more than spectacle. The system rejects beige shadcn stone defaults, decorative gradients, glass, soft SaaS cards, neon status color, and serif-heavy data views.
+This is a product interface, so consistency and task flow matter more than spectacle. The system rejects beige shadcn stone defaults, decorative gradients, default glass, soft SaaS cards, neon status color, and serif-heavy data views.
 
 **Key Characteristics:**
 
@@ -145,15 +145,18 @@ The palette is black, white, and three tiers of graphite. Semantic color is rare
 
 ## 4. Elevation
 
-This system is flat by default. It conveys depth through surface contrast, borders, divider rules, and tonal bands. Shadows and blur are not part of the base vocabulary.
+This system is flat by default. It conveys depth through surface contrast, borders, divider rules, tonal bands, and occasional contextual blur. Shadows are not part of the base vocabulary.
 
 ### Shadow Vocabulary
 
 - **None** (`box-shadow: none`): Default for cards, panels, buttons, menus, dialogs, popovers, tables, and graph nodes.
+- **Contextual Blur** (`backdrop-filter: blur(...)`): Reserved for sticky navigation, mobile sheets, popovers, dropdown menus, and other floating chrome that needs to keep page context visible.
 
 ### Named Rules
 
 **The Rule-Line Rule.** Use borders and dividers before shadows. If a surface needs separation, increase tonal contrast or add a full border.
+
+**The No Decorative Glass Rule.** Blur is allowed when it solves a layering problem. It should not become a translucent card aesthetic.
 
 ## 5. Components
 
@@ -185,7 +188,7 @@ This system is flat by default. It conveys depth through surface contrast, borde
 
 ### Navigation
 
-- **Style:** Top navigation uses a solid background and bottom rule, not blur. Active dashboard items have a border and accent fill. Dropdowns and sheets are flat bordered surfaces.
+- **Style:** Top navigation uses a translucent blurred background with a bottom rule. Active dashboard items have a border and accent fill. Dropdowns, popovers, selects, and sheets may use subtle blur with full borders.
 
 ### Figure Graph
 
@@ -205,7 +208,8 @@ Graph nodes use square surfaces, full borders, and metal borders for syllabus le
 ### Don't:
 
 - **Don't** use beige or brown shadcn stone defaults.
-- **Don't** add decorative gradients, glassmorphism, blur, or neon dashboards.
+- **Don't** add decorative gradients, default glassmorphism, or neon dashboards.
+- **Don't** use blur on ordinary cards, tables, lists, or panels. Keep it to sticky chrome and floating overlays.
 - **Don't** use side-stripe alert cards.
 - **Don't** use shadows as a default separator.
 - **Don't** put Source Serif 4 in tables, buttons, badges, form controls, figure list rows, or dense operational lists.
