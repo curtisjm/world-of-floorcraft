@@ -93,12 +93,6 @@
       "emptyStates": "Use the atelier diamond glyph with specific guidance about what the surface becomes once populated.",
       "brandMark": "The brand mark may respond softly on hover or keyboard focus. Keep it brief and non-decorative."
     },
-    "motionRules": {
-      "strategy": "Product motion is short and state-based. Use 150ms for direct feedback, 220ms for reveals, and 260ms for modal or sheet overlays.",
-      "easing": "Use ease-out-quint for controls and menus. Use ease-out-expo for larger overlays. Do not use bounce or elastic easing.",
-      "reducedMotion": "Respect prefers-reduced-motion globally. Disable decorative motion and keep state changes effectively instant.",
-      "avoid": "Do not add page-load choreography or hover movement to non-interactive badges and status chips."
-    },
     "colorRules": {
       "strategy": "Restrained semantic color. Color appears only for primary action, current selection, state indicators, placements, and syllabus levels.",
       "rawTailwindStatusColors": "Do not use raw Tailwind blue, green, amber, orange, yellow, red, or emerald status colors in product UI. Map those meanings to sage, clay, wine, gold, silver, and bronze.",
