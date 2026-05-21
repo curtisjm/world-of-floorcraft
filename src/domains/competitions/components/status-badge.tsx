@@ -17,15 +17,15 @@ const statusConfig: Record<
   },
   accepting_entries: {
     label: "Accepting Entries",
-    className: "border-sage bg-[var(--sage-tint)] text-sage",
+    className: "status-sage",
   },
   entries_closed: {
     label: "Entries Closed",
-    className: "border-clay bg-[var(--clay-tint)] text-clay",
+    className: "status-clay",
   },
   running: {
     label: "Running",
-    className: "border-wine bg-[var(--wine-tint)] text-wine",
+    className: "status-wine",
   },
   finished: {
     label: "Finished",

@@ -279,14 +279,14 @@ export default function RegisterPage() {
           <p className="text-muted-foreground">Registration</p>
         </div>
 
-        <Card className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
+        <Card className="status-clay">
           <CardContent className="py-4 flex items-start gap-3">
-            <Info className="size-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+            <Info className="size-5 text-status-clay shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-medium text-blue-900 dark:text-blue-100">
+              <p className="font-medium text-foreground">
                 Entries are closed
               </p>
-              <p className="text-blue-700 dark:text-blue-300 mt-1">
+              <p className="mt-1 text-muted-foreground">
                 To make changes to your entries, submit an{" "}
                 <Link
                   href={`/competitions/${slug}/add-drop`}
@@ -541,7 +541,7 @@ export default function RegisterPage() {
                         </div>
                       </div>
                       {alreadyEntered && (
-                        <Check className="size-4 text-green-500 shrink-0" />
+                        <Check className="size-4 text-status-sage shrink-0" />
                       )}
                     </label>
                   );

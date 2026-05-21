@@ -384,9 +384,9 @@ function CallbackMarkingPage({
                       text-xl sm:text-2xl font-bold transition-all select-none
                       ${
                         state === "marked"
-                          ? "bg-green-600 border-green-700 text-white"
+                          ? "status-sage text-foreground"
                           : state === "maybe"
-                            ? "bg-yellow-500 border-yellow-600 text-white"
+                            ? "status-clay text-foreground"
                             : "bg-muted border-border text-foreground hover:bg-accent"
                       }
                       ${submitted && !editing ? "opacity-60" : "active:scale-95"}

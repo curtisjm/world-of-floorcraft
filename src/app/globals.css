@@ -484,6 +484,62 @@
     animation: atelier-skeleton-rule 1.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   }
 
+  .status-sage {
+    border-color: color-mix(in oklch, var(--sage) 42%, var(--border));
+    background: var(--sage-tint);
+    color: color-mix(in oklch, var(--sage) 78%, var(--foreground));
+  }
+
+  .status-clay {
+    border-color: color-mix(in oklch, var(--clay) 46%, var(--border));
+    background: var(--clay-tint);
+    color: color-mix(in oklch, var(--clay) 82%, var(--foreground));
+  }
+
+  .status-wine {
+    border-color: color-mix(in oklch, var(--wine) 48%, var(--border));
+    background: var(--wine-tint);
+    color: color-mix(in oklch, var(--wine) 74%, var(--foreground));
+  }
+
+  .text-status-sage {
+    color: color-mix(in oklch, var(--sage) 78%, var(--foreground));
+  }
+
+  .text-status-clay {
+    color: color-mix(in oklch, var(--clay) 82%, var(--foreground));
+  }
+
+  .text-status-wine {
+    color: color-mix(in oklch, var(--wine) 74%, var(--foreground));
+  }
+
+  .status-dot-sage { background: color-mix(in oklch, var(--sage) 86%, var(--foreground)); }
+  .status-dot-clay { background: color-mix(in oklch, var(--clay) 86%, var(--foreground)); }
+  .status-dot-wine { background: color-mix(in oklch, var(--wine) 82%, var(--foreground)); }
+
+  .placement-gold {
+    border-color: color-mix(in oklch, var(--gold-base) 54%, var(--border));
+    background: color-mix(in oklch, var(--gold-base) 13%, var(--card));
+    color: var(--gold-matte);
+  }
+
+  .placement-silver {
+    border-color: color-mix(in oklch, var(--silver-matte) 46%, var(--border));
+    background: color-mix(in oklch, var(--silver-base) 12%, var(--card));
+    color: color-mix(in oklch, var(--silver-shadow) 72%, var(--foreground));
+  }
+
+  .placement-bronze {
+    border-color: color-mix(in oklch, var(--bronze-base) 48%, var(--border));
+    background: color-mix(in oklch, var(--bronze-base) 11%, var(--card));
+    color: var(--bronze-base);
+  }
+
+  .dark .placement-gold { color: var(--gold-highlight); }
+  .dark .placement-silver { color: var(--silver-highlight); }
+  .dark .placement-bronze { color: var(--bronze-highlight); }
+
   .atelier-panel,
   [data-slot="card"],
   [data-slot="table-container"],

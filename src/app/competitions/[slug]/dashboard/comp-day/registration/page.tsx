@@ -193,10 +193,10 @@ export default function RegistrationTablePage() {
           </h2>
           <span className={cn(
             "text-xs flex items-center gap-1",
-            connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+            connectionStatus === "connected" && "text-status-sage",
             connectionStatus === "disconnected" && "text-muted-foreground",
-            connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
-            connectionStatus === "failed" && "text-red-600 dark:text-red-400",
+            connectionStatus === "suspended" && "text-status-clay",
+            connectionStatus === "failed" && "text-status-wine",
           )}>
             {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
             {connectionStatus === "connected" && "Live"}
@@ -212,7 +212,7 @@ export default function RegistrationTablePage() {
           </Badge>
           <Badge
             variant="secondary"
-            className="gap-1.5 px-3 py-1 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
+            className="status-sage gap-1.5 px-3 py-1"
           >
             <CheckCircle2 className="size-3.5" />
             Checked In: {stats.checkedIn}
@@ -220,7 +220,7 @@ export default function RegistrationTablePage() {
           {stats.outstanding > 0 && (
             <Badge
               variant="secondary"
-              className="gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+              className="status-clay gap-1.5 px-3 py-1"
             >
               <DollarSign className="size-3.5" />
               Outstanding: ${stats.outstanding.toFixed(2)}
@@ -330,11 +330,11 @@ export default function RegistrationTablePage() {
                           </TableCell>
                           <TableCell className="text-right">
                             {isPaid ? (
-                              <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                              <span className="text-sm font-medium text-status-sage">
                                 Paid
                               </span>
                             ) : (
-                              <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                              <span className="text-sm font-medium text-status-clay">
                                 ${balance.toFixed(2)} owed
                               </span>
                             )}
@@ -373,7 +373,7 @@ export default function RegistrationTablePage() {
                       key={reg.id}
                       className={cn(
                         "flex items-center gap-3 rounded-lg border p-3",
-                        reg.checkedIn && "border-green-500/30 bg-green-500/5",
+                        reg.checkedIn && "status-sage",
                       )}
                     >
                       <Checkbox
@@ -403,11 +403,11 @@ export default function RegistrationTablePage() {
                           <span>{reg.entryCount} entries</span>
                           <span>&middot;</span>
                           {isPaid ? (
-                            <span className="font-medium text-green-600 dark:text-green-400">
+                            <span className="font-medium text-status-sage">
                               Paid
                             </span>
                           ) : (
-                            <span className="font-medium text-amber-600 dark:text-amber-400">
+                            <span className="font-medium text-status-clay">
                               ${balance.toFixed(2)} owed
                             </span>
                           )}
@@ -681,7 +681,7 @@ export default function RegistrationTablePage() {
               {pendingAddDrops.safe.length > 0 && (
                 <div>
                   <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <CheckCircle2 className="size-4 text-green-500" />
+                    <CheckCircle2 className="size-4 text-status-sage" />
                     Safe to approve ({pendingAddDrops.safe.length})
                   </p>
                   <div className="space-y-2">
@@ -730,21 +730,21 @@ export default function RegistrationTablePage() {
               {pendingAddDrops.needsReview.length > 0 && (
                 <div>
                   <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <XCircle className="size-4 text-amber-500" />
+                    <XCircle className="size-4 text-status-clay" />
                     Needs review ({pendingAddDrops.needsReview.length})
                   </p>
                   <div className="space-y-2">
                     {pendingAddDrops.needsReview.map((req) => (
                       <div
                         key={req.id}
-                        className="flex flex-col gap-2 rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                        className="status-clay flex flex-col gap-2 rounded-md border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="text-sm">
                           <span className="capitalize font-medium">
                             {req.type}
                           </span>{" "}
                           - Event #{req.eventId}
-                          <p className="text-xs text-amber-600 dark:text-amber-400">
+                          <p className="text-xs text-status-clay">
                             Affects active rounds
                           </p>
                         </div>

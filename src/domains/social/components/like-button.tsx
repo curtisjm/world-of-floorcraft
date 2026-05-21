@@ -28,7 +28,7 @@ export function LikeButton({ postId, userId }: LikeButtonProps) {
       disabled={!userId || toggleMutation.isPending}
     >
       <Heart
-        className={`h-4 w-4 ${data?.liked ? "fill-red-500 text-red-500" : ""}`}
+        className={`h-4 w-4 ${data?.liked ? "fill-wine text-wine" : ""}`}
       />
       <span className="text-xs">{data?.count ?? 0}</span>
     </Button>

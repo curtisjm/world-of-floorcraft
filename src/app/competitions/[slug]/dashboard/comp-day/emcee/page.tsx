@@ -143,10 +143,10 @@ export default function EmceePage() {
             <h2 className="text-xl sm:text-2xl font-bold">Emcee</h2>
             <span className={cn(
               "text-xs flex items-center gap-1",
-              connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+              connectionStatus === "connected" && "text-status-sage",
               connectionStatus === "disconnected" && "text-muted-foreground",
-              connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
-              connectionStatus === "failed" && "text-red-600 dark:text-red-400",
+              connectionStatus === "suspended" && "text-status-clay",
+              connectionStatus === "failed" && "text-status-wine",
             )}>
               {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
               {connectionStatus === "connected" && "Live"}
@@ -363,7 +363,7 @@ function ResultsPanel({ eventId }: { eventId: number }) {
           className={cn(
             "flex items-center gap-2 sm:gap-4 rounded-md px-3 sm:px-4 py-2 sm:py-3",
             r.placement <= 3
-              ? "bg-amber-50/50 dark:bg-amber-950/20"
+              ? "placement-gold"
               : "bg-muted/30",
           )}
         >

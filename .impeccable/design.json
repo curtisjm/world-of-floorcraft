@@ -80,7 +80,7 @@
     },
     "componentRules": {
       "shape": "Square or 2px radius for most UI. Preserve circles for avatars, toggles, progress dots, and familiar round indicators.",
-      "color": "Metals and semantic colors require domain meaning. Neutrals carry inactive UI.",
+      "color": "Metals and semantic colors require domain meaning. Neutrals carry inactive UI. Use sage for confirmed/saved/live, clay for pending/warning/current attention, wine for destructive/failed, and metals for awarded or syllabus meaning only.",
       "alerts": "Use full borders and tonal tints. Do not use side stripes.",
       "navigation": "Translucent blurred background plus bottom rule.",
       "menus": "Dropdowns, popovers, and selects use opaque surfaces so underlying text cannot compete.",
@@ -92,6 +92,11 @@
       "loading": "Skeletons use a quiet moving rule line, respect reduced motion, and never delay content.",
       "emptyStates": "Use the atelier diamond glyph with specific guidance about what the surface becomes once populated.",
       "brandMark": "The brand mark may respond softly on hover or keyboard focus. Keep it brief and non-decorative."
+    },
+    "colorRules": {
+      "strategy": "Restrained semantic color. Color appears only for primary action, current selection, state indicators, placements, and syllabus levels.",
+      "rawTailwindStatusColors": "Do not use raw Tailwind blue, green, amber, orange, yellow, red, or emerald status colors in product UI. Map those meanings to sage, clay, wine, gold, silver, and bronze.",
+      "utilities": "Use status-sage, status-clay, status-wine, placement-gold, placement-silver, and placement-bronze for product states."
     },
     "antiReferences": [
       "beige or brown shadcn stone defaults",
