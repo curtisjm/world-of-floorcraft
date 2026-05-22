@@ -88,7 +88,7 @@ export default function CompetitionsPage() {
               variant={statusFilter === filter.value ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setStatusFilter(filter.value)}
-              className="h-8"
+              className="min-h-11 min-w-11 sm:h-8 sm:min-h-8"
             >
               {filter.label}
             </Button>

@@ -79,7 +79,7 @@ export function FigureListFilters({ danceSlug, figures }: FigureListFiltersProps
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search figures..."
-          className="flex-1 rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="min-h-11 flex-1 rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:min-h-0"
         />
         <div className="flex gap-2">
           {TOGGLE_CONFIG.map(({ key, label, className }) => (

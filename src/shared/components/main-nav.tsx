@@ -92,7 +92,7 @@ function MobileNavLink({
       <Link
         href={href}
         onClick={onClick}
-        className="flex items-center gap-3 rounded-sm border border-transparent px-3 py-2 text-sm transition-colors hover:border-border hover:bg-accent hover:text-accent-foreground"
+        className="flex min-h-11 items-center gap-3 rounded-sm border border-transparent px-3 py-2 text-sm transition-colors hover:border-border hover:bg-accent hover:text-accent-foreground"
       >
         {Icon && <Icon className="size-4 text-muted-foreground" />}
         <span>{children}</span>
@@ -122,7 +122,7 @@ export function MainNav() {
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="brand-link mr-2 flex items-center gap-3 text-foreground md:mr-6"
+            className="brand-link mr-2 flex min-h-11 items-center gap-3 text-foreground md:mr-6"
           >
             <span className="brand-mark" aria-hidden="true" />
             <span className="font-heading text-[1.0625rem] font-medium leading-none">
@@ -237,7 +237,7 @@ export function MainNav() {
                 <Link
                   href="/competitions"
                   className={cn(
-                    "group inline-flex h-9 w-max items-center justify-center rounded-[2px] border border-transparent bg-transparent px-3 py-2 text-sm font-medium transition-[background-color,border-color,color] outline-none hover:bg-secondary hover:text-accent-foreground focus:bg-secondary focus:text-accent-foreground",
+                    "group inline-flex min-h-11 w-max items-center justify-center rounded-[2px] border border-transparent bg-transparent px-3 py-2 text-sm font-medium transition-[background-color,border-color,color] outline-none hover:bg-secondary hover:text-accent-foreground focus:bg-secondary focus:text-accent-foreground",
                     pathname.startsWith("/competitions")
                       ? "text-foreground"
                       : "text-muted-foreground"
@@ -254,7 +254,7 @@ export function MainNav() {
           <SignedOut>
             <Link
               href="/sign-in"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Sign in
             </Link>
@@ -269,7 +269,7 @@ export function MainNav() {
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <button
-                className="inline-flex items-center justify-center rounded-[2px] border border-border bg-card p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[2px] border border-border bg-card p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
                 aria-label="Open menu"
               >
                 <Menu className="size-5" />

@@ -799,6 +799,26 @@
     pointer-events: none;
   }
   .metal-shine:hover::after { transform: translateX(110%); }
+
+  @media (hover: none), (pointer: coarse) {
+    [data-slot="button"],
+    [data-slot="tabs-list"],
+    [data-slot="tabs-trigger"],
+    [data-slot="navigation-menu-trigger"],
+    [data-slot="navigation-menu-link"],
+    [data-slot="sheet-trigger"] {
+      min-height: 2.75rem;
+    }
+
+    .metal-whisper:is(button) {
+      min-height: 2.75rem;
+      padding-block: 0.5rem;
+    }
+
+    [data-slot="button"][data-size^="icon"] {
+      min-width: 2.75rem;
+    }
+  }
 }
 
 .tiptap.ProseMirror {

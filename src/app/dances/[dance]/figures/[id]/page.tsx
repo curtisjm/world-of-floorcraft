@@ -37,32 +37,77 @@ interface Step {
 
 function StepTable({ steps }: { steps: Step[] }) {
   return (
-    <div className="atelier-panel overflow-x-auto">
-      <table className="atelier-data-table min-w-[56rem] text-sm">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>position</th>
-            <th>alignment</th>
-            <th>turn</th>
-            <th>rise & fall</th>
-          </tr>
-        </thead>
-        <tbody>
-          {steps.map((step) => (
-            <tr key={step.step_number}>
-              <td className="num-cell">
-                {step.step_number}
-              </td>
-              <td>{step.feet_position}</td>
-              <td>{step.alignment}</td>
-              <td>{step.amount_of_turn ?? "—"}</td>
-              <td>{step.rise_and_fall ?? "—"}</td>
+    <>
+      <div className="space-y-3 md:hidden">
+        {steps.map((step) => (
+          <article
+            key={step.step_number}
+            data-adapted-step-card
+            className="atelier-panel grid gap-4 p-4 text-sm"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <span className="font-mono text-xs text-muted-foreground">
+                step {step.step_number}
+              </span>
+              <span className="text-base font-medium text-foreground">
+                {step.feet_position}
+              </span>
+            </div>
+            <dl className="grid gap-3">
+              <div>
+                <dt className="font-mono text-xs lowercase text-muted-foreground">
+                  alignment
+                </dt>
+                <dd className="mt-1 text-foreground">{step.alignment}</dd>
+              </div>
+              <div>
+                <dt className="font-mono text-xs lowercase text-muted-foreground">
+                  turn
+                </dt>
+                <dd className="mt-1 text-foreground">
+                  {step.amount_of_turn ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="font-mono text-xs lowercase text-muted-foreground">
+                  rise & fall
+                </dt>
+                <dd className="mt-1 text-foreground">
+                  {step.rise_and_fall ?? "—"}
+                </dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+      </div>
+
+      <div className="atelier-panel hidden overflow-x-auto md:block">
+        <table className="atelier-data-table min-w-[56rem] text-sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>position</th>
+              <th>alignment</th>
+              <th>turn</th>
+              <th>rise & fall</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {steps.map((step) => (
+              <tr key={step.step_number}>
+                <td className="num-cell">
+                  {step.step_number}
+                </td>
+                <td>{step.feet_position}</td>
+                <td>{step.alignment}</td>
+                <td>{step.amount_of_turn ?? "—"}</td>
+                <td>{step.rise_and_fall ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
@@ -306,10 +351,10 @@ export default async function FigureDetailPage({
                   {precedeEdges.map((edge) => {
                     const neighbor = neighborMap.get(edge.sourceFigureId);
                     return (
-                      <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                      <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                         <Link
                           href={`/dances/${danceSlug}/figures/${edge.sourceFigureId}`}
-                          className="min-w-0 text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
+                          className="flex min-h-11 min-w-0 flex-col justify-center text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
                           <span className="block truncate">
                             {neighbor?.name ?? `Figure #${edge.sourceFigureId}`}
@@ -320,7 +365,7 @@ export default async function FigureDetailPage({
                             </span>
                           )}
                         </Link>
-                        <div className="flex min-w-0 items-center gap-2 sm:justify-end">
+                        <div className="flex min-w-0 items-center gap-2 lg:justify-end">
                           {edge.conditions && (
                             <span className="min-w-0 max-w-[20rem] text-xs leading-relaxed text-muted-foreground">
                               {edge.conditions}
@@ -357,10 +402,10 @@ export default async function FigureDetailPage({
                   {followEdges.map((edge) => {
                     const neighbor = neighborMap.get(edge.targetFigureId);
                     return (
-                      <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                      <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                         <Link
                           href={`/dances/${danceSlug}/figures/${edge.targetFigureId}`}
-                          className="min-w-0 text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
+                          className="flex min-h-11 min-w-0 flex-col justify-center text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
                           <span className="block truncate">
                             {neighbor?.name ?? `Figure #${edge.targetFigureId}`}
@@ -371,7 +416,7 @@ export default async function FigureDetailPage({
                             </span>
                           )}
                         </Link>
-                        <div className="flex min-w-0 items-center gap-2 sm:justify-end">
+                        <div className="flex min-w-0 items-center gap-2 lg:justify-end">
                           {edge.conditions && (
                             <span className="min-w-0 max-w-[20rem] text-xs leading-relaxed text-muted-foreground">
                               {edge.conditions}
