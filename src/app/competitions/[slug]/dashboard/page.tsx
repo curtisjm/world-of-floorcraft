@@ -2,8 +2,9 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
+import { api } from "../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Skeleton } from "@shared/ui/skeleton";
 import { StatusBadge } from "@competitions/components/status-badge";
@@ -32,29 +33,18 @@ const statusTransitions: Record<string, { label: string; next: string }[]> = {
 
 export default function DashboardOverviewPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const {
-    data: dashboard,
-    isLoading,
-  } = trpc.competition.getForDashboard.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const dashboard = useQuery(
+    api.competitions.core.getForDashboard,
+    comp ? { competitionId: comp._id } : "skip",
   );
-  const { data: setup } = trpc.competition.setupStatus.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const setup = useQuery(
+    api.competitions.core.setupStatus,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = comp === undefined || dashboard === undefined;
 
-  const utils = trpc.useUtils();
-  const statusMutation = trpc.competition.updateStatus.useMutation({
-    onSuccess: () => {
-      utils.competition.getBySlug.invalidate({ slug });
-      utils.competition.getForDashboard.invalidate({ competitionId: comp!.id });
-      utils.competition.setupStatus.invalidate({ competitionId: comp!.id });
-      toast.success("Status updated");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const statusMutation = useMutation(api.competitions.core.updateStatus);
 
   if (isLoading || !comp) {
     return (
@@ -148,21 +138,25 @@ export default function DashboardOverviewPage() {
                   key={t.next}
                   variant={t.next === "accepting_entries" ? "outline" : "default"}
                   size="sm"
-                  disabled={statusMutation.isPending}
-                  onClick={() => {
+                  onClick={async () => {
                     if (
                       t.next === "running" &&
                       !confirm("Start the competition? This enables live judging.")
                     ) {
                       return;
                     }
-                    statusMutation.mutate({
-                      competitionId: comp.id,
-                      status: t.next as "draft" | "advertised" | "accepting_entries" | "entries_closed" | "running" | "finished",
-                    });
+                    try {
+                      await statusMutation({
+                        competitionId: comp._id,
+                        status: t.next as "draft" | "advertised" | "accepting_entries" | "entries_closed" | "running" | "finished",
+                      });
+                      toast.success("Status updated");
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Failed");
+                    }
                   }}
                 >
-                  {statusMutation.isPending ? "Updating..." : t.label}
+                  {t.label}
                 </Button>
               ))}
             </div>

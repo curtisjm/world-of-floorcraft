@@ -8,6 +8,18 @@
  * @module
  */
 
+import type * as competitions_addDrop from "../competitions/addDrop.js";
+import type * as competitions_core from "../competitions/core.js";
+import type * as competitions_defaultEvents from "../competitions/defaultEvents.js";
+import type * as competitions_entries from "../competitions/entries.js";
+import type * as competitions_events from "../competitions/events.js";
+import type * as competitions_judges from "../competitions/judges.js";
+import type * as competitions_numbers from "../competitions/numbers.js";
+import type * as competitions_registration from "../competitions/registration.js";
+import type * as competitions_schedule from "../competitions/schedule.js";
+import type * as competitions_staff from "../competitions/staff.js";
+import type * as competitions_tba from "../competitions/tba.js";
+import type * as competitions_teamMatch from "../competitions/teamMatch.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_money from "../lib/money.js";
@@ -38,6 +50,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "competitions/addDrop": typeof competitions_addDrop;
+  "competitions/core": typeof competitions_core;
+  "competitions/defaultEvents": typeof competitions_defaultEvents;
+  "competitions/entries": typeof competitions_entries;
+  "competitions/events": typeof competitions_events;
+  "competitions/judges": typeof competitions_judges;
+  "competitions/numbers": typeof competitions_numbers;
+  "competitions/registration": typeof competitions_registration;
+  "competitions/schedule": typeof competitions_schedule;
+  "competitions/staff": typeof competitions_staff;
+  "competitions/tba": typeof competitions_tba;
+  "competitions/teamMatch": typeof competitions_teamMatch;
   "lib/auth": typeof lib_auth;
   "lib/errors": typeof lib_errors;
   "lib/money": typeof lib_money;

@@ -1,10 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
 import { DashboardNav } from "@competitions/components/dashboard-nav";
 import { StatusBadge } from "@competitions/components/status-badge";
 import { Skeleton } from "@shared/ui/skeleton";
+import { api } from "../../../../../convex/_generated/api";
 
 export default function DashboardLayout({
   children,
@@ -12,7 +13,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp, isLoading } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const isLoading = comp === undefined;
 
   if (isLoading) {
     return (

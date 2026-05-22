@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -31,12 +31,14 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@shared/lib/utils";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 // ── Step 1: Basic Info ─────────────────────────────────────────
 
 const basicInfoSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
-  orgId: z.number({ required_error: "Select an organization" }),
+  orgId: z.string().min(1, "Select an organization"),
   description: z.string().optional(),
   venueName: z.string().optional(),
   city: z.string().optional(),
@@ -44,8 +46,6 @@ const basicInfoSchema = z.object({
 });
 
 type BasicInfoData = z.infer<typeof basicInfoSchema>;
-
-// ── Step schemas ───────────────────────────────────────────────
 
 const styles = ["standard", "smooth", "latin", "rhythm", "nightclub"] as const;
 
@@ -60,92 +60,70 @@ export default function CreateCompetitionPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [createdComp, setCreatedComp] = useState<{
-    id: number;
+    _id: Id<"competitions">;
     slug: string;
     name: string;
   } | null>(null);
   const [scheduleApplied, setScheduleApplied] = useState(false);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [eventsGenerated, setEventsGenerated] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [applyingTemplate, setApplyingTemplate] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
-  // Org list for the selector
-  const { data: userOrgs, isLoading: orgsLoading } = trpc.org.listUserOrgs.useQuery();
+  const userOrgs = useQuery(api.orgs.listUserOrgs, {});
+  const orgsLoading = userOrgs === undefined;
   const adminOrgs = userOrgs?.filter((o) => o.role === "admin");
 
-  // Step 1: Create competition
+  const createMutation = useMutation(api.competitions.core.create);
+  const updateMutation = useMutation(api.competitions.core.update);
+  const applyTemplate = useMutation(api.competitions.schedule.applyDefaultTemplate);
+  const generateEvents = useMutation(api.competitions.events.generateDefaults);
+
   const basicForm = useForm<BasicInfoData>({
     resolver: zodResolver(basicInfoSchema),
     defaultValues: { name: "", description: "", venueName: "", city: "", state: "" },
   });
 
-  const createMutation = trpc.competition.create.useMutation({
-    onSuccess: (comp) => {
-      if (!comp) return;
-      setCreatedComp({ id: comp.id, slug: comp.slug, name: comp.name });
-      toast.success("Competition created as draft");
-      setCurrentStep(1);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const updateMutation = trpc.competition.update.useMutation({
-    onError: (err) => toast.error(err.message),
-  });
-
-  // Step 2: Schedule template
-  const applyTemplate = trpc.schedule.applyDefaultTemplate.useMutation({
-    onSuccess: () => {
-      setScheduleApplied(true);
-      toast.success("Schedule template applied");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  // Step 3: Generate events
-  const generateEvents = trpc.event.generateDefaults.useMutation({
-    onSuccess: (created) => {
-      setEventsGenerated(true);
-      toast.success(`Generated ${created.length} events`);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const handleStep1Submit = basicForm.handleSubmit((data) => {
-    if (createdComp) {
-      updateMutation.mutate(
-        {
-          competitionId: createdComp.id,
+  const handleStep1Submit = basicForm.handleSubmit(async (data) => {
+    try {
+      if (createdComp) {
+        setUpdating(true);
+        await updateMutation({
+          competitionId: createdComp._id,
           name: data.name,
           description: data.description || null,
           venueName: data.venueName || null,
           city: data.city || null,
           state: data.state || null,
-        },
-        { onSuccess: () => setCurrentStep(1) },
-      );
-    } else {
-      createMutation.mutate(
-        { name: data.name, orgId: data.orgId },
-        {
-          onSuccess: (comp) => {
-            if (!comp) return;
-            setCreatedComp({ id: comp.id, slug: comp.slug, name: comp.name });
-            toast.success("Competition created as draft");
-
-            // Update with optional fields
-            if (data.description || data.venueName || data.city || data.state) {
-              updateMutation.mutate({
-                competitionId: comp.id,
-                description: data.description || null,
-                venueName: data.venueName || null,
-                city: data.city || null,
-                state: data.state || null,
-              });
-            }
-            setCurrentStep(1);
-          },
-        },
-      );
+        });
+        setCurrentStep(1);
+      } else {
+        setCreating(true);
+        const comp = await createMutation({
+          name: data.name,
+          orgId: data.orgId as Id<"organizations">,
+        });
+        if (!comp) return;
+        setCreatedComp({ _id: comp._id, slug: comp.slug, name: comp.name });
+        toast.success("Competition created as draft");
+        if (data.description || data.venueName || data.city || data.state) {
+          await updateMutation({
+            competitionId: comp._id,
+            description: data.description || null,
+            venueName: data.venueName || null,
+            city: data.city || null,
+            state: data.state || null,
+          });
+        }
+        setCurrentStep(1);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setCreating(false);
+      setUpdating(false);
     }
   });
 
@@ -175,7 +153,6 @@ export default function CreateCompetitionPage() {
     <div className="max-w-2xl mx-auto space-y-6 py-8 px-4">
       <h1 className="text-2xl font-bold">Create Competition</h1>
 
-      {/* Step indicator */}
       <nav className="flex items-center gap-2">
         {steps.map((step, i) => {
           const Icon = step.icon;
@@ -212,7 +189,6 @@ export default function CreateCompetitionPage() {
         })}
       </nav>
 
-      {/* Step 1: Basic Info */}
       {currentStep === 0 && (
         <Card>
           <CardHeader>
@@ -227,8 +203,8 @@ export default function CreateCompetitionPage() {
                   name="orgId"
                   render={({ field }) => (
                     <Select
-                      value={field.value?.toString() ?? ""}
-                      onValueChange={(v) => field.onChange(Number(v))}
+                      value={field.value ?? ""}
+                      onValueChange={field.onChange}
                       disabled={!!createdComp}
                     >
                       <SelectTrigger>
@@ -236,7 +212,7 @@ export default function CreateCompetitionPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {adminOrgs.map((org) => (
-                          <SelectItem key={org.id} value={org.id.toString()}>
+                          <SelectItem key={org._id} value={org._id}>
                             {org.name}
                           </SelectItem>
                         ))}
@@ -292,13 +268,10 @@ export default function CreateCompetitionPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                >
-                  {createMutation.isPending
+                <Button type="submit" disabled={creating || updating}>
+                  {creating
                     ? "Creating..."
-                    : updateMutation.isPending
+                    : updating
                       ? "Saving..."
                       : createdComp
                         ? "Next"
@@ -311,7 +284,6 @@ export default function CreateCompetitionPage() {
         </Card>
       )}
 
-      {/* Step 2: Schedule */}
       {currentStep === 1 && createdComp && (
         <Card>
           <CardHeader>
@@ -330,34 +302,35 @@ export default function CreateCompetitionPage() {
               </div>
             ) : (
               <Button
-                onClick={() => {
+                onClick={async () => {
                   const today = new Date().toISOString().split("T")[0]!;
-                  applyTemplate.mutate({
-                    competitionId: createdComp.id,
-                    date: today,
-                  });
+                  try {
+                    setApplyingTemplate(true);
+                    await applyTemplate({
+                      competitionId: createdComp._id,
+                      date: today,
+                    });
+                    setScheduleApplied(true);
+                    toast.success("Schedule template applied");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Failed");
+                  } finally {
+                    setApplyingTemplate(false);
+                  }
                 }}
-                disabled={applyTemplate.isPending}
+                disabled={applyingTemplate}
               >
-                {applyTemplate.isPending
-                  ? "Applying..."
-                  : "Apply Default Template"}
+                {applyingTemplate ? "Applying..." : "Apply Default Template"}
               </Button>
             )}
 
             <div className="flex justify-between pt-4">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentStep(0)}
-              >
+              <Button variant="ghost" onClick={() => setCurrentStep(0)}>
                 <ArrowLeft className="size-4 mr-2" />
                 Back
               </Button>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep(2)}
-                >
+                <Button variant="outline" onClick={() => setCurrentStep(2)}>
                   Skip
                 </Button>
                 <Button onClick={() => setCurrentStep(2)}>
@@ -370,7 +343,6 @@ export default function CreateCompetitionPage() {
         </Card>
       )}
 
-      {/* Step 3: Events */}
       {currentStep === 2 && createdComp && (
         <Card>
           <CardHeader>
@@ -413,17 +385,24 @@ export default function CreateCompetitionPage() {
                 </div>
 
                 <Button
-                  onClick={() => {
-                    generateEvents.mutate({
-                      competitionId: createdComp.id,
-                      styles: selectedStyles as (typeof styles)[number][],
-                    });
+                  onClick={async () => {
+                    try {
+                      setGenerating(true);
+                      const created = await generateEvents({
+                        competitionId: createdComp._id,
+                        styles: selectedStyles as (typeof styles)[number][],
+                      });
+                      setEventsGenerated(true);
+                      toast.success(`Generated ${created.length} events`);
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : "Failed");
+                    } finally {
+                      setGenerating(false);
+                    }
                   }}
-                  disabled={
-                    generateEvents.isPending || selectedStyles.length === 0
-                  }
+                  disabled={generating || selectedStyles.length === 0}
                 >
-                  {generateEvents.isPending
+                  {generating
                     ? "Generating..."
                     : `Generate Events (${selectedStyles.length} style${selectedStyles.length !== 1 ? "s" : ""})`}
                 </Button>
@@ -431,18 +410,12 @@ export default function CreateCompetitionPage() {
             )}
 
             <div className="flex justify-between pt-4">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentStep(1)}
-              >
+              <Button variant="ghost" onClick={() => setCurrentStep(1)}>
                 <ArrowLeft className="size-4 mr-2" />
                 Back
               </Button>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep(3)}
-                >
+                <Button variant="outline" onClick={() => setCurrentStep(3)}>
                   Skip
                 </Button>
                 <Button onClick={() => setCurrentStep(3)}>
@@ -455,7 +428,6 @@ export default function CreateCompetitionPage() {
         </Card>
       )}
 
-      {/* Step 4: Review */}
       {currentStep === 3 && createdComp && (
         <Card>
           <CardHeader>
@@ -492,18 +464,13 @@ export default function CreateCompetitionPage() {
             </div>
 
             <div className="flex justify-between pt-4">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentStep(2)}
-              >
+              <Button variant="ghost" onClick={() => setCurrentStep(2)}>
                 <ArrowLeft className="size-4 mr-2" />
                 Back
               </Button>
               <Button
                 onClick={() =>
-                  router.push(
-                    `/competitions/${createdComp.slug}/dashboard`,
-                  )
+                  router.push(`/competitions/${createdComp.slug}/dashboard`)
                 }
               >
                 Go to Dashboard

@@ -3,7 +3,8 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Separator } from "@shared/ui/separator";
@@ -25,12 +26,12 @@ import {
 export default function CompetitionPage() {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useUser();
-  const { data: comp, isLoading } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const isLoading = comp === undefined;
 
-  // Check if current user is an admin of the competition's org
-  const { data: membershipData } = trpc.membership.getMyMembership.useQuery(
-    { orgId: comp?.orgId ?? 0 },
-    { enabled: !!comp && !!user },
+  const membershipData = useQuery(
+    api.orgs.getMyMembership,
+    comp && user ? { orgId: comp.orgId } : "skip",
   );
 
   const isAdmin =
@@ -142,11 +143,11 @@ export default function CompetitionPage() {
         )}
 
         {/* Pricing */}
-        {comp.baseFee && Number(comp.baseFee) > 0 && (
+        {typeof comp.baseFee === "number" && comp.baseFee > 0 && (
           <Card>
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">
-                Entry fee: <span className="font-medium text-foreground">${comp.baseFee}</span>
+                Entry fee: <span className="font-medium text-foreground">${(comp.baseFee / 100).toFixed(2)}</span>
               </p>
             </CardContent>
           </Card>

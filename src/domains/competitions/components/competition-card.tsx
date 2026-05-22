@@ -7,7 +7,6 @@ import { MapPin } from "lucide-react";
 
 interface CompetitionCardProps {
   competition: {
-    id: number;
     slug: string;
     name: string;
     status: string;
@@ -16,7 +15,7 @@ interface CompetitionCardProps {
     city?: string | null;
     state?: string | null;
   };
-  orgName?: string;
+  orgName?: string | null;
 }
 
 export function CompetitionCard({ competition, orgName }: CompetitionCardProps) {

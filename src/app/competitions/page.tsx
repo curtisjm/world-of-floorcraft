@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../convex/_generated/api";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -45,10 +47,14 @@ export default function CompetitionsPage() {
 
   const activeStatus = statusFilter === "past" ? undefined : statusFilter;
 
-  const { data, isLoading } = trpc.competition.list.useQuery(
-    { status: activeStatus, limit: 20 },
-    { enabled: !isPast },
+  const listResult = useQuery(
+    api.competitions.core.list,
+    isPast
+      ? "skip"
+      : { status: activeStatus, paginationOpts: { numItems: 20, cursor: null } },
   );
+  const data = listResult ? { items: listResult.page } : undefined;
+  const isLoading = !isPast && listResult === undefined;
 
   const { data: pastData, isLoading: pastLoading } =
     trpc.calendar.getPast.useQuery(
@@ -126,7 +132,9 @@ function ActiveTab({
   isLoading,
   statusFilter,
 }: {
-  data: { items: Array<{ id: number; slug: string; name: string; status: string; description?: string | null; venueName?: string | null; city?: string | null; state?: string | null; orgName: string }>; nextCursor?: number | null } | undefined;
+  data:
+    | { items: Array<{ _id: string; slug: string; name: string; status: string; description?: string | null; venueName?: string | null; city?: string | null; state?: string | null; orgName: string | null }> }
+    | undefined;
   isLoading: boolean;
   statusFilter: StatusFilter;
 }) {
@@ -165,20 +173,12 @@ function ActiveTab({
           <div className="grid gap-4 sm:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]">
             {data.items.map((comp) => (
               <CompetitionCard
-                key={comp.id}
+                key={comp._id}
                 competition={comp}
-                orgName={comp.orgName}
+                orgName={comp.orgName ?? undefined}
               />
             ))}
           </div>
-
-          {data.nextCursor && (
-            <div className="mt-6 text-center">
-              <Button variant="outline" size="sm">
-                Load more
-              </Button>
-            </div>
-          )}
         </>
       )}
     </>
