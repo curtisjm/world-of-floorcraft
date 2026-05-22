@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -20,18 +22,20 @@ import { toast } from "sonner";
 
 export default function FeedbackDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
   const utils = trpc.useUtils();
 
   const { data: form, isLoading: formLoading } =
     trpc.feedback.getForm.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: feedback router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp },
     );
 
   const { data: analytics, isLoading: analyticsLoading } =
     trpc.feedback.getAnalytics.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: feedback router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp },
     );
 
@@ -66,7 +70,8 @@ export default function FeedbackDashboardPage() {
               <Button
                 onClick={() =>
                   createForm.mutate({
-                    competitionId: comp.id,
+                    // TODO Task 10/11: feedback router still expects numeric competitionId
+                    competitionId: comp._id as unknown as number,
                     useTemplate: true,
                   })
                 }
@@ -79,7 +84,8 @@ export default function FeedbackDashboardPage() {
                 variant="outline"
                 onClick={() =>
                   createForm.mutate({
-                    competitionId: comp.id,
+                    // TODO Task 10/11: feedback router still expects numeric competitionId
+                    competitionId: comp._id as unknown as number,
                     useTemplate: false,
                     title: "Competition Feedback",
                   })

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
@@ -64,13 +66,15 @@ function formatTime(date: Date | string) {
 
 export default function CompDayDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
-  const { connectionStatus } = useCompLiveWithInvalidation(comp?.id);
+  // TODO Task 10/11: useCompLiveWithInvalidation still expects numeric competitionId
+  const { connectionStatus } = useCompLiveWithInvalidation(comp?._id as unknown as number | undefined);
 
   const { data: dashboard, isLoading } =
     trpc.scrutineerDashboard.getDashboard.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: scrutineerDashboard router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp, refetchInterval: 10_000 },
     );
 

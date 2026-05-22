@@ -5,23 +5,14 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { trpc, type RouterOutput } from "@shared/lib/trpc";
-
-// getBySlug doesn't include all competition fields; this type covers fields used in settings forms
-type CompetitionSettings = RouterOutput["competition"]["getBySlug"] & {
-  maxFinalSize?: number | null;
-  maxHeatSize?: number | null;
-  minutesPerCouplePerDance?: string | null;
-  transitionMinutes?: string | null;
-  numberStart?: number;
-  compCode?: string | null;
-};
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Textarea } from "@shared/ui/textarea";
 import { Label } from "@shared/ui/label";
 import { Separator } from "@shared/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
+import { Card, CardContent } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
 import { toast } from "sonner";
 
@@ -72,24 +63,18 @@ type PricingFormData = z.infer<typeof pricingSchema>;
 export default function SettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
-  const { data: comp, isLoading } = trpc.competition.getBySlug.useQuery({ slug });
-  const utils = trpc.useUtils();
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const isLoading = comp === undefined;
 
-  const updateMutation = trpc.competition.update.useMutation({
-    onSuccess: () => {
-      utils.competition.getBySlug.invalidate({ slug });
-      toast.success("Settings saved");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const updateMutation = useMutation(api.competitions.core.update);
+  const deleteMutation = useMutation(api.competitions.core.remove);
+  const compCodeMutation = useMutation(api.competitions.core.setCompCode);
+  const masterPasswordMutation = useMutation(api.competitions.core.setMasterPassword);
 
-  const deleteMutation = trpc.competition.delete.useMutation({
-    onSuccess: () => {
-      toast.success("Competition deleted");
-      router.push("/competitions");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const [updatePending, setUpdatePending] = useState(false);
+  const [deletePending, setDeletePending] = useState(false);
+  const [compCodePending, setCompCodePending] = useState(false);
+  const [masterPasswordPending, setMasterPasswordPending] = useState(false);
 
   // ── General info ──────────────────────────────────────────────
 
@@ -108,14 +93,22 @@ export default function SettingsPage() {
     }
   }, [comp]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onGeneralSubmit = (data: GeneralFormData) => {
+  const onGeneralSubmit = async (data: GeneralFormData) => {
     if (!comp) return;
-    updateMutation.mutate({
-      competitionId: comp.id,
-      name: data.name,
-      description: data.description || null,
-      rules: data.rules || null,
-    });
+    setUpdatePending(true);
+    try {
+      await updateMutation({
+        competitionId: comp._id,
+        name: data.name,
+        description: data.description || null,
+        rules: data.rules || null,
+      });
+      toast.success("Settings saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdatePending(false);
+    }
   };
 
   // ── Venue ─────────────────────────────────────────────────────
@@ -139,18 +132,26 @@ export default function SettingsPage() {
     }
   }, [comp]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onVenueSubmit = (data: VenueFormData) => {
+  const onVenueSubmit = async (data: VenueFormData) => {
     if (!comp) return;
-    updateMutation.mutate({
-      competitionId: comp.id,
-      venueName: data.venueName || null,
-      streetAddress: data.streetAddress || null,
-      city: data.city || null,
-      state: data.state || null,
-      zip: data.zip || null,
-      country: data.country || null,
-      venueNotes: data.venueNotes || null,
-    });
+    setUpdatePending(true);
+    try {
+      await updateMutation({
+        competitionId: comp._id,
+        venueName: data.venueName || null,
+        streetAddress: data.streetAddress || null,
+        city: data.city || null,
+        state: data.state || null,
+        zip: data.zip || null,
+        country: data.country || null,
+        venueNotes: data.venueNotes || null,
+      });
+      toast.success("Settings saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdatePending(false);
+    }
   };
 
   // ── Scoring ───────────────────────────────────────────────────
@@ -163,23 +164,43 @@ export default function SettingsPage() {
   useEffect(() => {
     if (comp) {
       scoringForm.reset({
-        maxFinalSize: (comp as CompetitionSettings).maxFinalSize ?? null,
-        maxHeatSize: (comp as CompetitionSettings).maxHeatSize ?? null,
-        minutesPerCouplePerDance: (comp as CompetitionSettings).minutesPerCouplePerDance ?? "1.5",
-        transitionMinutes: (comp as CompetitionSettings).transitionMinutes ?? "2.0",
+        maxFinalSize: comp.maxFinalSize ?? null,
+        maxHeatSize: comp.maxHeatSize ?? null,
+        minutesPerCouplePerDance:
+          comp.minutesPerCouplePerDance != null
+            ? String(comp.minutesPerCouplePerDance)
+            : "1.5",
+        transitionMinutes:
+          comp.transitionMinutes != null
+            ? String(comp.transitionMinutes)
+            : "2.0",
       });
     }
   }, [comp]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onScoringSubmit = (data: ScoringFormData) => {
+  const onScoringSubmit = async (data: ScoringFormData) => {
     if (!comp) return;
-    updateMutation.mutate({
-      competitionId: comp.id,
-      maxFinalSize: data.maxFinalSize,
-      maxHeatSize: data.maxHeatSize,
-      minutesPerCouplePerDance: data.minutesPerCouplePerDance,
-      transitionMinutes: data.transitionMinutes,
-    });
+    setUpdatePending(true);
+    try {
+      await updateMutation({
+        competitionId: comp._id,
+        maxFinalSize: data.maxFinalSize,
+        maxHeatSize: data.maxHeatSize,
+        minutesPerCouplePerDance:
+          data.minutesPerCouplePerDance && data.minutesPerCouplePerDance.length > 0
+            ? Number(data.minutesPerCouplePerDance)
+            : undefined,
+        transitionMinutes:
+          data.transitionMinutes && data.transitionMinutes.length > 0
+            ? Number(data.transitionMinutes)
+            : undefined,
+      });
+      toast.success("Settings saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdatePending(false);
+    }
   };
 
   // ── Pricing & Numbers ─────────────────────────────────────────
@@ -192,19 +213,31 @@ export default function SettingsPage() {
   useEffect(() => {
     if (comp) {
       pricingForm.reset({
-        baseFee: comp.baseFee ?? "0",
-        numberStart: (comp as CompetitionSettings).numberStart ?? 1,
+        baseFee:
+          comp.baseFee != null ? (comp.baseFee / 100).toFixed(2) : "0",
+        numberStart: comp.numberStart ?? 1,
       });
     }
   }, [comp]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onPricingSubmit = (data: PricingFormData) => {
+  const onPricingSubmit = async (data: PricingFormData) => {
     if (!comp) return;
-    updateMutation.mutate({
-      competitionId: comp.id,
-      baseFee: data.baseFee || null,
-      numberStart: data.numberStart,
-    });
+    setUpdatePending(true);
+    try {
+      await updateMutation({
+        competitionId: comp._id,
+        baseFee:
+          data.baseFee && data.baseFee.length > 0
+            ? Math.round(Number(data.baseFee) * 100)
+            : null,
+        numberStart: data.numberStart,
+      });
+      toast.success("Settings saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdatePending(false);
+    }
   };
 
   // ── Tablet Auth ───────────────────────────────────────────────
@@ -213,24 +246,56 @@ export default function SettingsPage() {
   const [masterPassword, setMasterPassword] = useState("");
 
   useEffect(() => {
-    if (comp) setCompCode((comp as CompetitionSettings).compCode ?? "");
+    if (comp) setCompCode(comp.compCode ?? "");
   }, [comp]);
 
-  const compCodeMutation = trpc.competition.setCompCode.useMutation({
-    onSuccess: () => {
-      utils.competition.getBySlug.invalidate({ slug });
+  const handleSetCompCode = async () => {
+    if (!comp) return;
+    setCompCodePending(true);
+    try {
+      await compCodeMutation({
+        competitionId: comp._id,
+        compCode,
+      });
       toast.success("Competition code saved");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setCompCodePending(false);
+    }
+  };
 
-  const masterPasswordMutation = trpc.competition.setMasterPassword.useMutation({
-    onSuccess: () => {
+  const handleSetMasterPassword = async () => {
+    if (!comp) return;
+    setMasterPasswordPending(true);
+    try {
+      await masterPasswordMutation({
+        competitionId: comp._id,
+        password: masterPassword,
+      });
       toast.success("Master password updated");
       setMasterPassword("");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setMasterPasswordPending(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!comp) return;
+    if (!confirm(`Delete "${comp.name}"? This cannot be undone.`)) return;
+    setDeletePending(true);
+    try {
+      await deleteMutation({ competitionId: comp._id });
+      toast.success("Competition deleted");
+      router.push("/competitions");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setDeletePending(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -265,8 +330,8 @@ export default function SettingsPage() {
             <Label htmlFor="rules">Rules</Label>
             <Textarea id="rules" rows={6} {...generalForm.register("rules")} />
           </div>
-          <Button type="submit" disabled={updateMutation.isPending}>
-            {updateMutation.isPending ? "Saving..." : "Save"}
+          <Button type="submit" disabled={updatePending}>
+            {updatePending ? "Saving..." : "Save"}
           </Button>
         </form>
       </section>
@@ -314,8 +379,8 @@ export default function SettingsPage() {
               {...venueForm.register("venueNotes")}
             />
           </div>
-          <Button type="submit" disabled={updateMutation.isPending}>
-            {updateMutation.isPending ? "Saving..." : "Save Venue"}
+          <Button type="submit" disabled={updatePending}>
+            {updatePending ? "Saving..." : "Save Venue"}
           </Button>
         </form>
       </section>
@@ -368,8 +433,8 @@ export default function SettingsPage() {
               />
             </div>
           </div>
-          <Button type="submit" disabled={updateMutation.isPending}>
-            {updateMutation.isPending ? "Saving..." : "Save Scoring Settings"}
+          <Button type="submit" disabled={updatePending}>
+            {updatePending ? "Saving..." : "Save Scoring Settings"}
           </Button>
         </form>
       </section>
@@ -399,8 +464,8 @@ export default function SettingsPage() {
               />
             </div>
           </div>
-          <Button type="submit" disabled={updateMutation.isPending}>
-            {updateMutation.isPending ? "Saving..." : "Save"}
+          <Button type="submit" disabled={updatePending}>
+            {updatePending ? "Saving..." : "Save"}
           </Button>
         </form>
       </section>
@@ -426,15 +491,10 @@ export default function SettingsPage() {
               />
             </div>
             <Button
-              onClick={() =>
-                compCodeMutation.mutate({
-                  competitionId: comp.id,
-                  compCode,
-                })
-              }
-              disabled={compCodeMutation.isPending || !compCode.trim()}
+              onClick={handleSetCompCode}
+              disabled={compCodePending || !compCode.trim()}
             >
-              {compCodeMutation.isPending ? "Saving..." : "Save Code"}
+              {compCodePending ? "Saving..." : "Save Code"}
             </Button>
           </div>
           <div className="flex items-end gap-3">
@@ -449,15 +509,10 @@ export default function SettingsPage() {
               />
             </div>
             <Button
-              onClick={() =>
-                masterPasswordMutation.mutate({
-                  competitionId: comp.id,
-                  password: masterPassword,
-                })
-              }
-              disabled={masterPasswordMutation.isPending || masterPassword.length < 4}
+              onClick={handleSetMasterPassword}
+              disabled={masterPasswordPending || masterPassword.length < 4}
             >
-              {masterPasswordMutation.isPending ? "Saving..." : "Set Password"}
+              {masterPasswordPending ? "Saving..." : "Set Password"}
             </Button>
           </div>
         </div>
@@ -478,18 +533,10 @@ export default function SettingsPage() {
             </div>
             <Button
               variant="destructive"
-              onClick={() => {
-                if (
-                  confirm(
-                    `Delete "${comp.name}"? This cannot be undone.`,
-                  )
-                ) {
-                  deleteMutation.mutate({ competitionId: comp.id });
-                }
-              }}
-              disabled={deleteMutation.isPending}
+              onClick={handleDelete}
+              disabled={deletePending}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {deletePending ? "Deleting..." : "Delete"}
             </Button>
           </CardContent>
         </Card>

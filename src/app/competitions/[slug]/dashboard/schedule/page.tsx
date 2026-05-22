@@ -5,7 +5,9 @@ import { useParams } from "next/navigation";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { move } from "@dnd-kit/helpers";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -31,120 +33,58 @@ import {
 import { cn } from "@shared/lib/utils";
 
 interface Block {
-  id: number;
+  id: Id<"scheduleBlocks">;
+  _id: Id<"scheduleBlocks">;
   label: string;
   type: string;
   position: number;
 }
 
 interface Day {
-  id: number;
-  date: string | null;
-  label: string | null;
-  blocks: Block[];
+  _id: Id<"competitionDays">;
+  date: string;
+  label?: string;
 }
 
 export default function SchedulePage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const {
-    data: days,
-    isLoading,
-  } = trpc.schedule.getDays.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const days = useQuery(
+    api.competitions.schedule.getDays,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = comp === undefined || days === undefined;
 
-  const utils = trpc.useUtils();
-  const invalidate = () => {
-    utils.schedule.getDays.invalidate({ competitionId: comp!.id });
-    utils.competition.getForDashboard.invalidate({ competitionId: comp!.id });
-  };
+  const applyTemplateMutation = useMutation(api.competitions.schedule.applyDefaultTemplate);
+  const addDayMutation = useMutation(api.competitions.schedule.addDay);
+  const updateDayMutation = useMutation(api.competitions.schedule.updateDay);
+  const removeDayMutation = useMutation(api.competitions.schedule.removeDay);
+  const addBlockMutation = useMutation(api.competitions.schedule.addBlock);
+  const updateBlockMutation = useMutation(api.competitions.schedule.updateBlock);
+  const removeBlockMutation = useMutation(api.competitions.schedule.removeBlock);
+  const reorderBlocksMutation = useMutation(api.competitions.schedule.reorderBlocks);
+  const moveBlockMutation = useMutation(api.competitions.schedule.moveBlock);
 
-  const applyTemplate = trpc.schedule.applyDefaultTemplate.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Default template applied");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const addDay = trpc.schedule.addDay.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Day added");
-      setShowAddDay(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const updateDay = trpc.schedule.updateDay.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Day updated");
-      setEditDay(null);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const removeDay = trpc.schedule.removeDay.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Day removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const addBlock = trpc.schedule.addBlock.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Block added");
-      setAddBlockDayId(null);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const updateBlock = trpc.schedule.updateBlock.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Block updated");
-      setEditBlock(null);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const removeBlock = trpc.schedule.removeBlock.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Block removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const reorderBlocks = trpc.schedule.reorderBlocks.useMutation({
-    onSuccess: () => invalidate(),
-    onError: (err) => toast.error(err.message),
-  });
-
-  const moveBlock = trpc.schedule.moveBlock.useMutation({
-    onSuccess: () => invalidate(),
-    onError: (err) => toast.error(err.message),
-  });
+  const [applyTemplatePending, setApplyTemplatePending] = useState(false);
+  const [addDayPending, setAddDayPending] = useState(false);
+  const [updateDayPending, setUpdateDayPending] = useState(false);
+  const [addBlockPending, setAddBlockPending] = useState(false);
+  const [updateBlockPending, setUpdateBlockPending] = useState(false);
 
   // Dialog state
   const [showAddDay, setShowAddDay] = useState(false);
   const [newDayDate, setNewDayDate] = useState("");
   const [newDayLabel, setNewDayLabel] = useState("");
   const [editDay, setEditDay] = useState<{
-    id: number;
+    id: Id<"competitionDays">;
     date: string;
     label: string;
   } | null>(null);
-  const [addBlockDayId, setAddBlockDayId] = useState<number | null>(null);
+  const [addBlockDayId, setAddBlockDayId] = useState<Id<"competitionDays"> | null>(null);
   const [newBlockLabel, setNewBlockLabel] = useState("");
   const [newBlockType, setNewBlockType] = useState<"session" | "break">("session");
   const [editBlock, setEditBlock] = useState<{
-    id: number;
+    id: Id<"scheduleBlocks">;
     label: string;
     type: string;
   } | null>(null);
@@ -154,14 +94,21 @@ export default function SchedulePage() {
   const snapshot = useRef<Record<string, Block[]>>({});
 
   // Sync server data into local drag state
-  const serverKey = days?.map((d) => `${d.id}:${d.blocks.map((b) => b.id).join(",")}`).join("|") ?? "";
+  const serverKey =
+    days?.map((d) => `${d._id}:${d.blocks.map((b) => b._id).join(",")}`).join("|") ?? "";
   const [prevServerKey, setPrevServerKey] = useState("");
   if (serverKey !== prevServerKey) {
     setPrevServerKey(serverKey);
     if (days) {
       const next: Record<string, Block[]> = {};
       for (const day of days) {
-        next[String(day.id)] = day.blocks;
+        next[String(day._id)] = day.blocks.map((b) => ({
+          id: b._id,
+          _id: b._id,
+          label: b.label,
+          type: b.type,
+          position: b.position,
+        }));
       }
       setBlocksByDay(next);
     }
@@ -178,6 +125,115 @@ export default function SchedulePage() {
 
   const hasDays = days && days.length > 0;
 
+  const handleApplyTemplate = async () => {
+    const today = new Date().toISOString().split("T")[0]!;
+    setApplyTemplatePending(true);
+    try {
+      await applyTemplateMutation({
+        competitionId: comp._id,
+        date: today,
+      });
+      toast.success("Default template applied");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setApplyTemplatePending(false);
+    }
+  };
+
+  const handleAddDay = async () => {
+    setAddDayPending(true);
+    try {
+      await addDayMutation({
+        competitionId: comp._id,
+        date: newDayDate,
+        label: newDayLabel || undefined,
+      });
+      toast.success("Day added");
+      setShowAddDay(false);
+      setNewDayDate("");
+      setNewDayLabel("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setAddDayPending(false);
+    }
+  };
+
+  const handleUpdateDay = async () => {
+    if (!editDay) return;
+    setUpdateDayPending(true);
+    try {
+      await updateDayMutation({
+        dayId: editDay.id,
+        label: editDay.label || null,
+        date: editDay.date || undefined,
+      });
+      toast.success("Day updated");
+      setEditDay(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdateDayPending(false);
+    }
+  };
+
+  const handleRemoveDay = async (dayId: Id<"competitionDays">, label: string) => {
+    if (!confirm(`Remove ${label}? All blocks will be deleted.`)) return;
+    try {
+      await removeDayMutation({ dayId });
+      toast.success("Day removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  };
+
+  const handleAddBlock = async () => {
+    if (!addBlockDayId) return;
+    setAddBlockPending(true);
+    try {
+      await addBlockMutation({
+        dayId: addBlockDayId,
+        label: newBlockLabel,
+        type: newBlockType,
+      });
+      toast.success("Block added");
+      setAddBlockDayId(null);
+      setNewBlockLabel("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setAddBlockPending(false);
+    }
+  };
+
+  const handleUpdateBlock = async () => {
+    if (!editBlock) return;
+    setUpdateBlockPending(true);
+    try {
+      await updateBlockMutation({
+        blockId: editBlock.id,
+        label: editBlock.label,
+      });
+      toast.success("Block updated");
+      setEditBlock(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdateBlockPending(false);
+    }
+  };
+
+  const handleRemoveBlock = async (blockId: Id<"scheduleBlocks">) => {
+    if (!confirm("Remove this block? Events will be unlinked.")) return;
+    try {
+      await removeBlockMutation({ blockId });
+      toast.success("Block removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -185,17 +241,11 @@ export default function SchedulePage() {
         <div className="flex gap-2">
           {!hasDays && (
             <Button
-              onClick={() => {
-                const today = new Date().toISOString().split("T")[0]!;
-                applyTemplate.mutate({
-                  competitionId: comp.id,
-                  date: today,
-                });
-              }}
-              disabled={applyTemplate.isPending}
+              onClick={handleApplyTemplate}
+              disabled={applyTemplatePending}
             >
               <Wand2 className="size-4 mr-2" />
-              {applyTemplate.isPending ? "Applying..." : "Apply Default Template"}
+              {applyTemplatePending ? "Applying..." : "Apply Default Template"}
             </Button>
           )}
           <Button variant="outline" onClick={() => setShowAddDay(true)}>
@@ -234,7 +284,7 @@ export default function SchedulePage() {
               group?: string;
               initialIndex?: number;
               index?: number;
-              id: number;
+              id: Id<"scheduleBlocks">;
             };
 
             const { initialGroup, group, initialIndex, index } = s;
@@ -245,20 +295,24 @@ export default function SchedulePage() {
               // Same-day reorder
               const dayBlocks = blocksByDay[group];
               if (dayBlocks) {
-                reorderBlocks.mutate({
-                  dayId: Number(group),
-                  blockIds: dayBlocks.map((b) => b.id),
-                });
+                reorderBlocksMutation({
+                  dayId: group as Id<"competitionDays">,
+                  blockIds: dayBlocks.map((b) => b._id),
+                }).catch((err) =>
+                  toast.error(err instanceof Error ? err.message : "Failed"),
+                );
               }
             } else {
               // Cross-day move
               const targetBlocks = blocksByDay[group];
               if (targetBlocks) {
-                moveBlock.mutate({
+                moveBlockMutation({
                   blockId: s.id,
-                  toDayId: Number(group),
-                  blockIds: targetBlocks.map((b) => b.id),
-                });
+                  toDayId: group as Id<"competitionDays">,
+                  blockIds: targetBlocks.map((b) => b._id),
+                }).catch((err) =>
+                  toast.error(err instanceof Error ? err.message : "Failed"),
+                );
               }
             }
           }}
@@ -266,28 +320,22 @@ export default function SchedulePage() {
           <div className="space-y-6">
             {days!.map((day) => (
               <DayCard
-                key={day.id}
+                key={day._id}
                 day={day}
-                blocks={blocksByDay[String(day.id)] ?? []}
-                onAddBlock={() => setAddBlockDayId(day.id)}
+                blocks={blocksByDay[String(day._id)] ?? []}
+                onAddBlock={() => setAddBlockDayId(day._id)}
                 onEditDay={() =>
                   setEditDay({
-                    id: day.id,
+                    id: day._id,
                     date: day.date ?? "",
                     label: day.label ?? "",
                   })
                 }
                 onEditBlock={(block) => setEditBlock(block)}
-                onRemoveBlock={(blockId) => {
-                  if (confirm("Remove this block? Events will be unlinked.")) {
-                    removeBlock.mutate({ blockId });
-                  }
-                }}
-                onRemoveDay={() => {
-                  if (confirm(`Remove ${day.label ?? "this day"}? All blocks will be deleted.`)) {
-                    removeDay.mutate({ dayId: day.id });
-                  }
-                }}
+                onRemoveBlock={handleRemoveBlock}
+                onRemoveDay={() =>
+                  handleRemoveDay(day._id, day.label ?? "this day")
+                }
               />
             ))}
           </div>
@@ -322,16 +370,10 @@ export default function SchedulePage() {
           </div>
           <DialogFooter>
             <Button
-              onClick={() => {
-                addDay.mutate({
-                  competitionId: comp.id,
-                  date: newDayDate,
-                  label: newDayLabel || undefined,
-                });
-              }}
-              disabled={addDay.isPending || !newDayDate}
+              onClick={handleAddDay}
+              disabled={addDayPending || !newDayDate}
             >
-              {addDay.isPending ? "Adding..." : "Add Day"}
+              {addDayPending ? "Adding..." : "Add Day"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -371,18 +413,10 @@ export default function SchedulePage() {
           )}
           <DialogFooter>
             <Button
-              onClick={() => {
-                if (editDay) {
-                  updateDay.mutate({
-                    dayId: editDay.id,
-                    label: editDay.label || null,
-                    date: editDay.date || undefined,
-                  });
-                }
-              }}
-              disabled={updateDay.isPending}
+              onClick={handleUpdateDay}
+              disabled={updateDayPending}
             >
-              {updateDay.isPending ? "Saving..." : "Save"}
+              {updateDayPending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -422,18 +456,10 @@ export default function SchedulePage() {
           </div>
           <DialogFooter>
             <Button
-              onClick={() => {
-                if (addBlockDayId) {
-                  addBlock.mutate({
-                    dayId: addBlockDayId,
-                    label: newBlockLabel,
-                    type: newBlockType,
-                  });
-                }
-              }}
-              disabled={addBlock.isPending || !newBlockLabel.trim()}
+              onClick={handleAddBlock}
+              disabled={addBlockPending || !newBlockLabel.trim()}
             >
-              {addBlock.isPending ? "Adding..." : "Add Block"}
+              {addBlockPending ? "Adding..." : "Add Block"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -461,17 +487,10 @@ export default function SchedulePage() {
           )}
           <DialogFooter>
             <Button
-              onClick={() => {
-                if (editBlock) {
-                  updateBlock.mutate({
-                    blockId: editBlock.id,
-                    label: editBlock.label,
-                  });
-                }
-              }}
-              disabled={updateBlock.isPending}
+              onClick={handleUpdateBlock}
+              disabled={updateBlockPending}
             >
-              {updateBlock.isPending ? "Saving..." : "Save"}
+              {updateBlockPending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -487,8 +506,8 @@ interface DayCardProps {
   blocks: Block[];
   onAddBlock: () => void;
   onEditDay: () => void;
-  onEditBlock: (block: { id: number; label: string; type: string }) => void;
-  onRemoveBlock: (blockId: number) => void;
+  onEditBlock: (block: { id: Id<"scheduleBlocks">; label: string; type: string }) => void;
+  onRemoveBlock: (blockId: Id<"scheduleBlocks">) => void;
   onRemoveDay: () => void;
 }
 
@@ -540,13 +559,13 @@ function DayCard({
           <div className="space-y-1">
             {blocks.map((block, index) => (
               <SortableBlock
-                key={block.id}
-                id={block.id}
+                key={block._id}
+                id={block._id}
                 index={index}
-                group={String(day.id)}
+                group={String(day._id)}
                 block={block}
-                onEdit={() => onEditBlock(block)}
-                onRemove={() => onRemoveBlock(block.id)}
+                onEdit={() => onEditBlock({ id: block._id, label: block.label, type: block.type })}
+                onRemove={() => onRemoveBlock(block._id)}
               />
             ))}
           </div>
@@ -566,7 +585,7 @@ function SortableBlock({
   onEdit,
   onRemove,
 }: {
-  id: number;
+  id: Id<"scheduleBlocks">;
   index: number;
   group: string;
   block: Block;

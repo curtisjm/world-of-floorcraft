@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../convex/_generated/api";
 import { useCompLive } from "@competitions/lib/ably-comp-client";
 import { Card, CardContent } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
@@ -51,7 +53,7 @@ export default function CompetitorLiveViewPage() {
   const [showMyEvents, setShowMyEvents] = useState(true);
   const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set());
 
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
   const utils = trpc.useUtils();
 
   const invalidateAll = () => {
@@ -60,7 +62,8 @@ export default function CompetitorLiveViewPage() {
   };
 
   const { isConnected, connectionStatus } = useCompLive(
-    comp?.id,
+    // TODO Task 10/11: useCompLive still expects numeric competitionId
+    comp?._id as unknown as number | undefined,
     {
       "schedule:updated": () => utils.liveView.getSchedule.invalidate(),
       "event:completed": () => utils.liveView.getSchedule.invalidate(),
@@ -74,12 +77,14 @@ export default function CompetitorLiveViewPage() {
 
   const { data: schedule, isLoading: scheduleLoading } =
     trpc.liveView.getSchedule.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: liveView router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp, refetchInterval: 30_000 },
     );
 
   const { data: myEventsData } = trpc.liveView.getMyEvents.useQuery(
-    { competitionId: comp?.id ?? 0 },
+    // TODO Task 10/11: liveView router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0 },
     { enabled: !!comp },
   );
 

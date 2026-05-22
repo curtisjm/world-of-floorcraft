@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -10,12 +12,13 @@ import { PartnerEntriesSheet } from "@competitions/components/partner-entries-sh
 
 export default function EntriesPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const { data: eventEntries, isLoading } = trpc.entry.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const eventEntries = useQuery(
+    api.competitions.entries.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
-  const [sheetRegistrationId, setSheetRegistrationId] = useState<number | null>(null);
+  const isLoading = eventEntries === undefined;
+  const [sheetRegistrationId, setSheetRegistrationId] = useState<Id<"competitionRegistrations"> | null>(null);
 
   if (isLoading || !comp) {
     return (
@@ -43,7 +46,7 @@ export default function EntriesPage() {
         </Card>
       ) : (
         eventEntries.map((event) => (
-          <Card key={event.id}>
+          <Card key={event._id}>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base">{event.name}</CardTitle>
@@ -65,7 +68,7 @@ export default function EntriesPage() {
                 <div className="space-y-1">
                   {event.entries.map((entry, i) => (
                     <div
-                      key={entry.id}
+                      key={entry._id}
                       className="flex items-center justify-between py-1.5 px-2 rounded text-sm hover:bg-accent/30"
                     >
                       <div className="flex items-center gap-2">
@@ -98,7 +101,7 @@ export default function EntriesPage() {
 
       {sheetRegistrationId && comp && (
         <PartnerEntriesSheet
-          competitionId={comp.id}
+          competitionId={comp._id}
           registrationId={sheetRegistrationId}
           slug={slug}
           open={!!sheetRegistrationId}
@@ -115,8 +118,8 @@ function NameButton({
   onClick,
 }: {
   name: string | null;
-  registrationId: number;
-  onClick: (id: number) => void;
+  registrationId: Id<"competitionRegistrations">;
+  onClick: (id: Id<"competitionRegistrations">) => void;
 }) {
   if (!name) return <span>TBA</span>;
   return (

@@ -2,39 +2,30 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Textarea } from "@shared/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 export default function TeamMatchPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const { data: submissions, isLoading, refetch } = trpc.teamMatch.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const submissions = useQuery(
+    api.competitions.teamMatch.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = submissions === undefined;
 
-  const submitMutation = trpc.teamMatch.submit.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Submission posted");
-      setContent("");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const submitMutation = useMutation(api.competitions.teamMatch.submit);
+  const deleteMutation = useMutation(api.competitions.teamMatch.remove);
 
-  const deleteMutation = trpc.teamMatch.delete.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Submission removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
+  const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<Id<"teamMatchSubmissions"> | null>(null);
   const [content, setContent] = useState("");
 
   if (isLoading || !comp) {
@@ -44,6 +35,35 @@ export default function TeamMatchPage() {
         <Skeleton className="h-48 rounded-lg" />
       </div>
     );
+  }
+
+  async function handleSubmit() {
+    if (!comp) return;
+    setSubmitting(true);
+    try {
+      await submitMutation({
+        competitionId: comp._id,
+        content,
+      });
+      toast.success("Submission posted");
+      setContent("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDelete(submissionId: Id<"teamMatchSubmissions">) {
+    setDeletingId(submissionId);
+    try {
+      await deleteMutation({ submissionId });
+      toast.success("Submission removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -66,15 +86,10 @@ export default function TeamMatchPage() {
             maxLength={2000}
           />
           <Button
-            onClick={() => {
-              submitMutation.mutate({
-                competitionId: comp.id,
-                content,
-              });
-            }}
-            disabled={submitMutation.isPending || content.trim().length === 0}
+            onClick={handleSubmit}
+            disabled={submitting || content.trim().length === 0}
           >
-            {submitMutation.isPending ? "Submitting..." : "Submit"}
+            {submitting ? "Submitting..." : "Submit"}
           </Button>
         </CardContent>
       </Card>
@@ -82,7 +97,7 @@ export default function TeamMatchPage() {
       {submissions?.length ? (
         <div className="space-y-2">
           {submissions.map((sub) => (
-            <Card key={sub.id}>
+            <Card key={sub._id}>
               <CardContent className="py-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -98,7 +113,8 @@ export default function TeamMatchPage() {
                     variant="ghost"
                     size="icon"
                     className="size-7 text-destructive shrink-0"
-                    onClick={() => deleteMutation.mutate({ submissionId: sub.id })}
+                    disabled={deletingId === sub._id}
+                    onClick={() => handleDelete(sub._id)}
                   >
                     <Trash2 className="size-3.5" />
                   </Button>

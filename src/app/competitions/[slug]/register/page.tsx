@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { trpc, type RouterOutput } from "@shared/lib/trpc";
+import { useQuery, useMutation } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -29,7 +32,6 @@ import {
   Check,
   Info,
   Pencil,
-  ExternalLink,
 } from "lucide-react";
 import { PartnerSearch } from "@competitions/components/partner-search";
 import { EventFilterBar } from "@competitions/components/event-filter-bar";
@@ -38,21 +40,23 @@ import { PartnerEntriesSheet } from "@competitions/components/partner-entries-sh
 // ── Types ─────────────────────────────────────────────────────────
 
 type PartnerInfo = {
-  userId: string;
+  userId: Id<"users">;
   username: string | null;
   displayName: string | null;
   avatarUrl: string | null;
-  registrationId: number | null;
+  registrationId: Id<"competitionRegistrations"> | null;
 };
 
 type EntryAssignment = {
-  eventId: number;
-  leaderRegistrationId: number;
-  followerRegistrationId: number;
+  eventId: Id<"competitionEvents">;
+  leaderRegistrationId: Id<"competitionRegistrations">;
+  followerRegistrationId: Id<"competitionRegistrations">;
   partner: PartnerInfo;
 };
 
-type MyRegistration = NonNullable<RouterOutput["registration"]["getMyRegistration"]>;
+type MyRegistration = NonNullable<
+  FunctionReturnType<typeof api.competitions.registration.getMyRegistration>
+>;
 type MyRegistrationEntry = MyRegistration["entries"][number];
 
 // ── Steps ─────────────────────────────────────────────────────────
@@ -68,52 +72,29 @@ const STEPS = [
 
 export default function RegisterPage() {
   const { slug } = useParams<{ slug: string }>();
-  const router = useRouter();
-  const { data: comp, isLoading: compLoading } = trpc.competition.getBySlug.useQuery({ slug });
-  const { data: userOrgs } = trpc.org.listUserOrgs.useQuery();
-  const { data: myReg, refetch: refetchReg } = trpc.registration.getMyRegistration.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const compLoading = comp === undefined;
+  const userOrgs = useQuery(api.orgs.listUserOrgs, {});
+  const myReg = useQuery(
+    api.competitions.registration.getMyRegistration,
+    comp ? { competitionId: comp._id } : "skip",
   );
-  const { data: events } = trpc.event.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const events = useQuery(
+    api.competitions.events.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
-
-  const utils = trpc.useUtils();
 
   // ── Mutations ─────────────────────────────────────────────────
 
-  const registerMutation = trpc.registration.register.useMutation({
-    onSuccess: () => {
-      refetchReg();
-      toast.success("Registered successfully");
-      setCurrentStep(1);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const registerMutation = useMutation(api.competitions.registration.register);
+  const ensurePartnerMutation = useMutation(
+    api.competitions.registration.ensurePartnerRegistered,
+  );
+  const bulkCreateEntries = useMutation(api.competitions.entries.bulkCreate);
+  const removeEntry = useMutation(api.competitions.entries.remove);
 
-  const ensurePartnerMutation = trpc.registration.ensurePartnerRegistered.useMutation({
-    onError: (err) => toast.error(err.message),
-  });
-
-  const bulkCreateEntries = trpc.entry.bulkCreate.useMutation({
-    onSuccess: (created) => {
-      refetchReg();
-      toast.success(`Added ${created.length} entries`);
-      setWizardMode(false);
-      resetWizard();
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const removeEntry = trpc.entry.remove.useMutation({
-    onSuccess: () => {
-      refetchReg();
-      toast.success("Entry removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const [registering, setRegistering] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // ── Wizard State ──────────────────────────────────────────────
 
@@ -122,7 +103,7 @@ export default function RegisterPage() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>("");
 
   // Step 1: Event selection
-  const [selectedEventIds, setSelectedEventIds] = useState<number[]>([]);
+  const [selectedEventIds, setSelectedEventIds] = useState<Id<"competitionEvents">[]>([]);
   const [eventSearch, setEventSearch] = useState("");
   const [styleFilter, setStyleFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
@@ -131,12 +112,12 @@ export default function RegisterPage() {
   // Step 2: Partner assignments
   const [defaultRole, setDefaultRole] = useState<"leader" | "follower">("leader");
   const [defaultPartner, setDefaultPartner] = useState<PartnerInfo | null>(null);
-  const [perEventPartner, setPerEventPartner] = useState<Map<number, PartnerInfo>>(new Map());
-  const [perEventRole, setPerEventRole] = useState<Map<number, "leader" | "follower">>(new Map());
-  const [editingEventId, setEditingEventId] = useState<number | null>(null);
+  const [perEventPartner, setPerEventPartner] = useState<Map<Id<"competitionEvents">, PartnerInfo>>(new Map());
+  const [perEventRole, setPerEventRole] = useState<Map<Id<"competitionEvents">, "leader" | "follower">>(new Map());
+  const [editingEventId, setEditingEventId] = useState<Id<"competitionEvents"> | null>(null);
 
   // Partner entries sheet
-  const [sheetRegistrationId, setSheetRegistrationId] = useState<number | null>(null);
+  const [sheetRegistrationId, setSheetRegistrationId] = useState<Id<"competitionRegistrations"> | null>(null);
 
   function resetWizard() {
     setCurrentStep(myReg ? 1 : 0);
@@ -174,11 +155,11 @@ export default function RegisterPage() {
   }, [events, eventSearch, styleFilter, levelFilter, typeFilter]);
 
   // Get partner for a specific event (per-event override or default)
-  function getPartnerForEvent(eventId: number): PartnerInfo | null {
+  function getPartnerForEvent(eventId: Id<"competitionEvents">): PartnerInfo | null {
     return perEventPartner.get(eventId) ?? defaultPartner;
   }
 
-  function getRoleForEvent(eventId: number): "leader" | "follower" {
+  function getRoleForEvent(eventId: Id<"competitionEvents">): "leader" | "follower" {
     return perEventRole.get(eventId) ?? defaultRole;
   }
 
@@ -195,61 +176,98 @@ export default function RegisterPage() {
         const role = getRoleForEvent(eventId);
         return {
           eventId,
-          leaderRegistrationId: role === "leader" ? myReg.id : (partner.registrationId ?? 0),
-          followerRegistrationId: role === "follower" ? myReg.id : (partner.registrationId ?? 0),
+          leaderRegistrationId: role === "leader"
+            ? myReg._id
+            : (partner.registrationId ?? ("" as Id<"competitionRegistrations">)),
+          followerRegistrationId: role === "follower"
+            ? myReg._id
+            : (partner.registrationId ?? ("" as Id<"competitionRegistrations">)),
           partner,
         };
       })
       .filter((a): a is EntryAssignment => a !== null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEventIds, myReg, defaultPartner, defaultRole, perEventPartner, perEventRole]);
 
   // ── Handlers ──────────────────────────────────────────────────
 
-  function handleRegister() {
+  async function handleRegister() {
     if (!comp) return;
-    registerMutation.mutate({
-      competitionId: comp.id,
-      orgId: selectedOrgId && selectedOrgId !== "none" ? Number(selectedOrgId) : undefined,
-    });
+    setRegistering(true);
+    try {
+      await registerMutation({
+        competitionId: comp._id,
+        orgId:
+          selectedOrgId && selectedOrgId !== "none"
+            ? (selectedOrgId as Id<"organizations">)
+            : undefined,
+      });
+      toast.success("Registered successfully");
+      setCurrentStep(1);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setRegistering(false);
+    }
   }
 
   async function handleSubmitEntries() {
     if (!comp || !myReg) return;
+    setSubmitting(true);
 
-    // Ensure all partners are registered
-    const partnersToRegister = new Map<string, PartnerInfo>();
-    for (const a of entryAssignments) {
-      if (!a.partner.registrationId) {
-        partnersToRegister.set(a.partner.userId, a.partner);
+    try {
+      // Ensure all partners are registered
+      const partnersToRegister = new Map<Id<"users">, PartnerInfo>();
+      for (const a of entryAssignments) {
+        if (!a.partner.registrationId) {
+          partnersToRegister.set(a.partner.userId, a.partner);
+        }
       }
-    }
 
-    // Register unregistered partners
-    const registrationMap = new Map<string, number>();
-    for (const [userId, partner] of partnersToRegister) {
-      try {
-        const reg = await ensurePartnerMutation.mutateAsync({
-          competitionId: comp.id,
+      // Register unregistered partners
+      const registrationMap = new Map<Id<"users">, Id<"competitionRegistrations">>();
+      for (const [userId, partner] of partnersToRegister) {
+        const reg = await ensurePartnerMutation({
+          competitionId: comp._id,
           partnerUserId: userId,
         });
-        registrationMap.set(userId, reg.id);
-      } catch {
-        return; // Error already shown by onError
+        if (!reg) {
+          setSubmitting(false);
+          return;
+        }
+        registrationMap.set(userId, reg._id);
+        void partner;
       }
+
+      // Build final entries with resolved registration IDs
+      const resolvedEntries = entryAssignments.map((a) => {
+        const role = getRoleForEvent(a.eventId);
+        const partnerRegId = a.partner.registrationId ?? registrationMap.get(a.partner.userId)!;
+        return {
+          eventId: a.eventId,
+          leaderRegistrationId: role === "leader" ? myReg._id : partnerRegId,
+          followerRegistrationId: role === "follower" ? myReg._id : partnerRegId,
+        };
+      });
+
+      const created = await bulkCreateEntries({ entries: resolvedEntries });
+      toast.success(`Added ${created.length} entries`);
+      setWizardMode(false);
+      resetWizard();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setSubmitting(false);
     }
+  }
 
-    // Build final entries with resolved registration IDs
-    const resolvedEntries = entryAssignments.map((a) => {
-      const role = getRoleForEvent(a.eventId);
-      const partnerRegId = a.partner.registrationId ?? registrationMap.get(a.partner.userId)!;
-      return {
-        eventId: a.eventId,
-        leaderRegistrationId: role === "leader" ? myReg.id : partnerRegId,
-        followerRegistrationId: role === "follower" ? myReg.id : partnerRegId,
-      };
-    });
-
-    bulkCreateEntries.mutate({ entries: resolvedEntries });
+  async function handleRemoveEntry(entryId: Id<"entries">) {
+    try {
+      await removeEntry({ entryId });
+      toast.success("Entry removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
   }
 
   // ── Loading / Not Found ───────────────────────────────────────
@@ -303,7 +321,7 @@ export default function RegisterPage() {
         <RegistrationInfoCard reg={myReg} />
         <EntriesList
           entries={myReg.entries ?? []}
-          myRegId={myReg.id}
+          myRegId={myReg._id}
           canRemove={false}
           onRemove={() => {}}
           onPartnerClick={(regId) => setSheetRegistrationId(regId)}
@@ -312,7 +330,7 @@ export default function RegisterPage() {
 
         {sheetRegistrationId && comp && (
           <PartnerEntriesSheet
-            competitionId={comp.id}
+            competitionId={comp._id}
             registrationId={sheetRegistrationId}
             slug={slug}
             open={!!sheetRegistrationId}
@@ -377,11 +395,11 @@ export default function RegisterPage() {
           <CardContent>
             <EntriesList
               entries={myReg.entries ?? []}
-              myRegId={myReg.id}
+              myRegId={myReg._id}
               canRemove={isOpen}
               onRemove={(entryId) => {
                 if (confirm("Remove this entry?")) {
-                  removeEntry.mutate({ entryId });
+                  void handleRemoveEntry(entryId);
                 }
               }}
               onPartnerClick={(regId) => setSheetRegistrationId(regId)}
@@ -393,7 +411,7 @@ export default function RegisterPage() {
 
         {sheetRegistrationId && comp && (
           <PartnerEntriesSheet
-            competitionId={comp.id}
+            competitionId={comp._id}
             registrationId={sheetRegistrationId}
             slug={slug}
             open={!!sheetRegistrationId}
@@ -468,7 +486,7 @@ export default function RegisterPage() {
                   <SelectContent>
                     <SelectItem value="none">Unaffiliated</SelectItem>
                     {userOrgs.map((org) => (
-                      <SelectItem key={org.id} value={org.id.toString()}>
+                      <SelectItem key={org._id} value={org._id}>
                         {org.name}
                       </SelectItem>
                     ))}
@@ -476,8 +494,8 @@ export default function RegisterPage() {
                 </Select>
               </div>
             )}
-            <Button onClick={handleRegister} disabled={registerMutation.isPending}>
-              {registerMutation.isPending ? "Registering..." : "Register"}
+            <Button onClick={handleRegister} disabled={registering}>
+              {registering ? "Registering..." : "Register"}
             </Button>
           </CardContent>
         </Card>
@@ -508,11 +526,11 @@ export default function RegisterPage() {
                 </p>
               ) : (
                 filteredEvents.map((event) => {
-                  const alreadyEntered = enteredEventIds.has(event.id);
-                  const isSelected = selectedEventIds.includes(event.id);
+                  const alreadyEntered = enteredEventIds.has(event._id);
+                  const isSelected = selectedEventIds.includes(event._id);
                   return (
                     <label
-                      key={event.id}
+                      key={event._id}
                       className={cn(
                         "flex items-center gap-3 p-2.5 rounded-lg cursor-pointer",
                         alreadyEntered ? "opacity-50" : "hover:bg-accent/50",
@@ -524,8 +542,8 @@ export default function RegisterPage() {
                         onCheckedChange={(checked) => {
                           setSelectedEventIds((prev) =>
                             checked
-                              ? [...prev, event.id]
-                              : prev.filter((id: number) => id !== event.id),
+                              ? [...prev, event._id]
+                              : prev.filter((id) => id !== event._id),
                           );
                         }}
                       />
@@ -633,7 +651,7 @@ export default function RegisterPage() {
                 </div>
               ) : (
                 <PartnerSearch
-                  competitionId={comp.id}
+                  competitionId={comp._id}
                   onSelect={setDefaultPartner}
                   excludeUserIds={myReg ? [myReg.userId] : []}
                 />
@@ -648,7 +666,7 @@ export default function RegisterPage() {
               <label className="text-sm font-medium">Event assignments</label>
               <div className="space-y-1">
                 {selectedEventIds.map((eventId) => {
-                  const event = events?.find((e) => e.id === eventId);
+                  const event = events?.find((e) => e._id === eventId);
                   if (!event) return null;
                   const partner = getPartnerForEvent(eventId);
                   const role = getRoleForEvent(eventId);
@@ -718,7 +736,7 @@ export default function RegisterPage() {
                             </Button>
                           </div>
                           <PartnerSearch
-                            competitionId={comp.id}
+                            competitionId={comp._id}
                             onSelect={(p) => {
                               const next = new Map(perEventPartner);
                               next.set(eventId, p);
@@ -782,7 +800,7 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               {entryAssignments.map((a) => {
-                const event = events?.find((e) => e.id === a.eventId);
+                const event = events?.find((e) => e._id === a.eventId);
                 if (!event) return null;
                 const role = getRoleForEvent(a.eventId);
                 return (
@@ -821,11 +839,9 @@ export default function RegisterPage() {
               </Button>
               <Button
                 onClick={handleSubmitEntries}
-                disabled={
-                  bulkCreateEntries.isPending || ensurePartnerMutation.isPending
-                }
+                disabled={submitting}
               >
-                {bulkCreateEntries.isPending || ensurePartnerMutation.isPending
+                {submitting
                   ? "Submitting..."
                   : `Submit ${entryAssignments.length} Entries`}
               </Button>
@@ -868,6 +884,8 @@ function RegistrationInfoCard({ reg }: { reg: MyRegistration }) {
 }
 
 function PaymentCard({ reg }: { reg: MyRegistration }) {
+  const amountOwed = ((reg.amountOwed ?? 0) / 100).toFixed(2);
+  const totalPaid = ((reg.totalPaid ?? 0) / 100).toFixed(2);
   return (
     <Card>
       <CardHeader>
@@ -876,11 +894,11 @@ function PaymentCard({ reg }: { reg: MyRegistration }) {
       <CardContent>
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Amount Owed</span>
-          <span className="font-medium">${reg.amountOwed ?? "0.00"}</span>
+          <span className="font-medium">${amountOwed}</span>
         </div>
         <div className="flex items-center justify-between mt-1">
           <span className="text-sm text-muted-foreground">Total Paid</span>
-          <span className="font-medium">${reg.totalPaid ?? "0.00"}</span>
+          <span className="font-medium">${totalPaid}</span>
         </div>
       </CardContent>
     </Card>
@@ -895,10 +913,10 @@ function EntriesList({
   onPartnerClick,
 }: {
   entries: MyRegistrationEntry[];
-  myRegId: number;
+  myRegId: Id<"competitionRegistrations">;
   canRemove: boolean;
-  onRemove: (entryId: number) => void;
-  onPartnerClick: (registrationId: number) => void;
+  onRemove: (entryId: Id<"entries">) => void;
+  onPartnerClick: (registrationId: Id<"competitionRegistrations">) => void;
 }) {
   if (!entries.length) {
     return (
@@ -922,13 +940,13 @@ function EntriesList({
 
         return (
           <div
-            key={entry.id}
+            key={entry._id}
             className="flex items-center justify-between p-3 rounded-md border"
           >
             <div className="min-w-0 space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">
-                  {entry.eventName ?? `Event #${entry.eventId}`}
+                  {entry.eventName ?? "Event"}
                 </span>
                 {entry.scratched && (
                   <Badge variant="destructive" className="text-xs">
@@ -968,7 +986,7 @@ function EntriesList({
                   variant="ghost"
                   size="sm"
                   className="text-destructive"
-                  onClick={() => onRemove(entry.id)}
+                  onClick={() => onRemove(entry._id)}
                 >
                   Remove
                 </Button>

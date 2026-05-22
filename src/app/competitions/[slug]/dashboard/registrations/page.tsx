@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc, type RouterOutput } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
+import { trpc } from "@shared/lib/trpc";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
 import { Badge } from "@shared/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
 import {
   Dialog,
@@ -24,42 +26,39 @@ import {
   SelectValue,
 } from "@shared/ui/select";
 import { toast } from "sonner";
-
-type RegistrationListItem = RouterOutput["registration"]["listByCompetition"][number];
 import { CheckCircle2, Circle, DollarSign, Eye } from "lucide-react";
+
+type RegistrationListItem = {
+  _id: Id<"competitionRegistrations">;
+  userId: Id<"users">;
+  competitorNumber: number | null;
+  amountOwed: number;
+  paidConfirmed: boolean;
+  checkedIn: boolean;
+  orgId: Id<"organizations"> | null;
+  registeredAt: number;
+  cancelled: boolean;
+  username: string | null;
+  displayName: string | null;
+  orgName: string | null;
+  totalPaid: number;
+};
 
 export default function RegistrationsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
   const [sortBy, setSortBy] = useState<"org" | "name" | "paid" | "checked_in">("name");
-  const {
-    data: registrations,
-    isLoading,
-    refetch,
-  } = trpc.registration.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0, sortBy },
-    { enabled: !!comp },
+  const registrations = useQuery(
+    api.competitions.registration.listByCompetition,
+    comp ? { competitionId: comp._id, sortBy } : "skip",
   );
+  const isLoading = comp === undefined || registrations === undefined;
 
-  const toggleCheckedIn = trpc.registration.toggleCheckedIn.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Check-in updated");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const cancelRegistration = trpc.registration.cancel.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Registration cancelled");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const toggleCheckedInMutation = useMutation(api.competitions.registration.toggleCheckedIn);
+  const cancelRegistrationMutation = useMutation(api.competitions.registration.cancel);
 
   const recordManual = trpc.payment.recordManual.useMutation({
     onSuccess: () => {
-      refetch();
       toast.success("Payment recorded");
       setPaymentReg(null);
     },
@@ -71,10 +70,10 @@ export default function RegistrationsPage() {
   const [payMethod, setPayMethod] = useState<string>("cash");
   const [payNote, setPayNote] = useState("");
 
-  const [detailReg, setDetailReg] = useState<number | null>(null);
-  const { data: regDetail } = trpc.registration.getById.useQuery(
-    { registrationId: detailReg ?? 0 },
-    { enabled: !!detailReg },
+  const [detailReg, setDetailReg] = useState<Id<"competitionRegistrations"> | null>(null);
+  const regDetail = useQuery(
+    api.competitions.registration.getById,
+    detailReg ? { registrationId: detailReg } : "skip",
   );
 
   if (isLoading || !comp) {
@@ -87,6 +86,25 @@ export default function RegistrationsPage() {
       </div>
     );
   }
+
+  const handleToggleCheckedIn = async (registrationId: Id<"competitionRegistrations">) => {
+    try {
+      await toggleCheckedInMutation({ registrationId });
+      toast.success("Check-in updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  };
+
+  const handleCancel = async (registrationId: Id<"competitionRegistrations">) => {
+    try {
+      await cancelRegistrationMutation({ registrationId });
+      toast.success("Registration cancelled");
+      setDetailReg(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -115,13 +133,13 @@ export default function RegistrationsPage() {
         <div className="space-y-1">
           {registrations.map((reg) => (
             <div
-              key={reg.id}
+              key={reg._id}
               className="flex items-center justify-between rounded-[2px] border p-3 transition-colors hover:bg-accent/30"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   className="shrink-0"
-                  onClick={() => toggleCheckedIn.mutate({ registrationId: reg.id })}
+                  onClick={() => handleToggleCheckedIn(reg._id)}
                   title={reg.checkedIn ? "Uncheck" : "Check in"}
                 >
                   {reg.checkedIn ? (
@@ -146,7 +164,7 @@ export default function RegistrationsPage() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className={reg.amountOwed > reg.totalPaid ? "text-clay" : "text-sage"}>
-                      ${reg.totalPaid ?? "0"} / ${reg.amountOwed ?? "0"}
+                      ${(reg.totalPaid / 100).toFixed(2)} / ${(reg.amountOwed / 100).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -156,7 +174,7 @@ export default function RegistrationsPage() {
                   variant="ghost"
                   size="icon"
                   className="size-7"
-                  onClick={() => setDetailReg(reg.id)}
+                  onClick={() => setDetailReg(reg._id)}
                 >
                   <Eye className="size-3.5" />
                 </Button>
@@ -166,7 +184,7 @@ export default function RegistrationsPage() {
                   className="size-7"
                   onClick={() => {
                     setPaymentReg(reg);
-                    setPayAmount(String(Number(reg.amountOwed ?? 0) - Number(reg.totalPaid ?? 0)));
+                    setPayAmount(((reg.amountOwed - reg.totalPaid) / 100).toFixed(2));
                   }}
                 >
                   <DollarSign className="size-3.5" />
@@ -224,7 +242,7 @@ export default function RegistrationsPage() {
               onClick={() => {
                 if (paymentReg) {
                   recordManual.mutate({
-                    registrationId: paymentReg.id,
+                    registrationId: paymentReg._id as unknown as number,
                     amount: payAmount,
                     method: payMethod as "cash" | "check" | "other",
                     note: payNote || undefined,
@@ -255,7 +273,7 @@ export default function RegistrationsPage() {
                 <p className="text-sm text-muted-foreground">Entries ({regDetail.entries?.length ?? 0})</p>
                 <div className="space-y-1 mt-1">
                   {regDetail.entries?.map((entry) => (
-                    <div key={entry.id} className="text-sm flex items-center gap-2">
+                    <div key={entry._id} className="text-sm flex items-center gap-2">
                       <span>{`Event #${entry.eventId}`}</span>
                       {entry.scratched && <Badge variant="destructive" className="text-xs">Scratched</Badge>}
                     </div>
@@ -267,9 +285,9 @@ export default function RegistrationsPage() {
                 <div className="space-y-1 mt-1">
                   {regDetail.payments?.length ? (
                     regDetail.payments.map((p) => (
-                      <div key={p.id} className="text-sm flex items-center justify-between">
+                      <div key={p._id} className="text-sm flex items-center justify-between">
                         <span className="capitalize">{p.method}</span>
-                        <span>${p.amount}</span>
+                        <span>${(p.amount / 100).toFixed(2)}</span>
                       </div>
                     ))
                   ) : (
@@ -278,14 +296,13 @@ export default function RegistrationsPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between pt-2 border-t">
-                <span className="text-sm">Total Paid: ${regDetail.totalPaid ?? "0"}</span>
+                <span className="text-sm">Total Paid: ${((regDetail.totalPaid ?? 0) / 100).toFixed(2)}</span>
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={() => {
                     if (confirm("Cancel this registration?")) {
-                      cancelRegistration.mutate({ registrationId: regDetail.id });
-                      setDetailReg(null);
+                      handleCancel(regDetail._id);
                     }
                   }}
                 >

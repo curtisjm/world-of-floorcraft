@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
-import { Badge } from "@shared/ui/badge";
 import { Skeleton } from "@shared/ui/skeleton";
 import {
   Dialog,
@@ -44,57 +45,41 @@ const roleLabels: Record<string, string> = {
   registration: "Registration",
 };
 
+type StaffRole = (typeof staffRoles)[number] | "judge";
+
+type StaffMember = {
+  _id: Id<"competitionStaff">;
+  userId: Id<"users">;
+  role: string;
+  username: string | null;
+  displayName: string | null;
+};
+
 export default function StaffPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const {
-    data: staffList,
-    isLoading,
-  } = trpc.staff.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const staffList = useQuery(
+    api.competitions.staff.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = comp === undefined || staffList === undefined;
 
-  const utils = trpc.useUtils();
-  const invalidate = () => {
-    utils.staff.listByCompetition.invalidate({ competitionId: comp!.id });
-    utils.competition.getForDashboard.invalidate({ competitionId: comp!.id });
-  };
-
-  const assignStaff = trpc.staff.assign.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Staff member assigned");
-      setShowAssign(false);
-      setSearchQuery("");
-      setSearchResults([]);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const removeStaff = trpc.staff.remove.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Staff member removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const assignStaffMutation = useMutation(api.competitions.staff.assign);
+  const removeStaffMutation = useMutation(api.competitions.staff.remove);
+  const [assignPending, setAssignPending] = useState(false);
 
   const [showAssign, setShowAssign] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<Id<"users"> | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("scrutineer");
-  const [searchResults, setSearchResults] = useState<
-    { id: string; username: string | null; displayName: string | null; avatarUrl: string | null }[]
-  >([]);
 
-  const userSearch = trpc.profile.search.useQuery(
-    { query: searchQuery },
-    { enabled: searchQuery.length >= 1 },
+  const userSearch = useQuery(
+    api.social.profiles.search,
+    searchQuery.length >= 1 ? { query: searchQuery } : "skip",
   );
 
   // Group staff by role
-  const staffByRole = new Map<string, typeof staffList>();
+  const staffByRole = new Map<string, StaffMember[]>();
   staffList?.forEach((s) => {
     if (!staffByRole.has(s.role)) staffByRole.set(s.role, []);
     staffByRole.get(s.role)!.push(s);
@@ -112,6 +97,44 @@ export default function StaffPage() {
   }
 
   const hasStaff = staffList && staffList.length > 0;
+
+  const handleAssign = async () => {
+    if (!selectedUserId || !comp) return;
+    setAssignPending(true);
+    try {
+      await assignStaffMutation({
+        competitionId: comp._id,
+        userId: selectedUserId,
+        role: selectedRole as StaffRole,
+      });
+      toast.success("Staff member assigned");
+      setShowAssign(false);
+      setSearchQuery("");
+      setSelectedUserId(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setAssignPending(false);
+    }
+  };
+
+  const handleRemove = async (
+    userId: Id<"users">,
+    role: string,
+    label: string,
+  ) => {
+    if (!confirm(`Remove ${label} as ${roleLabels[role]}?`)) return;
+    try {
+      await removeStaffMutation({
+        competitionId: comp._id,
+        userId,
+        role: role as StaffRole,
+      });
+      toast.success("Staff member removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -139,9 +162,9 @@ export default function StaffPage() {
               <h3 className="text-sm font-medium text-muted-foreground capitalize">
                 {roleLabels[role] ?? role}
               </h3>
-              {members!.map((member) => (
+              {members.map((member) => (
                 <div
-                  key={member.id}
+                  key={member._id}
                   className="flex items-center justify-between p-3 rounded-md border"
                 >
                   <div className="flex items-center gap-3">
@@ -160,15 +183,13 @@ export default function StaffPage() {
                     variant="ghost"
                     size="icon"
                     className="size-7 text-destructive hover:text-destructive shrink-0"
-                    onClick={() => {
-                      if (confirm(`Remove ${member.displayName ?? member.username} as ${roleLabels[role]}?`)) {
-                        removeStaff.mutate({
-                          competitionId: comp.id,
-                          userId: member.userId,
-                          role: role as (typeof staffRoles)[number] | "judge",
-                        });
-                      }
-                    }}
+                    onClick={() =>
+                      handleRemove(
+                        member.userId,
+                        role,
+                        member.displayName ?? member.username ?? "Unknown",
+                      )
+                    }
                   >
                     <Trash2 className="size-3.5" />
                   </Button>
@@ -187,7 +208,6 @@ export default function StaffPage() {
           if (!open) {
             setSearchQuery("");
             setSelectedUserId(null);
-            setSearchResults([]);
           }
         }}
       >
@@ -229,19 +249,19 @@ export default function StaffPage() {
 
               {searchQuery.length >= 1 && (
                 <div className="border rounded-md max-h-48 overflow-y-auto">
-                  {userSearch.isLoading ? (
+                  {userSearch === undefined ? (
                     <div className="p-3 text-sm text-muted-foreground">Searching...</div>
-                  ) : !userSearch.data?.length ? (
+                  ) : !userSearch.length ? (
                     <div className="p-3 text-sm text-muted-foreground">No users found</div>
                   ) : (
-                    userSearch.data.map((user) => (
+                    userSearch.map((user) => (
                       <button
-                        key={user.id}
+                        key={user._id}
                         type="button"
                         className={`w-full text-left px-3 py-2 text-sm hover:bg-accent/50 transition-colors ${
-                          selectedUserId === user.id ? "bg-accent" : ""
+                          selectedUserId === user._id ? "bg-accent" : ""
                         }`}
-                        onClick={() => setSelectedUserId(user.id)}
+                        onClick={() => setSelectedUserId(user._id)}
                       >
                         <span className="font-medium">
                           {user.displayName ?? user.username}
@@ -261,18 +281,10 @@ export default function StaffPage() {
 
           <DialogFooter>
             <Button
-              onClick={() => {
-                if (selectedUserId && comp) {
-                  assignStaff.mutate({
-                    competitionId: comp.id,
-                    userId: selectedUserId,
-                    role: selectedRole as (typeof staffRoles)[number] | "judge",
-                  });
-                }
-              }}
-              disabled={assignStaff.isPending || !selectedUserId}
+              onClick={handleAssign}
+              disabled={assignPending || !selectedUserId}
             >
-              {assignStaff.isPending ? "Assigning..." : "Assign"}
+              {assignPending ? "Assigning..." : "Assign"}
             </Button>
           </DialogFooter>
         </DialogContent>

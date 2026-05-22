@@ -1,7 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../../convex/_generated/api";
 import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
 import { cn } from "@shared/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
@@ -22,9 +24,10 @@ import {
 
 export default function DeckCaptainPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
-  const { connectionStatus } = useCompLiveWithInvalidation(comp?.id);
+  // TODO Task 10/11: useCompLiveWithInvalidation still expects numeric competitionId
+  const { connectionStatus } = useCompLiveWithInvalidation(comp?._id as unknown as number | undefined);
 
   if (!comp) {
     return (
@@ -71,11 +74,11 @@ export default function DeckCaptainPage() {
         </TabsList>
 
         <TabsContent value="checkin">
-          <CheckinTab competitionId={comp.id} />
+          <CheckinTab competitionId={comp._id as unknown as number} />
         </TabsContent>
 
         <TabsContent value="schedule">
-          <ScheduleTab competitionId={comp.id} />
+          <ScheduleTab competitionId={comp._id as unknown as number} />
         </TabsContent>
       </Tabs>
     </div>

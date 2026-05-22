@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../../convex/_generated/api";
 import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
 import { cn } from "@shared/lib/utils";
 import { Button } from "@shared/ui/button";
@@ -48,21 +50,24 @@ import {
 
 export default function RegistrationTablePage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
-  const { connectionStatus } = useCompLiveWithInvalidation(comp?.id);
+  // TODO Task 10/11: useCompLiveWithInvalidation still expects numeric competitionId
+  const { connectionStatus } = useCompLiveWithInvalidation(comp?._id as unknown as number | undefined);
 
   const utils = trpc.useUtils();
 
   const { data: orgGroups, isLoading } =
     trpc.registrationTable.getRegistrationTable.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: registrationTable router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp },
     );
 
   const { data: pendingAddDrops } =
     trpc.registrationTable.getPendingAddDrops.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: registrationTable router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp },
     );
 

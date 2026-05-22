@@ -1,7 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -26,7 +28,7 @@ import {
 
 export default function AnalyticsDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
   return (
     <div className="space-y-6">
@@ -43,7 +45,7 @@ export default function AnalyticsDashboardPage() {
 
         <TabsContent value="entries">
           {comp ? (
-            <EntryAnalytics competitionId={comp.id} />
+            <EntryAnalytics competitionId={comp._id as unknown as number} />
           ) : (
             <AnalyticsSkeleton />
           )}
@@ -51,7 +53,7 @@ export default function AnalyticsDashboardPage() {
 
         <TabsContent value="financials">
           {comp ? (
-            <FinancialAnalytics competitionId={comp.id} />
+            <FinancialAnalytics competitionId={comp._id as unknown as number} />
           ) : (
             <AnalyticsSkeleton />
           )}

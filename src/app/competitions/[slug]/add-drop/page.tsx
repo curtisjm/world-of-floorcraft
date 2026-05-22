@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Label } from "@shared/ui/label";
 import { Textarea } from "@shared/ui/textarea";
@@ -28,43 +30,36 @@ import { Plus } from "lucide-react";
 import { PartnerSearch } from "@competitions/components/partner-search";
 
 type PartnerInfo = {
-  userId: string;
+  userId: Id<"users">;
   username: string | null;
   displayName: string | null;
   avatarUrl: string | null;
-  registrationId: number | null;
+  registrationId: Id<"competitionRegistrations"> | null;
 };
 
 export default function AddDropPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const { data: myReg } = trpc.registration.getMyRegistration.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const myReg = useQuery(
+    api.competitions.registration.getMyRegistration,
+    comp ? { competitionId: comp._id } : "skip",
   );
-  const { data: myRequests, isLoading, refetch } = trpc.addDrop.listByRegistration.useQuery(
-    { registrationId: myReg?.id ?? 0 },
-    { enabled: !!myReg },
+  const myRequests = useQuery(
+    api.competitions.addDrop.listByRegistration,
+    myReg ? { registrationId: myReg._id } : "skip",
   );
-  const { data: events } = trpc.event.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const isLoading = myRequests === undefined && myReg !== null;
+  const events = useQuery(
+    api.competitions.events.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
 
-  const submitRequest = trpc.addDrop.submit.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Request submitted");
-      setShowSubmit(false);
-      resetForm();
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const submitRequest = useMutation(api.competitions.addDrop.submit);
+  const ensurePartnerMutation = useMutation(
+    api.competitions.registration.ensurePartnerRegistered,
+  );
 
-  const ensurePartnerMutation = trpc.registration.ensurePartnerRegistered.useMutation({
-    onError: (err) => toast.error(err.message),
-  });
-
+  const [submitting, setSubmitting] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [requestType, setRequestType] = useState<string>("add");
   const [selectedEventId, setSelectedEventId] = useState<string>("");
@@ -94,29 +89,36 @@ export default function AddDropPage() {
   async function handleSubmit() {
     if (!myReg || !selectedEventId || !partner || !comp) return;
 
-    let partnerRegId = partner.registrationId;
+    setSubmitting(true);
+    try {
+      let partnerRegId = partner.registrationId;
 
-    // Auto-register partner if needed
-    if (!partnerRegId) {
-      try {
-        const reg = await ensurePartnerMutation.mutateAsync({
-          competitionId: comp.id,
+      // Auto-register partner if needed
+      if (!partnerRegId) {
+        const reg = await ensurePartnerMutation({
+          competitionId: comp._id,
           partnerUserId: partner.userId,
         });
-        partnerRegId = reg.id;
-      } catch {
-        return;
+        if (!reg) return;
+        partnerRegId = reg._id;
       }
-    }
 
-    submitRequest.mutate({
-      competitionId: comp.id,
-      type: requestType as "add" | "drop",
-      eventId: Number(selectedEventId),
-      leaderRegistrationId: myRole === "leader" ? myReg.id : partnerRegId,
-      followerRegistrationId: myRole === "follower" ? myReg.id : partnerRegId,
-      reason: reason || undefined,
-    });
+      await submitRequest({
+        competitionId: comp._id,
+        type: requestType as "add" | "drop",
+        eventId: selectedEventId as Id<"competitionEvents">,
+        leaderRegistrationId: myRole === "leader" ? myReg._id : partnerRegId,
+        followerRegistrationId: myRole === "follower" ? myReg._id : partnerRegId,
+        reason: reason || undefined,
+      });
+      toast.success("Request submitted");
+      setShowSubmit(false);
+      resetForm();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -153,7 +155,7 @@ export default function AddDropPage() {
       {myRequests?.length ? (
         <div className="space-y-2">
           {myRequests.map((req) => (
-            <Card key={req.id}>
+            <Card key={req._id}>
               <CardContent className="py-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
@@ -161,7 +163,7 @@ export default function AddDropPage() {
                       <Badge variant={req.type === "add" ? "default" : "destructive"} className="text-xs">
                         {req.type === "add" ? "Add" : "Drop"}
                       </Badge>
-                      <span className="text-sm font-medium">{events?.find((e) => e.id === req.eventId)?.name ?? `Event #${req.eventId}`}</span>
+                      <span className="text-sm font-medium">{events?.find((e) => e._id === req.eventId)?.name ?? "Event"}</span>
                     </div>
                     {req.reason && (
                       <p className="text-xs text-muted-foreground">{req.reason}</p>
@@ -211,7 +213,7 @@ export default function AddDropPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {events?.map((event) => (
-                    <SelectItem key={event.id} value={event.id.toString()}>
+                    <SelectItem key={event._id} value={event._id}>
                       {event.name}
                     </SelectItem>
                   ))}
@@ -260,7 +262,7 @@ export default function AddDropPage() {
               ) : (
                 comp && (
                   <PartnerSearch
-                    competitionId={comp.id}
+                    competitionId={comp._id}
                     onSelect={setPartner}
                     excludeUserIds={myReg ? [myReg.userId] : []}
                   />
@@ -281,9 +283,9 @@ export default function AddDropPage() {
           <DialogFooter>
             <Button
               onClick={handleSubmit}
-              disabled={submitRequest.isPending || ensurePartnerMutation.isPending || !selectedEventId || !partner}
+              disabled={submitting || !selectedEventId || !partner}
             >
-              {submitRequest.isPending || ensurePartnerMutation.isPending
+              {submitting
                 ? "Submitting..."
                 : "Submit Request"}
             </Button>

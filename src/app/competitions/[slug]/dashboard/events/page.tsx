@@ -5,7 +5,9 @@ import { useParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -28,7 +30,7 @@ import {
   SelectValue,
 } from "@shared/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Wand2 } from "lucide-react";
+import { Plus, Trash2, Wand2 } from "lucide-react";
 
 const styles = ["standard", "smooth", "latin", "rhythm", "nightclub"] as const;
 const levels = [
@@ -55,50 +57,23 @@ type EventFormData = z.infer<typeof eventSchema>;
 
 export default function EventsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const {
-    data: events,
-    isLoading,
-  } = trpc.event.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const events = useQuery(
+    api.competitions.events.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
-  const { data: schedule } = trpc.schedule.getDays.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const schedule = useQuery(
+    api.competitions.schedule.getDays,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = comp === undefined || events === undefined;
 
-  const utils = trpc.useUtils();
-  const invalidate = () => {
-    utils.event.listByCompetition.invalidate({ competitionId: comp!.id });
-    utils.competition.getForDashboard.invalidate({ competitionId: comp!.id });
-  };
+  const generateDefaultsMutation = useMutation(api.competitions.events.generateDefaults);
+  const createEventMutation = useMutation(api.competitions.events.create);
+  const removeEventMutation = useMutation(api.competitions.events.remove);
 
-  const generateDefaults = trpc.event.generateDefaults.useMutation({
-    onSuccess: (created) => {
-      invalidate();
-      toast.success(`Generated ${created.length} events`);
-      setShowGenerate(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const createEvent = trpc.event.create.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Event created");
-      setShowCreate(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const deleteEvent = trpc.event.delete.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Event deleted");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const [generatePending, setGeneratePending] = useState(false);
+  const [createPending, setCreatePending] = useState(false);
 
   const [showGenerate, setShowGenerate] = useState(false);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
@@ -106,11 +81,12 @@ export default function EventsPage() {
 
   // Group events by session
   const sessions = schedule?.flatMap((d) => d.blocks.filter((b) => b.type === "session")) ?? [];
-  const sessionMap = new Map(sessions.map((s) => [s.id, s.label]));
+  const sessionMap = new Map(sessions.map((s) => [s._id, s.label]));
 
-  const eventsBySession = new Map<number | null, typeof events>();
+  type EventWithDances = NonNullable<typeof events>[number];
+  const eventsBySession = new Map<Id<"scheduleBlocks"> | null, EventWithDances[]>();
   events?.forEach((e) => {
-    const key = e.sessionId;
+    const key = e.sessionId ?? null;
     if (!eventsBySession.has(key)) eventsBySession.set(key, []);
     eventsBySession.get(key)!.push(e);
   });
@@ -130,12 +106,51 @@ export default function EventsPage() {
   const watchedStyle = form.watch("style");
   const availableDances = dancesByStyle[watchedStyle] ?? [];
 
-  const onCreateSubmit = (data: EventFormData) => {
+  const onCreateSubmit = async (data: EventFormData) => {
     if (!comp) return;
-    createEvent.mutate({
-      competitionId: comp.id,
-      ...data,
-    });
+    setCreatePending(true);
+    try {
+      await createEventMutation({
+        competitionId: comp._id,
+        ...data,
+      });
+      toast.success("Event created");
+      setShowCreate(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setCreatePending(false);
+    }
+  };
+
+  const handleGenerateDefaults = async () => {
+    if (!comp) return;
+    setGeneratePending(true);
+    try {
+      const created = await generateDefaultsMutation({
+        competitionId: comp._id,
+        styles: selectedStyles as (typeof styles)[number][],
+      });
+      toast.success(`Generated ${created.length} events`);
+      setShowGenerate(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setGeneratePending(false);
+    }
+  };
+
+  const handleRemoveEvent = async (
+    eventId: Id<"competitionEvents">,
+    name: string,
+  ) => {
+    if (!confirm(`Delete "${name}"?`)) return;
+    try {
+      await removeEventMutation({ eventId });
+      toast.success("Event deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
   };
 
   if (isLoading || !comp) {
@@ -188,9 +203,9 @@ export default function EventsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {sessionEvents!.map((event) => (
+                  {sessionEvents.map((event) => (
                     <div
-                      key={event.id}
+                      key={event._id}
                       className="flex items-center justify-between p-3 rounded-md border"
                     >
                       <div className="min-w-0">
@@ -214,11 +229,7 @@ export default function EventsPage() {
                         variant="ghost"
                         size="icon"
                         className="size-7 text-destructive hover:text-destructive shrink-0"
-                        onClick={() => {
-                          if (confirm(`Delete "${event.name}"?`)) {
-                            deleteEvent.mutate({ eventId: event.id });
-                          }
-                        }}
+                        onClick={() => handleRemoveEvent(event._id, event.name)}
                       >
                         <Trash2 className="size-3.5" />
                       </Button>
@@ -262,15 +273,10 @@ export default function EventsPage() {
           </div>
           <DialogFooter>
             <Button
-              onClick={() => {
-                generateDefaults.mutate({
-                  competitionId: comp.id,
-                  styles: selectedStyles as (typeof styles)[number][],
-                });
-              }}
-              disabled={generateDefaults.isPending || selectedStyles.length === 0}
+              onClick={handleGenerateDefaults}
+              disabled={generatePending || selectedStyles.length === 0}
             >
-              {generateDefaults.isPending
+              {generatePending
                 ? "Generating..."
                 : `Generate (${selectedStyles.length} style${selectedStyles.length !== 1 ? "s" : ""})`}
             </Button>
@@ -402,8 +408,8 @@ export default function EventsPage() {
             </div>
 
             <DialogFooter>
-              <Button type="submit" disabled={createEvent.isPending}>
-                {createEvent.isPending ? "Creating..." : "Create Event"}
+              <Button type="submit" disabled={createPending}>
+                {createPending ? "Creating..." : "Create Event"}
               </Button>
             </DialogFooter>
           </form>

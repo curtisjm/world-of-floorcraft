@@ -1,24 +1,26 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { Input } from "@shared/ui/input";
 import { Badge } from "@shared/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Loader2, Search } from "lucide-react";
 
 type PartnerResult = {
-  userId: string;
+  userId: Id<"users">;
   username: string | null;
   displayName: string | null;
   avatarUrl: string | null;
-  registrationId: number | null;
+  registrationId: Id<"competitionRegistrations"> | null;
 };
 
 interface PartnerSearchProps {
-  competitionId: number;
+  competitionId: Id<"competitions">;
   onSelect: (partner: PartnerResult) => void;
-  excludeUserIds?: string[];
+  excludeUserIds?: Id<"users">[];
   placeholder?: string;
 }
 
@@ -51,10 +53,13 @@ export function PartnerSearch({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const { data: results, isLoading } = trpc.registration.searchPartners.useQuery(
-    { competitionId, query: debouncedQuery },
-    { enabled: debouncedQuery.length >= 1 },
+  const results = useQuery(
+    api.competitions.registration.searchPartners,
+    debouncedQuery.length >= 1
+      ? { competitionId, query: debouncedQuery }
+      : "skip",
   );
+  const isLoading = results === undefined && debouncedQuery.length >= 1;
 
   const filtered = results?.filter((r) => !excludeUserIds.includes(r.userId)) ?? [];
 

@@ -1,7 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -11,14 +13,16 @@ import { DollarSign, CreditCard, Banknote, CheckCircle2, AlertCircle } from "luc
 
 export default function PaymentsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
   const { data: summary, isLoading } = trpc.payment.summaryByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
+    // TODO Task 10/11: payment router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0 },
     { enabled: !!comp },
   );
   const { data: stripeConfig } = trpc.payment.isStripeConfigured.useQuery();
   const { data: connectStatus } = trpc.payment.getConnectStatus.useQuery(
-    { competitionId: comp?.id ?? 0 },
+    // TODO Task 10/11: payment router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0 },
     { enabled: !!comp && stripeConfig?.configured === true },
   );
 
@@ -143,7 +147,8 @@ export default function PaymentsPage() {
               <Button
                 onClick={() => {
                   createConnect.mutate({
-                    competitionId: comp.id,
+                    // TODO Task 10/11: payment router still expects numeric competitionId
+                    competitionId: comp._id as unknown as number,
                     refreshUrl: `${window.location.origin}/competitions/${slug}/dashboard/payments`,
                     returnUrl: `${window.location.origin}/competitions/${slug}/dashboard/payments`,
                   });

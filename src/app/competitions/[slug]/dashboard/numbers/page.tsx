@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -17,54 +19,30 @@ import {
   DialogFooter,
 } from "@shared/ui/dialog";
 import { toast } from "sonner";
-import { Hash, Wand2, Pencil, X } from "lucide-react";
+import { Wand2, Pencil, X } from "lucide-react";
 
 export default function NumbersPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const {
-    data: assignments,
-    isLoading,
-    refetch,
-  } = trpc.number.listAssignments.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const assignments = useQuery(
+    api.competitions.numbers.listAssignments,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = comp === undefined || assignments === undefined;
 
-  const autoAssign = trpc.number.autoAssign.useMutation({
-    onSuccess: (result) => {
-      refetch();
-      toast.success(`Auto-assigned ${result.assigned} numbers`);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const autoAssignMutation = useMutation(api.competitions.numbers.autoAssign);
+  const manualAssignMutation = useMutation(api.competitions.numbers.manualAssign);
+  const unassignMutation = useMutation(api.competitions.numbers.unassign);
+  const updateSettingsMutation = useMutation(api.competitions.numbers.updateSettings);
 
-  const manualAssign = trpc.number.manualAssign.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Number assigned");
-      setEditingReg(null);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const [autoAssignPending, setAutoAssignPending] = useState(false);
+  const [manualAssignPending, setManualAssignPending] = useState(false);
+  const [updateSettingsPending, setUpdateSettingsPending] = useState(false);
 
-  const unassign = trpc.number.unassign.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Number removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const updateSettings = trpc.number.updateSettings.useMutation({
-    onSuccess: () => {
-      toast.success("Settings updated");
-      setShowSettings(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const [editingReg, setEditingReg] = useState<{ id: number; name: string } | null>(null);
+  const [editingReg, setEditingReg] = useState<{
+    id: Id<"competitionRegistrations">;
+    name: string;
+  } | null>(null);
   const [manualNumber, setManualNumber] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [numberStart, setNumberStart] = useState("1");
@@ -82,6 +60,63 @@ export default function NumbersPage() {
   const assigned = assignments?.filter((a) => a.competitorNumber) ?? [];
   const unassigned = assignments?.filter((a) => !a.competitorNumber) ?? [];
 
+  const handleAutoAssign = async () => {
+    setAutoAssignPending(true);
+    try {
+      const result = await autoAssignMutation({ competitionId: comp._id });
+      toast.success(`Auto-assigned ${result.assigned} numbers`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setAutoAssignPending(false);
+    }
+  };
+
+  const handleManualAssign = async () => {
+    if (!editingReg || !manualNumber) return;
+    setManualAssignPending(true);
+    try {
+      await manualAssignMutation({
+        registrationId: editingReg.id,
+        number: Number(manualNumber),
+      });
+      toast.success("Number assigned");
+      setEditingReg(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setManualAssignPending(false);
+    }
+  };
+
+  const handleUnassign = async (registrationId: Id<"competitionRegistrations">) => {
+    try {
+      await unassignMutation({ registrationId });
+      toast.success("Number removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  };
+
+  const handleUpdateSettings = async () => {
+    setUpdateSettingsPending(true);
+    try {
+      await updateSettingsMutation({
+        competitionId: comp._id,
+        numberStart: Number(numberStart),
+        numberExclusions: exclusions
+          ? exclusions.split(",").map((s) => Number(s.trim())).filter(Boolean)
+          : undefined,
+      });
+      toast.success("Settings updated");
+      setShowSettings(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdateSettingsPending(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -93,11 +128,11 @@ export default function NumbersPage() {
             Settings
           </Button>
           <Button
-            onClick={() => autoAssign.mutate({ competitionId: comp.id })}
-            disabled={autoAssign.isPending}
+            onClick={handleAutoAssign}
+            disabled={autoAssignPending}
           >
             <Wand2 className="size-4 mr-2" />
-            {autoAssign.isPending ? "Assigning..." : "Auto-Assign"}
+            {autoAssignPending ? "Assigning..." : "Auto-Assign"}
           </Button>
         </div>
       </div>
@@ -138,7 +173,7 @@ export default function NumbersPage() {
                       variant="ghost"
                       size="icon"
                       className="size-7 text-destructive"
-                      onClick={() => unassign.mutate({ registrationId: a.registrationId })}
+                      onClick={() => handleUnassign(a.registrationId)}
                     >
                       <X className="size-3.5" />
                     </Button>
@@ -201,17 +236,10 @@ export default function NumbersPage() {
           )}
           <DialogFooter>
             <Button
-              onClick={() => {
-                if (editingReg && manualNumber) {
-                  manualAssign.mutate({
-                    registrationId: editingReg.id,
-                    number: Number(manualNumber),
-                  });
-                }
-              }}
-              disabled={manualAssign.isPending || !manualNumber}
+              onClick={handleManualAssign}
+              disabled={manualAssignPending || !manualNumber}
             >
-              {manualAssign.isPending ? "Assigning..." : "Assign"}
+              {manualAssignPending ? "Assigning..." : "Assign"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -244,18 +272,10 @@ export default function NumbersPage() {
           </div>
           <DialogFooter>
             <Button
-              onClick={() => {
-                updateSettings.mutate({
-                  competitionId: comp.id,
-                  numberStart: Number(numberStart),
-                  numberExclusions: exclusions
-                    ? exclusions.split(",").map((s) => Number(s.trim())).filter(Boolean)
-                    : undefined,
-                });
-              }}
-              disabled={updateSettings.isPending}
+              onClick={handleUpdateSettings}
+              disabled={updateSettingsPending}
             >
-              {updateSettings.isPending ? "Saving..." : "Save"}
+              {updateSettingsPending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>

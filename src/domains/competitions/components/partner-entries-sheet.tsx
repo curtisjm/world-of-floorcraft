@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -15,8 +17,8 @@ import { Button } from "@shared/ui/button";
 import { ExternalLink } from "lucide-react";
 
 interface PartnerEntriesSheetProps {
-  competitionId: number;
-  registrationId: number;
+  competitionId: Id<"competitions">;
+  registrationId: Id<"competitionRegistrations">;
   slug: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,10 +31,11 @@ export function PartnerEntriesSheet({
   open,
   onOpenChange,
 }: PartnerEntriesSheetProps) {
-  const { data, isLoading } = trpc.registration.getPartnerEntries.useQuery(
-    { competitionId, registrationId },
-    { enabled: open },
+  const data = useQuery(
+    api.competitions.registration.getPartnerEntries,
+    open ? { competitionId, registrationId } : "skip",
   );
+  const isLoading = data === undefined;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -99,7 +102,7 @@ export function PartnerEntriesSheet({
 
                   return (
                     <div
-                      key={entry.id}
+                      key={entry._id}
                       className="p-3 rounded-md border space-y-1"
                     >
                       <div className="flex items-center gap-2">

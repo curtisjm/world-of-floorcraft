@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -15,13 +17,14 @@ export default function PartnerEntriesPage() {
     slug: string;
     registrationId: string;
   }>();
-  const registrationId = Number(regIdParam);
+  const registrationId = regIdParam as Id<"competitionRegistrations">;
 
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const { data, isLoading } = trpc.registration.getPartnerEntries.useQuery(
-    { competitionId: comp?.id ?? 0, registrationId },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const data = useQuery(
+    api.competitions.registration.getPartnerEntries,
+    comp ? { competitionId: comp._id, registrationId } : "skip",
   );
+  const isLoading = data === undefined;
 
   if (isLoading || !comp) {
     return (
@@ -111,7 +114,7 @@ export default function PartnerEntriesPage() {
 
                 return (
                   <div
-                    key={entry.id}
+                    key={entry._id}
                     className="flex items-center justify-between p-3 rounded-md border"
                   >
                     <div className="min-w-0 space-y-1">

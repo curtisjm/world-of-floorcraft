@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
-import type { RouterOutput } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -10,41 +12,34 @@ import { Skeleton } from "@shared/ui/skeleton";
 import { toast } from "sonner";
 import { Check, X, Zap } from "lucide-react";
 
+type AddDropRequest = {
+  _id: Id<"addDropRequests">;
+  competitionId: Id<"competitions">;
+  type: "add" | "drop";
+  eventId: Id<"competitionEvents">;
+  leaderRegistrationId: Id<"competitionRegistrations">;
+  followerRegistrationId: Id<"competitionRegistrations">;
+  reason?: string;
+  status: "pending" | "approved" | "rejected";
+  affectsRounds?: boolean;
+};
+
 export default function AddDropManagementPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const {
-    data: requests,
-    isLoading,
-    refetch,
-  } = trpc.addDrop.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const requests = useQuery(
+    api.competitions.addDrop.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = comp === undefined || requests === undefined;
 
-  const approveMutation = trpc.addDrop.approve.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Request approved");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const rejectMutation = trpc.addDrop.reject.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Request rejected");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const approveAllSafe = trpc.addDrop.approveAllSafe.useMutation({
-    onSuccess: (result) => {
-      refetch();
-      toast.success(`Approved ${result.approved} safe requests`);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const approveMutation = useMutation(api.competitions.addDrop.approve);
+  const rejectMutation = useMutation(api.competitions.addDrop.reject);
+  const approveAllSafeMutation = useMutation(
+    api.competitions.addDrop.approveAllSafe,
+  );
+  const [pending, setPending] = useState(false);
+  const [approveAllPending, setApproveAllPending] = useState(false);
 
   if (isLoading || !comp) {
     return (
@@ -58,6 +53,42 @@ export default function AddDropManagementPage() {
   const { safe = [], needsReview = [], resolved = [] } = requests ?? {};
   const pendingCount = safe.length + needsReview.length;
 
+  const handleApprove = async (requestId: Id<"addDropRequests">) => {
+    setPending(true);
+    try {
+      await approveMutation({ requestId });
+      toast.success("Request approved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const handleReject = async (requestId: Id<"addDropRequests">) => {
+    setPending(true);
+    try {
+      await rejectMutation({ requestId });
+      toast.success("Request rejected");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const handleApproveAllSafe = async () => {
+    setApproveAllPending(true);
+    try {
+      const result = await approveAllSafeMutation({ competitionId: comp._id });
+      toast.success(`Approved ${result.approved} safe requests`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setApproveAllPending(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -66,11 +97,11 @@ export default function AddDropManagementPage() {
         </h2>
         {safe.length > 0 && (
           <Button
-            onClick={() => approveAllSafe.mutate({ competitionId: comp.id })}
-            disabled={approveAllSafe.isPending}
+            onClick={handleApproveAllSafe}
+            disabled={approveAllPending}
           >
             <Zap className="size-4 mr-2" />
-            {approveAllSafe.isPending ? "Approving..." : `Approve ${safe.length} Safe`}
+            {approveAllPending ? "Approving..." : `Approve ${safe.length} Safe`}
           </Button>
         )}
       </div>
@@ -89,9 +120,9 @@ export default function AddDropManagementPage() {
           <CardContent>
             <RequestList
               requests={needsReview}
-              onApprove={(id) => approveMutation.mutate({ requestId: id })}
-              onReject={(id) => rejectMutation.mutate({ requestId: id })}
-              isPending={approveMutation.isPending || rejectMutation.isPending}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              isPending={pending}
             />
           </CardContent>
         </Card>
@@ -111,9 +142,9 @@ export default function AddDropManagementPage() {
           <CardContent>
             <RequestList
               requests={safe}
-              onApprove={(id) => approveMutation.mutate({ requestId: id })}
-              onReject={(id) => rejectMutation.mutate({ requestId: id })}
-              isPending={approveMutation.isPending || rejectMutation.isPending}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              isPending={pending}
             />
           </CardContent>
         </Card>
@@ -136,7 +167,7 @@ export default function AddDropManagementPage() {
           <CardContent>
             <div className="space-y-2">
               {resolved.map((req) => (
-                <div key={req.id} className="flex items-center justify-between p-2 rounded-md border opacity-60">
+                <div key={req._id} className="flex items-center justify-between p-2 rounded-md border opacity-60">
                   <div className="flex items-center gap-2">
                     <Badge variant={req.type === "add" ? "default" : "destructive"} className="text-xs">
                       {req.type}
@@ -168,15 +199,15 @@ function RequestList({
   onReject,
   isPending,
 }: {
-  requests: RouterOutput["addDrop"]["listByCompetition"]["safe"];
-  onApprove: (id: number) => void;
-  onReject: (id: number) => void;
+  requests: AddDropRequest[];
+  onApprove: (id: Id<"addDropRequests">) => void;
+  onReject: (id: Id<"addDropRequests">) => void;
   isPending: boolean;
 }) {
   return (
     <div className="space-y-2">
       {requests.map((req) => (
-        <div key={req.id} className="flex items-center justify-between p-3 rounded-md border">
+        <div key={req._id} className="flex items-center justify-between p-3 rounded-md border">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <Badge variant={req.type === "add" ? "default" : "destructive"} className="text-xs">
@@ -194,7 +225,7 @@ function RequestList({
               variant="ghost"
               size="icon"
               className="size-7 text-status-sage"
-              onClick={() => onApprove(req.id)}
+              onClick={() => onApprove(req._id)}
               disabled={isPending}
             >
               <Check className="size-4" />
@@ -203,7 +234,7 @@ function RequestList({
               variant="ghost"
               size="icon"
               className="size-7 text-destructive"
-              onClick={() => onReject(req.id)}
+              onClick={() => onReject(req._id)}
               disabled={isPending}
             >
               <X className="size-4" />

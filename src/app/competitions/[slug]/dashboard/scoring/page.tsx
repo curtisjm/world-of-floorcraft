@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc, type RouterOutput } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
+import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -29,14 +32,16 @@ import {
   SkipForward,
 } from "lucide-react";
 
-type CompetitionEvent = RouterOutput["event"]["listByCompetition"][number];
+type CompetitionEvent = FunctionReturnType<
+  typeof api.competitions.events.listByCompetition
+>[number];
 
 export default function ScoringPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const { data: events } = trpc.event.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const events = useQuery(
+    api.competitions.events.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
 
   const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
@@ -55,7 +60,7 @@ export default function ScoringPage() {
       <h2 className="text-lg font-semibold">Scoring & Results</h2>
 
       {/* Live scrutineer panel */}
-      <ScrutineerPanel competitionId={comp.id} />
+      <ScrutineerPanel competitionId={comp._id as unknown as number} />
 
       <Separator />
 
@@ -71,7 +76,7 @@ export default function ScoringPage() {
         <div className="space-y-2">
           {events.map((event) => (
             <EventScoringCard
-              key={event.id}
+              key={event._id}
               event={event}
               onSelectRound={setSelectedRoundId}
             />
@@ -82,7 +87,7 @@ export default function ScoringPage() {
       {selectedRoundId && (
         <RoundDetailDialog
           roundId={selectedRoundId}
-          competitionId={comp.id}
+          competitionId={comp._id as unknown as number}
           onClose={() => setSelectedRoundId(null)}
         />
       )}
@@ -239,7 +244,8 @@ function EventScoringCard({
   event: CompetitionEvent;
   onSelectRound: (roundId: number) => void;
 }) {
-  const { data: rounds } = trpc.round.listByEvent.useQuery({ eventId: event.id });
+  // TODO Task 10/11: round router still expects numeric eventId
+  const { data: rounds } = trpc.round.listByEvent.useQuery({ eventId: event._id as unknown as number });
 
   return (
     <Card>

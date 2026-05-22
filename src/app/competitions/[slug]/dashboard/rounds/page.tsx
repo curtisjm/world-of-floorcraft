@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc, type RouterOutput } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
+import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 
-type CompetitionEvent = RouterOutput["event"]["listByCompetition"][number];
+type CompetitionEvent = FunctionReturnType<
+  typeof api.competitions.events.listByCompetition
+>[number];
 import { Button } from "@shared/ui/button";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent } from "@shared/ui/card";
@@ -15,17 +20,15 @@ import { cn } from "@shared/lib/utils";
 
 export default function RoundsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const { data: events } = trpc.event.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const events = useQuery(
+    api.competitions.events.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
-
-  const utils = trpc.useUtils();
 
   const generateAll = trpc.round.generateForCompetition.useMutation({
     onSuccess: (result) => {
-      utils.event.listByCompetition.invalidate({ competitionId: comp!.id });
+      // event list is now a Convex query; will refresh reactively
       toast.success(`Generated ${result.totalRounds} rounds across ${result.events} events`);
     },
     onError: (err) => toast.error(err.message),
@@ -47,7 +50,8 @@ export default function RoundsPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Rounds</h2>
         <Button
-          onClick={() => generateAll.mutate({ competitionId: comp.id })}
+          // TODO Task 10/11: round router still expects numeric competitionId
+          onClick={() => generateAll.mutate({ competitionId: comp._id as unknown as number })}
           disabled={generateAll.isPending}
         >
           <Wand2 className="size-4 mr-2" />
@@ -63,11 +67,15 @@ export default function RoundsPage() {
         <div className="space-y-2">
           {events.map((event) => (
             <EventRoundsCard
-              key={event.id}
+              key={event._id}
               event={event}
-              expanded={expandedEvent === event.id}
+              expanded={expandedEvent === (event._id as unknown as number)}
               onToggle={() =>
-                setExpandedEvent(expandedEvent === event.id ? null : event.id)
+                setExpandedEvent(
+                  expandedEvent === (event._id as unknown as number)
+                    ? null
+                    : (event._id as unknown as number),
+                )
               }
             />
           ))}
@@ -86,8 +94,10 @@ function EventRoundsCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  // TODO Task 10/11: round router still expects numeric eventId
+  const eventIdNum = event._id as unknown as number;
   const { data: rounds } = trpc.round.listByEvent.useQuery(
-    { eventId: event.id },
+    { eventId: eventIdNum },
     { enabled: expanded },
   );
 
@@ -107,7 +117,7 @@ function EventRoundsCard({
 
   const approveHeats = trpc.round.approveHeats.useMutation({
     onSuccess: () => {
-      utils.round.listByEvent.invalidate({ eventId: event.id });
+      utils.round.listByEvent.invalidate({ eventId: eventIdNum });
       toast.success("Heats approved");
     },
     onError: (err) => toast.error(err.message),
@@ -115,7 +125,7 @@ function EventRoundsCard({
 
   const reassignHeats = trpc.round.reassignHeats.useMutation({
     onSuccess: (result) => {
-      utils.round.listByEvent.invalidate({ eventId: event.id });
+      utils.round.listByEvent.invalidate({ eventId: eventIdNum });
       toast.success(`Reassigned ${result.entries} entries across ${result.heats} heats`);
     },
     onError: (err) => toast.error(err.message),
@@ -155,7 +165,7 @@ function EventRoundsCard({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  generateForEvent.mutate({ eventId: event.id });
+                  generateForEvent.mutate({ eventId: eventIdNum });
                 }}
                 disabled={generateForEvent.isPending}
               >

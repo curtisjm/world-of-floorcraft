@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -14,15 +16,17 @@ import { BarChart3, Trophy, Medal, Award } from "lucide-react";
 
 export default function StatsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
   const { data: stats, isLoading } = trpc.stats.getCompetitionStats.useQuery(
-    { competitionId: comp?.id ?? 0 },
+    // TODO Task 10/11: stats router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0 },
     { enabled: !!comp },
   );
 
   const [bufferPct, setBufferPct] = useState(10);
   const { data: awards } = trpc.awards.calculate.useQuery(
-    { competitionId: comp?.id ?? 0, bufferPercentage: bufferPct },
+    // TODO Task 10/11: awards router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0, bufferPercentage: bufferPct },
     { enabled: !!comp },
   );
 

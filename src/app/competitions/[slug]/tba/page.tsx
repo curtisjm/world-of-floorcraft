@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
-import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -25,7 +26,7 @@ import {
   SelectValue,
 } from "@shared/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Search } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 const styles = ["standard", "smooth", "latin", "rhythm", "nightclub"] as const;
 const levels = [
@@ -34,38 +35,29 @@ const levels = [
 
 export default function TBAPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
   const [filterStyle, setFilterStyle] = useState<string>("");
   const [filterLevel, setFilterLevel] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("");
 
-  const { data: listings, isLoading, refetch } = trpc.tba.listByCompetition.useQuery(
-    {
-      competitionId: comp?.id ?? 0,
-      style: (filterStyle || undefined) as (typeof styles)[number] | undefined,
-      level: (filterLevel || undefined) as (typeof levels)[number] | undefined,
-      role: (filterRole || undefined) as "leader" | "follower" | undefined,
-    },
-    { enabled: !!comp },
+  const listings = useQuery(
+    api.competitions.tba.listByCompetition,
+    comp
+      ? {
+          competitionId: comp._id,
+          style: (filterStyle || undefined) as (typeof styles)[number] | undefined,
+          level: (filterLevel || undefined) as (typeof levels)[number] | undefined,
+          role: (filterRole || undefined) as "leader" | "follower" | undefined,
+        }
+      : "skip",
   );
+  const isLoading = listings === undefined;
 
-  const createListing = trpc.tba.create.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Listing posted");
-      setShowCreate(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const createListing = useMutation(api.competitions.tba.create);
+  const deleteListing = useMutation(api.competitions.tba.remove);
 
-  const deleteListing = trpc.tba.delete.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Listing removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
+  const [creating, setCreating] = useState(false);
+  const [deletingId, setDeletingId] = useState<Id<"tbaListings"> | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [newStyle, setNewStyle] = useState<string>("standard");
   const [newLevel, setNewLevel] = useState<string>("newcomer");
@@ -79,6 +71,38 @@ export default function TBAPage() {
         <Skeleton className="h-48 rounded-lg" />
       </div>
     );
+  }
+
+  async function handleCreate() {
+    if (!comp) return;
+    setCreating(true);
+    try {
+      await createListing({
+        competitionId: comp._id,
+        style: newStyle as (typeof styles)[number],
+        level: newLevel as (typeof levels)[number],
+        role: newRole as "leader" | "follower",
+        notes: newNotes || undefined,
+      });
+      toast.success("Listing posted");
+      setShowCreate(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function handleDelete(listingId: Id<"tbaListings">) {
+    setDeletingId(listingId);
+    try {
+      await deleteListing({ listingId });
+      toast.success("Listing removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -139,7 +163,7 @@ export default function TBAPage() {
       ) : (
         <div className="space-y-2">
           {listings.map((listing) => (
-            <Card key={listing.id}>
+            <Card key={listing._id}>
               <CardContent className="py-4">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
@@ -167,7 +191,8 @@ export default function TBAPage() {
                     variant="ghost"
                     size="icon"
                     className="size-7 text-destructive"
-                    onClick={() => deleteListing.mutate({ listingId: listing.id })}
+                    disabled={deletingId === listing._id}
+                    onClick={() => handleDelete(listing._id)}
                   >
                     <Trash2 className="size-3.5" />
                   </Button>
@@ -231,18 +256,10 @@ export default function TBAPage() {
           </div>
           <DialogFooter>
             <Button
-              onClick={() => {
-                createListing.mutate({
-                  competitionId: comp.id,
-                  style: newStyle as (typeof styles)[number],
-                  level: newLevel as (typeof levels)[number],
-                  role: newRole as "leader" | "follower",
-                  notes: newNotes || undefined,
-                });
-              }}
-              disabled={createListing.isPending}
+              onClick={handleCreate}
+              disabled={creating}
             >
-              {createListing.isPending ? "Posting..." : "Post Listing"}
+              {creating ? "Posting..." : "Post Listing"}
             </Button>
           </DialogFooter>
         </DialogContent>

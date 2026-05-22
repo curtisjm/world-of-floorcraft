@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Label } from "@shared/ui/label";
@@ -15,17 +17,19 @@ import { toast } from "sonner";
 
 export default function FeedbackPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
   const { data: form, isLoading: formLoading } =
     trpc.feedback.getForm.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: feedback router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp },
     );
 
   const { data: myResponse, isLoading: responseLoading } =
     trpc.feedback.getMyResponse.useQuery(
-      { competitionId: comp?.id ?? 0 },
+      // TODO Task 10/11: feedback router still expects numeric competitionId
+      { competitionId: (comp?._id as unknown as number) ?? 0 },
       { enabled: !!comp },
     );
 
@@ -77,7 +81,7 @@ export default function FeedbackPage() {
         <p className="text-sm text-muted-foreground">{comp.name}</p>
       </div>
 
-      <FeedbackForm formId={form.id} questions={form.questions} competitionId={comp.id} />
+      <FeedbackForm formId={form.id} questions={form.questions} competitionId={comp._id as unknown as number} />
     </div>
   );
 }

@@ -5,7 +5,9 @@ import { useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -32,74 +34,36 @@ type JudgeFormData = z.infer<typeof judgeSchema>;
 
 export default function JudgesPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
-  const {
-    data: assignedJudges,
-    isLoading,
-  } = trpc.judge.listByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
-    { enabled: !!comp },
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const assignedJudges = useQuery(
+    api.competitions.judges.listByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = comp === undefined || assignedJudges === undefined;
 
-  const utils = trpc.useUtils();
-  const invalidate = () => {
-    utils.judge.listByCompetition.invalidate({ competitionId: comp!.id });
-    utils.competition.getForDashboard.invalidate({ competitionId: comp!.id });
-  };
+  const assignJudgeMutation = useMutation(api.competitions.judges.assignToCompetition);
+  const removeJudgeMutation = useMutation(api.competitions.judges.removeFromCompetition);
+  const createJudgeMutation = useMutation(api.competitions.judges.create);
+  const updateJudgeMutation = useMutation(api.competitions.judges.update);
 
-  const assignJudge = trpc.judge.assignToCompetition.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Judge assigned");
-      setShowSearch(false);
-      setSearchQuery("");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const removeJudge = trpc.judge.removeFromCompetition.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Judge removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const createJudge = trpc.judge.create.useMutation({
-    onSuccess: (judge) => {
-      if (comp) {
-        assignJudge.mutate({ competitionId: comp.id, judgeId: judge!.id });
-      }
-      setShowCreate(false);
-      createForm.reset();
-      toast.success("Judge created and assigned");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const updateJudge = trpc.judge.update.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success("Judge updated");
-      setEditJudge(null);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const [assignPending, setAssignPending] = useState(false);
+  const [createPending, setCreatePending] = useState(false);
+  const [updatePending, setUpdatePending] = useState(false);
 
   const [showSearch, setShowSearch] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [editJudge, setEditJudge] = useState<{
-    judgeId: number;
+    judgeId: Id<"judges">;
     firstName: string;
     lastName: string;
     initials: string;
     affiliation: string;
   } | null>(null);
 
-  const judgeSearch = trpc.judge.search.useQuery(
-    { query: searchQuery },
-    { enabled: searchQuery.length >= 1 },
+  const judgeSearchResults = useQuery(
+    api.competitions.judges.search,
+    searchQuery.length >= 1 ? { query: searchQuery } : "skip",
   );
 
   const createForm = useForm<JudgeFormData>({
@@ -109,7 +73,7 @@ export default function JudgesPage() {
 
   // Filter out already-assigned judges from search results
   const assignedIds = new Set(assignedJudges?.map((j) => j.judgeId) ?? []);
-  const filteredResults = judgeSearch.data?.filter((j) => !assignedIds.has(j.id)) ?? [];
+  const filteredResults = judgeSearchResults?.filter((j) => !assignedIds.has(j._id)) ?? [];
 
   if (isLoading || !comp) {
     return (
@@ -123,6 +87,67 @@ export default function JudgesPage() {
   }
 
   const hasJudges = assignedJudges && assignedJudges.length > 0;
+
+  const handleAssign = async (judgeId: Id<"judges">) => {
+    setAssignPending(true);
+    try {
+      await assignJudgeMutation({ competitionId: comp._id, judgeId });
+      toast.success("Judge assigned");
+      setShowSearch(false);
+      setSearchQuery("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setAssignPending(false);
+    }
+  };
+
+  const handleRemove = async (judgeId: Id<"judges">, label: string) => {
+    if (!confirm(`Remove ${label} from this competition?`)) return;
+    try {
+      await removeJudgeMutation({ competitionId: comp._id, judgeId });
+      toast.success("Judge removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    }
+  };
+
+  const onCreateSubmit = async (data: JudgeFormData) => {
+    setCreatePending(true);
+    try {
+      const judge = await createJudgeMutation(data);
+      if (judge) {
+        await assignJudgeMutation({ competitionId: comp._id, judgeId: judge._id });
+      }
+      setShowCreate(false);
+      createForm.reset();
+      toast.success("Judge created and assigned");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setCreatePending(false);
+    }
+  };
+
+  const handleUpdateJudge = async () => {
+    if (!editJudge) return;
+    setUpdatePending(true);
+    try {
+      await updateJudgeMutation({
+        judgeId: editJudge.judgeId,
+        firstName: editJudge.firstName,
+        lastName: editJudge.lastName,
+        initials: editJudge.initials || null,
+        affiliation: editJudge.affiliation || null,
+      });
+      toast.success("Judge updated");
+      setEditJudge(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setUpdatePending(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -153,7 +178,7 @@ export default function JudgesPage() {
         <div className="space-y-2">
           {assignedJudges!.map((judge) => (
             <div
-              key={judge.id}
+              key={judge._id}
               className="flex items-center justify-between p-3 rounded-md border"
             >
               <div className="min-w-0">
@@ -181,8 +206,8 @@ export default function JudgesPage() {
                   onClick={() =>
                     setEditJudge({
                       judgeId: judge.judgeId,
-                      firstName: judge.firstName,
-                      lastName: judge.lastName,
+                      firstName: judge.firstName ?? "",
+                      lastName: judge.lastName ?? "",
                       initials: judge.initials ?? "",
                       affiliation: judge.affiliation ?? "",
                     })
@@ -194,14 +219,12 @@ export default function JudgesPage() {
                   variant="ghost"
                   size="icon"
                   className="size-7 text-destructive hover:text-destructive"
-                  onClick={() => {
-                    if (confirm(`Remove ${judge.firstName} ${judge.lastName} from this competition?`)) {
-                      removeJudge.mutate({
-                        competitionId: comp.id,
-                        judgeId: judge.judgeId,
-                      });
-                    }
-                  }}
+                  onClick={() =>
+                    handleRemove(
+                      judge.judgeId,
+                      `${judge.firstName} ${judge.lastName}`,
+                    )
+                  }
                 >
                   <Trash2 className="size-3.5" />
                 </Button>
@@ -237,7 +260,7 @@ export default function JudgesPage() {
 
             {searchQuery.length >= 1 && (
               <div className="border rounded-md max-h-64 overflow-y-auto">
-                {judgeSearch.isLoading ? (
+                {judgeSearchResults === undefined ? (
                   <div className="p-3 text-sm text-muted-foreground">Searching...</div>
                 ) : filteredResults.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground">
@@ -256,7 +279,7 @@ export default function JudgesPage() {
                 ) : (
                   filteredResults.map((judge) => (
                     <div
-                      key={judge.id}
+                      key={judge._id}
                       className="flex items-center justify-between px-3 py-2 hover:bg-accent/50 transition-colors"
                     >
                       <div>
@@ -277,13 +300,8 @@ export default function JudgesPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() =>
-                          assignJudge.mutate({
-                            competitionId: comp.id,
-                            judgeId: judge.id,
-                          })
-                        }
-                        disabled={assignJudge.isPending}
+                        onClick={() => handleAssign(judge._id)}
+                        disabled={assignPending}
                       >
                         <Plus className="size-4" />
                       </Button>
@@ -309,7 +327,7 @@ export default function JudgesPage() {
             <DialogTitle>Create New Judge</DialogTitle>
           </DialogHeader>
           <form
-            onSubmit={createForm.handleSubmit((data) => createJudge.mutate(data))}
+            onSubmit={createForm.handleSubmit(onCreateSubmit)}
             className="space-y-4"
           >
             <div className="grid grid-cols-2 gap-4">
@@ -350,8 +368,8 @@ export default function JudgesPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={createJudge.isPending}>
-                {createJudge.isPending ? "Creating..." : "Create & Assign"}
+              <Button type="submit" disabled={createPending}>
+                {createPending ? "Creating..." : "Create & Assign"}
               </Button>
             </DialogFooter>
           </form>
@@ -411,20 +429,10 @@ export default function JudgesPage() {
           )}
           <DialogFooter>
             <Button
-              onClick={() => {
-                if (editJudge) {
-                  updateJudge.mutate({
-                    judgeId: editJudge.judgeId,
-                    firstName: editJudge.firstName,
-                    lastName: editJudge.lastName,
-                    initials: editJudge.initials || null,
-                    affiliation: editJudge.affiliation || null,
-                  });
-                }
-              }}
-              disabled={updateJudge.isPending}
+              onClick={handleUpdateJudge}
+              disabled={updatePending}
             >
-              {updateJudge.isPending ? "Saving..." : "Save"}
+              {updatePending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>

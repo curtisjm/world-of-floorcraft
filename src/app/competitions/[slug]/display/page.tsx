@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../convex/_generated/api";
 import { useCompLive } from "@competitions/lib/ably-comp-client";
 import { Badge } from "@shared/ui/badge";
 import { Megaphone } from "lucide-react";
@@ -13,10 +15,11 @@ import { Megaphone } from "lucide-react";
 
 export default function ProjectorDisplayPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
   const { data: schedule } = trpc.liveView.getSchedule.useQuery(
-    { competitionId: comp?.id ?? 0 },
+    // TODO Task 10/11: liveView router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0 },
     { enabled: !!comp },
   );
 

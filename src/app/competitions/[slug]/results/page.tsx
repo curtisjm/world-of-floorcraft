@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../convex/_generated/api";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -11,10 +13,11 @@ import { Trophy, ChevronRight } from "lucide-react";
 
 export default function CompetitionResultsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
   const { data: results, isLoading } = trpc.results.getByCompetition.useQuery(
-    { competitionId: comp?.id ?? 0 },
+    // TODO Task 10/11: results router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0 },
     { enabled: !!comp },
   );
 

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -21,13 +23,14 @@ import {
 
 export default function ScheduleEstimationPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug });
   const {
     data: schedule,
     isLoading,
     refetch,
   } = trpc.scheduleEstimation.getEstimatedSchedule.useQuery(
-    { competitionId: comp?.id ?? 0 },
+    // TODO Task 10/11: scheduleEstimation router still expects numeric competitionId
+    { competitionId: (comp?._id as unknown as number) ?? 0 },
     { enabled: !!comp },
   );
 
@@ -168,7 +171,8 @@ export default function ScheduleEstimationPage() {
             <Button
               onClick={() => {
                 updateSettings.mutate({
-                  competitionId: comp.id,
+                  // TODO Task 10/11: scheduleEstimation router still expects numeric competitionId
+                  competitionId: comp._id as unknown as number,
                   minutesPerCouplePerDance: minutesPerCouple,
                   transitionMinutes: transitionMin,
                 });
