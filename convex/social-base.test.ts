@@ -268,16 +268,18 @@ describe("profiles", () => {
       username: "bob",
     });
 
-    expect(profile.username).toBe("bob");
-    expect(profile.followerCount).toBe(1);
-    expect(profile.followingCount).toBe(1);
+    expect(profile).not.toBeNull();
+    expect(profile?.username).toBe("bob");
+    expect(profile?.followerCount).toBe(1);
+    expect(profile?.followingCount).toBe(1);
   });
 
-  it("getByUsername throws for an unknown username", async () => {
+  it("getByUsername returns null for an unknown username", async () => {
     const t = convexTest(schema, modules);
-    await expect(
-      t.query(api.social.profiles.getByUsername, { username: "ghost" }),
-    ).rejects.toThrow();
+    const profile = await t.query(api.social.profiles.getByUsername, {
+      username: "ghost",
+    });
+    expect(profile).toBeNull();
   });
 
   it("search matches users by username or display name", async () => {

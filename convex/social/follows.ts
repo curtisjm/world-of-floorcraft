@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { getCurrentUser } from "../lib/auth";
+import { getCurrentUser, getCurrentUserOrNull } from "../lib/auth";
 import { badRequest, notFound } from "../lib/errors";
 import { createNotification } from "./notifications";
 
@@ -10,11 +10,16 @@ import { createNotification } from "./notifications";
  * approves; a follow of a public user is immediately `active`.
  */
 
-/** The current user's follow relationship toward `targetUserId`. */
+/**
+ * The current user's follow relationship toward `targetUserId`. Returns a
+ * `null` status for signed-out viewers rather than throwing, so the follow
+ * button can render on public profiles without an error boundary.
+ */
 export const status = query({
   args: { targetUserId: v.id("users") },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
+    const user = await getCurrentUserOrNull(ctx);
+    if (!user) return { status: null };
     const follow = await ctx.db
       .query("follows")
       .withIndex("by_follower_following", (q) =>

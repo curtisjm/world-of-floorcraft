@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -13,6 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@shared/ui/card";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../convex/_generated/api";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
 
@@ -21,28 +23,20 @@ export default function OnboardingPage() {
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const utils = trpc.useUtils();
+  const needsOnboarding = useQuery(api.users.needsOnboarding, {});
+  const updateProfile = useMutation(api.users.updateProfile);
 
-  const { data, isLoading } = trpc.profile.needsOnboarding.useQuery();
-
-  const updateProfile = trpc.profile.update.useMutation({
-    onSuccess: () => {
-      utils.profile.needsOnboarding.invalidate();
-      router.push("/");
-    },
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
+  const isLoading = needsOnboarding === undefined;
 
   // If the user already has a username, redirect them away
-  if (!isLoading && data && !data.needsOnboarding) {
+  if (!isLoading && !needsOnboarding.needsOnboarding) {
     router.push("/");
     return null;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
@@ -58,10 +52,17 @@ export default function OnboardingPage() {
       return;
     }
 
-    updateProfile.mutate({
-      username: trimmed,
-      ...(displayName.trim() ? { displayName: displayName.trim() } : {}),
-    });
+    setSubmitting(true);
+    try {
+      await updateProfile({
+        username: trimmed,
+        ...(displayName.trim() ? { displayName: displayName.trim() } : {}),
+      });
+      router.push("/");
+    } catch (err) {
+      setError(convexErrorMessage(err));
+      setSubmitting(false);
+    }
   }
 
   if (isLoading) {
@@ -122,9 +123,9 @@ export default function OnboardingPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={updateProfile.isPending}
+              disabled={submitting}
             >
-              {updateProfile.isPending ? "Saving..." : "Continue"}
+              {submitting ? "Saving..." : "Continue"}
             </Button>
           </form>
         </CardContent>

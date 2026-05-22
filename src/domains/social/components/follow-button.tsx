@@ -1,51 +1,51 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
-import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface FollowButtonProps {
-  targetUserId: string;
-  isOwnProfile: boolean;
+  targetUserId: Id<"users">;
 }
 
-export function FollowButton({ targetUserId, isOwnProfile }: FollowButtonProps) {
-  const utils = trpc.useUtils();
+/**
+ * Follow / unfollow control. Resolves the viewer through `users.me` and hides
+ * itself on the viewer's own profile, so callers only pass the target id.
+ * Follow state updates reactively — no manual cache invalidation.
+ */
+export function FollowButton({ targetUserId }: FollowButtonProps) {
+  const me = useQuery(api.users.me, {});
+  const isOwnProfile = me?._id === targetUserId;
 
-  const { data: followStatus, isLoading } = trpc.follow.status.useQuery(
-    { targetUserId },
-    { enabled: !isOwnProfile }
+  const followStatus = useQuery(
+    api.social.follows.status,
+    isOwnProfile ? "skip" : { targetUserId },
   );
+  const follow = useMutation(api.social.follows.follow);
+  const unfollow = useMutation(api.social.follows.unfollow);
 
-  const followMutation = trpc.follow.follow.useMutation({
-    onSuccess: () => utils.follow.status.invalidate({ targetUserId }),
-  });
+  if (isOwnProfile || followStatus === undefined) return null;
 
-  const unfollowMutation = trpc.follow.unfollow.useMutation({
-    onSuccess: () => utils.follow.status.invalidate({ targetUserId }),
-  });
+  const status = followStatus.status;
 
-  if (isOwnProfile || isLoading) return null;
-
-  const currentStatus = followStatus?.status;
-
-  if (currentStatus === "active") {
+  if (status === "active" || status === "pending") {
     return (
-      <Button variant="outline" size="sm" onClick={() => unfollowMutation.mutate({ targetUserId })} disabled={unfollowMutation.isPending}>
-        Following
-      </Button>
-    );
-  }
-
-  if (currentStatus === "pending") {
-    return (
-      <Button variant="outline" size="sm" onClick={() => unfollowMutation.mutate({ targetUserId })} disabled={unfollowMutation.isPending}>
-        Requested
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => void unfollow({ targetUserId }).catch(() => {})}
+      >
+        {status === "active" ? "Following" : "Requested"}
       </Button>
     );
   }
 
   return (
-    <Button size="sm" onClick={() => followMutation.mutate({ targetUserId })} disabled={followMutation.isPending}>
+    <Button
+      size="sm"
+      onClick={() => void follow({ targetUserId }).catch(() => {})}
+    >
       Follow
     </Button>
   );

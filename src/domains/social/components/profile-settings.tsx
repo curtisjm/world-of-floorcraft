@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Switch } from "@shared/ui/switch";
 import { Textarea } from "@shared/ui/textarea";
 import { trpc } from "@shared/lib/trpc";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../convex/_generated/api";
 
 const COMPETITION_LEVELS = [
   { value: "newcomer", label: "Newcomer" },
@@ -43,7 +46,10 @@ const selectClassName =
 
 export function ProfileSettings() {
   const utils = trpc.useUtils();
-  const { data: me, isLoading } = trpc.profile.me.useQuery();
+  // Profile identity is served by Convex; partner search remains on tRPC
+  // until the social-content slice (Task 7) migrates it.
+  const me = useQuery(api.users.me, {});
+  const isLoading = me === undefined;
   const { data: partnerSearch } = trpc.partnerSearch.me.useQuery();
 
   const [username, setUsername] = useState("");
@@ -55,6 +61,7 @@ export function ProfileSettings() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Partner search state
   const [lookingForPartner, setLookingForPartner] = useState(false);
@@ -69,8 +76,8 @@ export function ProfileSettings() {
       setUsername(me.username ?? "");
       setDisplayName(me.displayName ?? "");
       setBio(me.bio ?? "");
-      setCompetitionLevel((me.competitionLevel as CompetitionLevel | null) ?? "");
-      setCompetitionLevelHigh((me.competitionLevelHigh as CompetitionLevel | null) ?? "");
+      setCompetitionLevel((me.competitionLevel as CompetitionLevel | undefined) ?? "");
+      setCompetitionLevelHigh((me.competitionLevelHigh as CompetitionLevel | undefined) ?? "");
       setShowConsecutiveLevel(!!me.competitionLevelHigh);
       setIsPrivate(me.isPrivate);
     }
@@ -89,18 +96,7 @@ export function ProfileSettings() {
     }
   }, [partnerSearch]);
 
-  const updateMutation = trpc.profile.update.useMutation({
-    onSuccess: () => {
-      utils.profile.me.invalidate();
-      setSuccess(true);
-      setError(null);
-      setTimeout(() => setSuccess(false), 3000);
-    },
-    onError: (err) => {
-      setError(err.message);
-      setSuccess(false);
-    },
-  });
+  const updateProfile = useMutation(api.users.updateProfile);
 
   const upsertPartnerSearch = trpc.partnerSearch.upsert.useMutation({
     onSuccess: () => {
@@ -130,17 +126,30 @@ export function ProfileSettings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSaving(true);
 
-    updateMutation.mutate({
-      username: username || undefined,
-      displayName: displayName || undefined,
-      bio: bio || undefined,
-      competitionLevel: (competitionLevel as CompetitionLevel) || null,
-      competitionLevelHigh: showConsecutiveLevel && competitionLevel !== "professional"
-        ? (competitionLevelHigh as CompetitionLevel) || null
-        : null,
-      isPrivate,
-    });
+    try {
+      await updateProfile({
+        username: username || undefined,
+        displayName: displayName || undefined,
+        bio: bio || undefined,
+        competitionLevel: (competitionLevel as CompetitionLevel) || null,
+        competitionLevelHigh:
+          showConsecutiveLevel && competitionLevel !== "professional"
+            ? (competitionLevelHigh as CompetitionLevel) || null
+            : null,
+        isPrivate,
+      });
+    } catch (err) {
+      setError(convexErrorMessage(err));
+      setSuccess(false);
+      setSaving(false);
+      return;
+    }
+
+    setSaving(false);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
 
     // Handle partner search: upsert if enabled, remove if disabled
     if (lookingForPartner && partnerStyles.length > 0 && partnerRole) {
@@ -159,6 +168,9 @@ export function ProfileSettings() {
   if (isLoading) {
     return <div className="text-muted-foreground text-sm">Loading...</div>;
   }
+
+  const isSaving =
+    saving || upsertPartnerSearch.isPending || removePartnerSearch.isPending;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -408,12 +420,10 @@ export function ProfileSettings() {
 
       <Button
         type="submit"
-        disabled={updateMutation.isPending || upsertPartnerSearch.isPending || removePartnerSearch.isPending}
+        disabled={isSaving}
         className="w-fit"
       >
-        {updateMutation.isPending || upsertPartnerSearch.isPending || removePartnerSearch.isPending
-          ? "Saving..."
-          : "Save changes"}
+        {isSaving ? "Saving..." : "Save changes"}
       </Button>
     </form>
   );

@@ -1,14 +1,16 @@
 "use client";
 
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, usePaginatedQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { ScrollArea } from "@shared/ui/scroll-area";
 import { Skeleton } from "@shared/ui/skeleton";
 import { NotificationItem } from "./notification-item";
+import { api } from "../../../../convex/_generated/api";
+import type { Doc, Id } from "../../../../convex/_generated/dataModel";
 
 // ── Time-group helpers ─────────────────────────────────────────────────────────
 
-function getGroup(date: Date | string): "Today" | "This Week" | "Earlier" {
+function getGroup(date: number): "Today" | "This Week" | "Earlier" {
   const d = new Date(date);
   const now = new Date();
 
@@ -24,48 +26,43 @@ function getGroup(date: Date | string): "Today" | "This Week" | "Earlier" {
 const GROUP_ORDER = ["Today", "This Week", "Earlier"] as const;
 type Group = (typeof GROUP_ORDER)[number];
 
+interface NotificationListItem {
+  notification: Doc<"notifications">;
+  actor: {
+    displayName: string | null;
+    username: string | null;
+    avatarUrl: string | null;
+  } | null;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function NotificationPanel() {
-  const utils = trpc.useUtils();
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.social.notifications.list,
+    {},
+    { initialNumItems: 20 },
+  );
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    trpc.notification.list.useInfiniteQuery(
-      { limit: 20 },
-      { getNextPageParam: (lastPage) => lastPage.nextCursor }
-    );
+  const markRead = useMutation(api.social.notifications.markRead);
+  const markAllRead = useMutation(api.social.notifications.markAllRead);
 
-  const markReadMutation = trpc.notification.markRead.useMutation({
-    onSuccess: () => {
-      utils.notification.list.invalidate();
-      utils.notification.unreadCount.invalidate();
-    },
-  });
-
-  const markAllReadMutation = trpc.notification.markAllRead.useMutation({
-    onSuccess: () => {
-      utils.notification.list.invalidate();
-      utils.notification.unreadCount.invalidate();
-    },
-  });
-
-  const allNotifications =
-    data?.pages.flatMap((page) => page.notifications) ?? [];
+  const isLoading = status === "LoadingFirstPage";
+  const notifications = results as NotificationListItem[];
 
   // Group by time bucket
-  const grouped: Record<Group, typeof allNotifications> = {
+  const grouped: Record<Group, NotificationListItem[]> = {
     Today: [],
     "This Week": [],
     Earlier: [],
   };
 
-  for (const item of allNotifications) {
-    const group = getGroup(new Date(item.notification.createdAt));
-    grouped[group].push(item);
+  for (const item of notifications) {
+    grouped[getGroup(item.notification.createdAt)].push(item);
   }
 
-  function handleRead(notificationId: number) {
-    markReadMutation.mutate({ notificationId });
+  function handleRead(notificationId: Id<"notifications">) {
+    void markRead({ notificationId }).catch(() => {});
   }
 
   return (
@@ -77,8 +74,8 @@ export function NotificationPanel() {
           variant="ghost"
           size="sm"
           className="text-xs h-7 px-2"
-          onClick={() => markAllReadMutation.mutate()}
-          disabled={markAllReadMutation.isPending || allNotifications.length === 0}
+          onClick={() => void markAllRead({}).catch(() => {})}
+          disabled={notifications.length === 0}
         >
           Mark all read
         </Button>
@@ -94,7 +91,7 @@ export function NotificationPanel() {
           </div>
         )}
 
-        {!isLoading && allNotifications.length === 0 && (
+        {!isLoading && notifications.length === 0 && (
           <div className="atelier-empty-state atelier-empty-state-centered border-0 border-b border-border bg-popover px-4 py-8">
             <span className="atelier-empty-glyph" aria-hidden="true" />
             <p className="text-sm">No notices are waiting.</p>
@@ -112,7 +109,7 @@ export function NotificationPanel() {
               </p>
               {items.map(({ notification, actor }) => (
                 <NotificationItem
-                  key={notification.id}
+                  key={notification._id}
                   notification={notification}
                   actor={actor}
                   onRead={handleRead}
@@ -123,17 +120,21 @@ export function NotificationPanel() {
         })}
 
         {/* Load more */}
-        {hasNextPage && (
+        {status === "CanLoadMore" && (
           <div className="px-4 py-3">
             <Button
               variant="ghost"
               size="sm"
               className="w-full text-xs"
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
+              onClick={() => loadMore(20)}
             >
-              {isFetchingNextPage ? "Loading…" : "Load more"}
+              Load more
             </Button>
+          </div>
+        )}
+        {status === "LoadingMore" && (
+          <div className="px-4 py-3 text-center text-xs text-muted-foreground">
+            Loading…
           </div>
         )}
       </ScrollArea>

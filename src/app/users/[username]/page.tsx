@@ -12,6 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@shared/ui/card";
 import Link from "next/link";
 
+// During the Convex migration this page is hybrid: the profile header (the
+// Task 5 social-identity slice) reads from Convex via `ProfileHeader`, while
+// the posts / routines / partner-search / competitions tabs and the private-
+// account visibility gate still query Drizzle. Those domains are owned by
+// Tasks 4 (routines), 7 (social content, partner search), and 9 (competitions)
+// and will migrate this page's data fetches in their own slices.
+
 export default async function UserProfilePage({
   params,
 }: {
@@ -40,19 +47,7 @@ export default async function UserProfilePage({
     notFound();
   }
 
-  // Get follower/following counts
-  const [followerCountRow] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(follows)
-    .where(and(eq(follows.followingId, user.id), eq(follows.status, "active")));
-
-  const [followingCountRow] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(follows)
-    .where(and(eq(follows.followerId, user.id), eq(follows.status, "active")));
-
-  const followerCount = followerCountRow?.count ?? 0;
-  const followingCount = followingCountRow?.count ?? 0;
+  // Follower / following counts are owned by `ProfileHeader` (Convex).
 
   // Fetch partner search profile (table may not exist yet if migration hasn't run)
   let partnerSearch: {
@@ -156,15 +151,9 @@ export default async function UserProfilePage({
         .orderBy(asc(routines.createdAt))
     : [];
 
-  const profileUser = {
-    ...user,
-    followerCount,
-    followingCount,
-  };
-
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
-      <ProfileHeader user={profileUser} isOwnProfile={isOwnProfile} />
+      <ProfileHeader username={username} />
 
       {partnerSearch && (
         <div className="mt-4">

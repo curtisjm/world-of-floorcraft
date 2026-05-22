@@ -2,12 +2,15 @@ import { v } from "convex/values";
 import { query, type QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { getCurrentUser } from "../lib/auth";
-import { notFound } from "../lib/errors";
 
 /**
  * Public profile reads for the social domain. Ported from the Drizzle/tRPC
  * `profile` router (the `me`/`updateProfile`/`needsOnboarding` mutations live
  * in `convex/users.ts`; this module holds the public-facing lookups).
+ *
+ * Lookups by username return `null`/`[]` for an unknown user rather than
+ * throwing — these queries drive whole pages, and a thrown error would crash
+ * the route instead of letting it render a not-found state.
  */
 
 const SEARCH_LIMIT = 20;
@@ -22,19 +25,15 @@ function publicCard(user: Doc<"users">) {
   };
 }
 
-/** Resolve a user by username, throwing `NOT_FOUND` when absent. */
+/** Resolve a user by username, or `null` when none matches. */
 async function userByUsername(
   ctx: QueryCtx,
   username: string,
-): Promise<Doc<"users">> {
-  const user = await ctx.db
+): Promise<Doc<"users"> | null> {
+  return await ctx.db
     .query("users")
     .withIndex("by_username", (q) => q.eq("username", username))
     .unique();
-  if (!user) {
-    notFound("User not found");
-  }
-  return user;
 }
 
 /** Count the active follows on one side of a relationship. */
@@ -42,11 +41,15 @@ function activeFollowCount(follows: Doc<"follows">[]): number {
   return follows.filter((f) => f.status === "active").length;
 }
 
-/** Full public profile for a username, with active follower/following counts. */
+/**
+ * Full public profile for a username, with active follower/following counts.
+ * Returns `null` when the username is unknown.
+ */
 export const getByUsername = query({
   args: { username: v.string() },
   handler: async (ctx, args) => {
     const user = await userByUsername(ctx, args.username);
+    if (!user) return null;
 
     const followers = await ctx.db
       .query("follows")
@@ -102,6 +105,7 @@ export const followers = query({
   args: { username: v.string() },
   handler: async (ctx, args) => {
     const user = await userByUsername(ctx, args.username);
+    if (!user) return [];
     const follows = await ctx.db
       .query("follows")
       .withIndex("by_following", (q) => q.eq("followingId", user._id))
@@ -122,6 +126,7 @@ export const following = query({
   args: { username: v.string() },
   handler: async (ctx, args) => {
     const user = await userByUsername(ctx, args.username);
+    if (!user) return [];
     const follows = await ctx.db
       .query("follows")
       .withIndex("by_follower", (q) => q.eq("followerId", user._id))

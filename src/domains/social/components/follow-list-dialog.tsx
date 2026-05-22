@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +12,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@shared/ui/avatar";
 import { ScrollArea } from "@shared/ui/scroll-area";
 import { FollowButton } from "./follow-button";
+import { api } from "../../../../convex/_generated/api";
 
 type Tab = "followers" | "following";
 
@@ -30,7 +30,6 @@ export function FollowListDialog({
   onOpenChange,
 }: FollowListDialogProps) {
   const [tab, setTab] = useState<Tab>(initialTab);
-  const { userId: currentUserId } = useAuth();
 
   // Reset tab when dialog opens with a different initialTab
   const handleOpenChange = (isOpen: boolean) => {
@@ -38,14 +37,17 @@ export function FollowListDialog({
     onOpenChange(isOpen);
   };
 
-  const { data: followers, isLoading: loadingFollowers } =
-    trpc.profile.followers.useQuery({ username }, { enabled: open && tab === "followers" });
-
-  const { data: following, isLoading: loadingFollowing } =
-    trpc.profile.following.useQuery({ username }, { enabled: open && tab === "following" });
+  const followers = useQuery(
+    api.social.profiles.followers,
+    open && tab === "followers" ? { username } : "skip",
+  );
+  const following = useQuery(
+    api.social.profiles.following,
+    open && tab === "following" ? { username } : "skip",
+  );
 
   const users = tab === "followers" ? followers : following;
-  const isLoading = tab === "followers" ? loadingFollowers : loadingFollowing;
+  const isLoading = users === undefined;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -97,7 +99,7 @@ export function FollowListDialog({
             <div className="flex flex-col">
               {users.map((user) => (
                 <div
-                  key={user.id}
+                  key={user._id}
                   className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors"
                 >
                   <Link
@@ -124,12 +126,7 @@ export function FollowListDialog({
                       )}
                     </div>
                   </Link>
-                  {user.id !== currentUserId && (
-                    <FollowButton
-                      targetUserId={user.id}
-                      isOwnProfile={false}
-                    />
-                  )}
+                  <FollowButton targetUserId={user._id} />
                 </div>
               ))}
             </div>

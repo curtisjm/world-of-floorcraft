@@ -14,21 +14,11 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@shared/ui/avatar";
 import { cn } from "@shared/lib/utils";
+import type { Doc, Id } from "../../../../convex/_generated/dataModel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type NotificationType =
-  | "like"
-  | "comment"
-  | "reply"
-  | "follow"
-  | "follow_request"
-  | "follow_accepted"
-  | "message"
-  | "org_invite"
-  | "join_request"
-  | "join_approved"
-  | "org_post";
+export type NotificationType = Doc<"notifications">["type"];
 
 export interface NotificationActor {
   displayName: string | null;
@@ -36,26 +26,15 @@ export interface NotificationActor {
   avatarUrl: string | null;
 }
 
-export interface NotificationData {
-  id: number;
-  type: NotificationType;
-  read: boolean;
-  createdAt: Date | string;
-  postId?: number | null;
-  commentId?: number | null;
-  orgId?: number | null;
-  conversationId?: number | null;
-}
-
 interface NotificationItemProps {
-  notification: NotificationData;
+  notification: Doc<"notifications">;
   actor: NotificationActor | null;
-  onRead: (notificationId: number) => void;
+  onRead: (notificationId: Id<"notifications">) => void;
 }
 
 // ── Relative time helper ──────────────────────────────────────────────────────
 
-export function formatRelativeTime(date: Date | string): string {
+export function formatRelativeTime(date: number | Date | string): string {
   const d = new Date(date);
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
@@ -79,8 +58,8 @@ type NotificationConfig = {
   iconClass: string;
   getMessage: (actorName: string) => string;
   getHref: (
-    notification: NotificationData,
-    actor: NotificationActor | null
+    notification: Doc<"notifications">,
+    actor: NotificationActor | null,
   ) => string;
 };
 
@@ -173,7 +152,7 @@ export function NotificationItem({
 
   function handleClick() {
     if (!notification.read) {
-      onRead(notification.id);
+      onRead(notification._id);
     }
   }
 
