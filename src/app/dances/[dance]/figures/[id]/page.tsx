@@ -283,7 +283,7 @@ export default async function FigureDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="px-6 py-6">
-              <ul className="max-w-[62ch] space-y-4 text-[0.95rem] leading-relaxed text-muted-foreground">
+              <ul className="space-y-4 text-[0.95rem] leading-relaxed text-muted-foreground">
                 {(figure.notes as string[]).map((note, i) => (
                   <li key={i}>{note}</li>
                 ))}
