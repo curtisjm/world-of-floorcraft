@@ -38,10 +38,10 @@ export function MessageBubble({ message, sender, isOwnMessage }: MessageBubblePr
         )}
         <div
           className={cn(
-            "rounded-2xl px-4 py-2 text-sm",
+            "rounded-[2px] border px-4 py-2 text-sm",
             isOwnMessage
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted"
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-card text-card-foreground"
           )}
         >
           {message.body}

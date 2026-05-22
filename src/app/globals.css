@@ -290,6 +290,10 @@
     font-weight: 300;
   }
 
+  .atelier-page-title-wide {
+    max-width: none;
+  }
+
   .atelier-panel {
     border: 1px solid color-mix(in oklch, var(--foreground) 10%, var(--border));
     background: var(--card);
@@ -806,6 +810,7 @@
     [data-slot="tabs-trigger"],
     [data-slot="navigation-menu-trigger"],
     [data-slot="navigation-menu-link"],
+    [data-slot="select-trigger"],
     [data-slot="sheet-trigger"] {
       min-height: 2.75rem;
     }

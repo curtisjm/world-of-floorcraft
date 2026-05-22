@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@shared/ui/select";
 import { CompetitionCard } from "@competitions/components/competition-card";
-import { Plus, Calendar, MapPin, ChevronRight, Trophy } from "lucide-react";
+import { Plus, Calendar, MapPin, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@shared/ui/card";
 
 const statusFilters = [
@@ -64,35 +64,36 @@ export default function CompetitionsPage() {
   return (
     <div className="atelier-shell">
       <div className="atelier-section flex max-w-4xl flex-col gap-7">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="max-w-2xl">
-            <p className="atelier-eyebrow mb-4">competition desk</p>
-            <h1 className="atelier-page-title">Competitions</h1>
-            <p className="mt-3 text-muted-foreground">
-              Browse upcoming events, live rounds, and historical results.
-            </p>
+        <div className="max-w-2xl">
+          <p className="atelier-eyebrow mb-4">competition desk</p>
+          <h1 className="atelier-page-title">Competitions</h1>
+          <p className="mt-3 text-muted-foreground">
+            Browse upcoming events, live rounds, and historical results.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-fit max-w-full flex-wrap gap-1 rounded-sm border bg-muted p-1">
+            {statusFilters.map((filter) => (
+              <Button
+                key={filter.label}
+                type="button"
+                variant={statusFilter === filter.value ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter(filter.value)}
+                className="min-h-11 min-w-11 sm:h-8 sm:min-h-8"
+              >
+                {filter.label}
+              </Button>
+            ))}
           </div>
-          <Button asChild className="sm:mt-9">
+
+          <Button asChild>
             <Link href="/competitions/create">
               <Plus data-icon="inline-start" />
               Create competition
             </Link>
           </Button>
-        </div>
-
-        <div className="flex w-fit max-w-full flex-wrap gap-1 rounded-sm border bg-muted p-1">
-          {statusFilters.map((filter) => (
-            <Button
-              key={filter.label}
-              type="button"
-              variant={statusFilter === filter.value ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setStatusFilter(filter.value)}
-              className="min-h-11 min-w-11 sm:h-8 sm:min-h-8"
-            >
-              {filter.label}
-            </Button>
-          ))}
         </div>
 
         {isPast ? (
@@ -137,7 +138,7 @@ function ActiveTab({
             <Card key={i} className="gap-3 p-4">
               <div className="flex items-start justify-between">
                 <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-5 w-20" />
               </div>
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-full" />
@@ -262,14 +263,14 @@ function PastTab({
       {isLoading && (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-lg" />
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
       )}
 
       {!isLoading && competitions.length === 0 && (
-        <div className="atelier-panel rounded-lg px-6 py-12 text-center">
-          <Trophy className="mx-auto mb-3 size-10 text-muted-foreground opacity-30" />
+        <div className="atelier-empty-state atelier-empty-state-centered px-6 py-12">
+          <span className="atelier-empty-glyph" aria-hidden="true" />
           <p className="text-muted-foreground">No past competitions found.</p>
         </div>
       )}

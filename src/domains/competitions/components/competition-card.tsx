@@ -29,7 +29,7 @@ export function CompetitionCard({ competition, orgName }: CompetitionCardProps) 
       <Card className="atelier-link-card h-full cursor-pointer">
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="font-heading text-xl font-medium leading-tight">
+            <CardTitle className="text-lg font-semibold leading-tight">
               {competition.name}
             </CardTitle>
             <StatusBadge status={competition.status} />
