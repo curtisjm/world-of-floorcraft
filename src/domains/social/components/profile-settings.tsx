@@ -6,7 +6,6 @@ import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Switch } from "@shared/ui/switch";
 import { Textarea } from "@shared/ui/textarea";
-import { trpc } from "@shared/lib/trpc";
 import { convexErrorMessage } from "@social/lib/convex-error";
 import { api } from "../../../../convex/_generated/api";
 
@@ -45,12 +44,9 @@ const selectClassName =
   "flex h-10 w-full rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35";
 
 export function ProfileSettings() {
-  const utils = trpc.useUtils();
-  // Profile identity is served by Convex; partner search remains on tRPC
-  // until the social-content slice (Task 7) migrates it.
   const me = useQuery(api.users.me, {});
   const isLoading = me === undefined;
-  const { data: partnerSearch } = trpc.partnerSearch.me.useQuery();
+  const partnerSearch = useQuery(api.social.partnerSearch.me, {});
 
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -97,31 +93,8 @@ export function ProfileSettings() {
   }, [partnerSearch]);
 
   const updateProfile = useMutation(api.users.updateProfile);
-
-  const upsertPartnerSearch = trpc.partnerSearch.upsert.useMutation({
-    onSuccess: () => {
-      utils.partnerSearch.me.invalidate();
-    },
-    onError: (err) => {
-      setError(err.message);
-      setSuccess(false);
-    },
-  });
-
-  const removePartnerSearch = trpc.partnerSearch.remove.useMutation({
-    onSuccess: () => {
-      utils.partnerSearch.me.invalidate();
-      setPartnerStyles([]);
-      setPartnerHeight("");
-      setPartnerLocation("");
-      setPartnerBio("");
-      setPartnerRole("");
-    },
-    onError: (err) => {
-      setError(err.message);
-      setSuccess(false);
-    },
-  });
+  const upsertPartnerSearch = useMutation(api.social.partnerSearch.upsert);
+  const removePartnerSearch = useMutation(api.social.partnerSearch.remove);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +113,23 @@ export function ProfileSettings() {
             : null,
         isPrivate,
       });
+
+      if (lookingForPartner && partnerStyles.length > 0 && partnerRole) {
+        await upsertPartnerSearch({
+          danceStyles: partnerStyles,
+          height: partnerHeight || undefined,
+          location: partnerLocation || undefined,
+          bio: partnerBio || undefined,
+          rolePreference: partnerRole,
+        });
+      } else if (!lookingForPartner && partnerSearch) {
+        await removePartnerSearch({});
+        setPartnerStyles([]);
+        setPartnerHeight("");
+        setPartnerLocation("");
+        setPartnerBio("");
+        setPartnerRole("");
+      }
     } catch (err) {
       setError(convexErrorMessage(err));
       setSuccess(false);
@@ -150,27 +140,13 @@ export function ProfileSettings() {
     setSaving(false);
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
-
-    // Handle partner search: upsert if enabled, remove if disabled
-    if (lookingForPartner && partnerStyles.length > 0 && partnerRole) {
-      upsertPartnerSearch.mutate({
-        danceStyles: partnerStyles,
-        height: partnerHeight || undefined,
-        location: partnerLocation || undefined,
-        bio: partnerBio || undefined,
-        rolePreference: partnerRole,
-      });
-    } else if (!lookingForPartner && partnerSearch) {
-      removePartnerSearch.mutate();
-    }
   };
 
   if (isLoading) {
     return <div className="text-muted-foreground text-sm">Loading...</div>;
   }
 
-  const isSaving =
-    saving || upsertPartnerSearch.isPending || removePartnerSearch.isPending;
+  const isSaving = saving;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">

@@ -1,16 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { useQuery } from "convex/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Card, CardContent, CardHeader } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
 import { InteractionBar } from "./interaction-bar";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface PostCardProps {
   post: {
-    id: number;
+    id: Id<"posts">;
     type: "routine_share" | "article";
     title: string | null;
     body: string | null;
-    publishedAt: Date | null;
+    publishedAt: number | null;
     authorUsername: string | null;
     authorDisplayName: string | null;
     authorAvatarUrl: string | null;
@@ -18,6 +23,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const me = useQuery(api.users.me, {});
   const authorName = post.authorDisplayName ?? post.authorUsername ?? "Anonymous";
   const isArticle = post.type === "article";
 
@@ -71,7 +77,7 @@ export function PostCard({ post }: PostCardProps) {
             </p>
           )}
         </Link>
-        <InteractionBar postId={post.id} userId={null} />
+        <InteractionBar postId={post.id} userId={me?._id ?? null} />
       </CardContent>
     </Card>
   );

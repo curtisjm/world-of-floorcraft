@@ -1,34 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
-import { trpc } from "@shared/lib/trpc";
 import { TiptapEditor } from "@social/components/editor/tiptap-editor";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface OrgPostComposerProps {
-  orgId: number;
+  orgId: Id<"organizations">;
 }
 
 export function OrgPostComposer({ orgId }: OrgPostComposerProps) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [visibility, setVisibility] = useState<"public" | "followers" | "organization">(
-    "public"
-  );
+  const [visibility, setVisibility] = useState<
+    "public" | "followers" | "organization"
+  >("public");
   const [expanded, setExpanded] = useState(false);
+  const [pending, setPending] = useState(false);
 
-  const utils = trpc.useUtils();
-
-  const createMutation = trpc.orgPost.create.useMutation({
-    onSuccess: () => {
-      setTitle("");
-      setBody("");
-      setVisibility("public");
-      setExpanded(false);
-      utils.orgPost.listByOrg.invalidate({ orgId });
-    },
-  });
+  const createOrgPost = useMutation(api.social.posts.createOrgPost);
 
   if (!expanded) {
     return (
@@ -41,26 +34,24 @@ export function OrgPostComposer({ orgId }: OrgPostComposerProps) {
     );
   }
 
-  const handlePublish = () => {
-    createMutation.mutate({
-      orgId,
-      type: "article",
-      title: title || undefined,
-      body: body || undefined,
-      visibility,
-      publish: true,
-    });
-  };
-
-  const handleSaveDraft = () => {
-    createMutation.mutate({
-      orgId,
-      type: "article",
-      title: title || undefined,
-      body: body || undefined,
-      visibility,
-      publish: false,
-    });
+  const submit = async (publish: boolean) => {
+    setPending(true);
+    try {
+      await createOrgPost({
+        orgId,
+        type: "article",
+        title: title || undefined,
+        body: body || undefined,
+        visibility,
+        publish,
+      });
+      setTitle("");
+      setBody("");
+      setVisibility("public");
+      setExpanded(false);
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
@@ -94,22 +85,22 @@ export function OrgPostComposer({ orgId }: OrgPostComposerProps) {
             variant="ghost"
             size="sm"
             onClick={() => setExpanded(false)}
-            disabled={createMutation.isPending}
+            disabled={pending}
           >
             Cancel
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={handleSaveDraft}
-            disabled={createMutation.isPending}
+            onClick={() => void submit(false).catch(() => setPending(false))}
+            disabled={pending}
           >
             Save Draft
           </Button>
           <Button
             size="sm"
-            onClick={handlePublish}
-            disabled={createMutation.isPending || !title}
+            onClick={() => void submit(true).catch(() => setPending(false))}
+            disabled={pending || !title}
           >
             Publish
           </Button>

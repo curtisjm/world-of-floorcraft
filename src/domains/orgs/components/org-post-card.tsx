@@ -1,25 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "convex/react";
 import { Card, CardContent, CardHeader } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
 import { InteractionBar } from "@social/components/interaction-bar";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface OrgPostCardProps {
   post: {
-    id: number;
+    id: Id<"posts">;
     type: "routine_share" | "article";
     title: string | null;
     body: string | null;
-    publishedAt: Date | null;
-    orgName: string;
-    orgSlug: string;
+    publishedAt: number | null;
+    orgName: string | null;
+    orgSlug: string | null;
     orgAvatarUrl: string | null;
   };
 }
 
 export function OrgPostCard({ post }: OrgPostCardProps) {
+  const me = useQuery(api.users.me, {});
   const isArticle = post.type === "article";
+  const orgName = post.orgName ?? "Organization";
 
   const preview = post.body
     ? post.body.replace(/<[^>]*>/g, "").slice(0, 200)
@@ -33,11 +38,11 @@ export function OrgPostCard({ post }: OrgPostCardProps) {
             {post.orgAvatarUrl ? (
               <img
                 src={post.orgAvatarUrl}
-                alt={post.orgName}
+                alt={orgName}
                 className="w-8 h-8 rounded-full object-cover"
               />
             ) : (
-              post.orgName[0]?.toUpperCase() ?? "?"
+              orgName[0]?.toUpperCase() ?? "?"
             )}
           </div>
 
@@ -46,7 +51,7 @@ export function OrgPostCard({ post }: OrgPostCardProps) {
               href={`/orgs/${post.orgSlug}`}
               className="text-sm font-medium hover:underline"
             >
-              {post.orgName}
+              {orgName}
             </Link>
             {post.publishedAt && (
               <p className="text-xs text-muted-foreground">
@@ -72,7 +77,7 @@ export function OrgPostCard({ post }: OrgPostCardProps) {
             </p>
           )}
         </Link>
-        <InteractionBar postId={post.id} userId={null} />
+        <InteractionBar postId={post.id} userId={me?._id ?? null} />
       </CardContent>
     </Card>
   );

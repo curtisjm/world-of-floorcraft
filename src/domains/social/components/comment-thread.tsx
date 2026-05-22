@@ -2,37 +2,33 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
-import { trpc } from "@shared/lib/trpc";
 import { CommentForm } from "./comment-form";
 import Link from "next/link";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface CommentThreadProps {
-  postId: number;
+  postId: Id<"posts">;
 }
 
 export function CommentThread({ postId }: CommentThreadProps) {
-  const { data: comments, isLoading } = trpc.comment.listByPost.useQuery({ postId });
+  const comments = useQuery(api.social.comments.listByPost, { postId });
 
-  if (isLoading) {
+  if (comments === undefined) {
     return <p className="text-sm text-muted-foreground">Loading comments...</p>;
   }
 
   return (
     <div className="space-y-4" id="comments">
-      <h3 className="font-semibold">
-        Comments ({comments?.length ?? 0})
-      </h3>
+      <h3 className="font-semibold">Comments ({comments.length})</h3>
 
       <CommentForm postId={postId} />
 
       <div className="space-y-4">
-        {comments?.map((comment) => (
-          <TopLevelComment
-            key={comment.id}
-            comment={comment}
-            postId={postId}
-          />
+        {comments.map((comment) => (
+          <TopLevelComment key={comment.id} comment={comment} postId={postId} />
         ))}
       </div>
     </div>
@@ -44,19 +40,20 @@ function TopLevelComment({
   postId,
 }: {
   comment: {
-    id: number;
+    id: Id<"comments">;
     body: string;
-    createdAt: Date;
+    createdAt: number;
     replyCount: number;
     authorUsername: string | null;
     authorDisplayName: string | null;
     authorAvatarUrl: string | null;
   };
-  postId: number;
+  postId: Id<"posts">;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const authorName = comment.authorDisplayName ?? comment.authorUsername ?? "Anonymous";
+  const authorName =
+    comment.authorDisplayName ?? comment.authorUsername ?? "Anonymous";
 
   return (
     <div className="space-y-2">
@@ -100,7 +97,8 @@ function TopLevelComment({
                 ) : (
                   <ChevronDown className="h-3 w-3" />
                 )}
-                {comment.replyCount} {comment.replyCount === 1 ? "reply" : "replies"}
+                {comment.replyCount}{" "}
+                {comment.replyCount === 1 ? "reply" : "replies"}
               </Button>
             )}
           </div>
@@ -126,17 +124,18 @@ function TopLevelComment({
   );
 }
 
-function RepliesList({ commentId }: { commentId: number }) {
-  const { data: replies, isLoading } = trpc.comment.replies.useQuery({ commentId });
+function RepliesList({ commentId }: { commentId: Id<"comments"> }) {
+  const replies = useQuery(api.social.comments.replies, { commentId });
 
-  if (isLoading) {
+  if (replies === undefined) {
     return <p className="ml-10 text-xs text-muted-foreground">Loading...</p>;
   }
 
   return (
     <div className="ml-10 space-y-3">
-      {replies?.map((reply) => {
-        const name = reply.authorDisplayName ?? reply.authorUsername ?? "Anonymous";
+      {replies.map((reply) => {
+        const name =
+          reply.authorDisplayName ?? reply.authorUsername ?? "Anonymous";
         return (
           <div key={reply.id} className="flex gap-3">
             <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">

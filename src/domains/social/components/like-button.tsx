@@ -1,36 +1,32 @@
 "use client";
 
 import { Heart } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
-import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface LikeButtonProps {
-  postId: number;
-  userId: string | null;
+  postId: Id<"posts">;
+  userId: Id<"users"> | null;
 }
 
 export function LikeButton({ postId, userId }: LikeButtonProps) {
-  const utils = trpc.useUtils();
-  const { data } = trpc.like.postStatus.useQuery({ postId, userId });
-
-  const toggleMutation = trpc.like.togglePost.useMutation({
-    onSuccess: () => {
-      utils.like.postStatus.invalidate({ postId, userId });
-    },
-  });
+  const status = useQuery(api.social.likes.postStatus, { postId, userId });
+  const togglePost = useMutation(api.social.likes.togglePost);
 
   return (
     <Button
       variant="ghost"
       size="sm"
       className="gap-1"
-      onClick={() => toggleMutation.mutate({ postId })}
-      disabled={!userId || toggleMutation.isPending}
+      onClick={() => void togglePost({ postId }).catch(() => {})}
+      disabled={!userId}
     >
       <Heart
-        className={`h-4 w-4 ${data?.liked ? "fill-wine text-wine" : ""}`}
+        className={`h-4 w-4 ${status?.liked ? "fill-wine text-wine" : ""}`}
       />
-      <span className="text-xs">{data?.count ?? 0}</span>
+      <span className="text-xs">{status?.count ?? 0}</span>
     </Button>
   );
 }

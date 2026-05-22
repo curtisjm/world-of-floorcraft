@@ -2,65 +2,53 @@
 
 import { useState } from "react";
 import { Bookmark, Plus } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
-import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface SaveButtonProps {
-  postId: number;
+  postId: Id<"posts">;
 }
 
 export function SaveButton({ postId }: SaveButtonProps) {
   const [open, setOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-  const utils = trpc.useUtils();
 
-  const { data: folders } = trpc.save.folders.useQuery();
-  const { data: postFolderIds } = trpc.save.postFolders.useQuery({ postId });
+  const folders = useQuery(api.social.saves.folders, {});
+  const postFolderIds = useQuery(api.social.saves.postFolders, { postId });
+  const savePost = useMutation(api.social.saves.savePost);
+  const unsavePost = useMutation(api.social.saves.unsavePost);
+  const createFolder = useMutation(api.social.saves.createFolder);
 
-  const saveMutation = trpc.save.savePost.useMutation({
-    onSuccess: () => {
-      utils.save.postFolders.invalidate({ postId });
-      utils.save.folders.invalidate();
-    },
-  });
+  const folderIdSet = new Set<Id<"saveFolders"> | null>(
+    (postFolderIds ?? []) as Array<Id<"saveFolders"> | null>,
+  );
+  const isSaved = folderIdSet.size > 0;
 
-  const unsaveMutation = trpc.save.unsavePost.useMutation({
-    onSuccess: () => {
-      utils.save.postFolders.invalidate({ postId });
-      utils.save.folders.invalidate();
-    },
-  });
-
-  const createFolderMutation = trpc.save.createFolder.useMutation({
-    onSuccess: (folder) => {
-      utils.save.folders.invalidate();
-      saveMutation.mutate({ postId, folderId: folder.id });
-      setNewFolderName("");
-    },
-  });
-
-  const isSaved = postFolderIds && postFolderIds.length > 0;
-  const folderIdSet = new Set(postFolderIds ?? []);
-
-  const toggleFolder = (folderId: number | null) => {
+  const toggleFolder = (folderId: Id<"saveFolders"> | null) => {
     if (folderIdSet.has(folderId)) {
-      unsaveMutation.mutate({ postId, folderId });
+      void unsavePost({ postId, folderId }).catch(() => {});
     } else {
-      saveMutation.mutate({ postId, folderId });
+      void savePost({ postId, folderId }).catch(() => {});
     }
+  };
+
+  const handleCreateFolder = () => {
+    const name = newFolderName.trim();
+    if (!name) return;
+    void (async () => {
+      const folder = await createFolder({ name });
+      await savePost({ postId, folderId: folder._id });
+      setNewFolderName("");
+    })().catch(() => {});
   };
 
   return (
     <div className="relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setOpen(!open)}
-      >
-        <Bookmark
-          className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`}
-        />
+      <Button variant="ghost" size="sm" onClick={() => setOpen(!open)}>
+        <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
       </Button>
 
       {open && (
@@ -99,11 +87,7 @@ export function SaveButton({ postId }: SaveButtonProps) {
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0 shrink-0"
-              onClick={() => {
-                if (newFolderName.trim()) {
-                  createFolderMutation.mutate({ name: newFolderName.trim() });
-                }
-              }}
+              onClick={handleCreateFolder}
             >
               <Plus className="h-3 w-3" />
             </Button>

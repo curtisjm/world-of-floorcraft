@@ -4,12 +4,8 @@ import { useQuery } from "convex/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { OrgHeader } from "@orgs/components/org-header";
 import { MemberList } from "@orgs/components/member-list";
+import { OrgPostList } from "@orgs/components/org-post-list";
 import { api } from "../../../../convex/_generated/api";
-
-// Org posts (composer, drafts, listing) require Task 7's Convex social-
-// content migration, since Convex org ids are opaque rather than serial
-// integers. The Posts tab returns once Task 7 ports `orgPost.*` and the
-// org-post component family.
 
 export default function OrgProfilePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -41,6 +37,7 @@ export default function OrgProfilePage() {
 
   const isOwner = membershipData?.isOwner ?? false;
   const membership = membershipData?.membership ?? null;
+  const isAdmin = isOwner || membership?.role === "admin";
   const pendingRequest = myRequest?.status === "pending";
 
   const membershipModelLabel =
@@ -60,11 +57,16 @@ export default function OrgProfilePage() {
       />
 
       <div className="mt-8">
-        <Tabs defaultValue="members">
+        <Tabs defaultValue="posts">
           <TabsList>
+            <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="posts" className="mt-4">
+            <OrgPostList orgId={org._id} isAdmin={isAdmin} />
+          </TabsContent>
 
           <TabsContent value="members" className="mt-4">
             <MemberList orgId={org._id} />

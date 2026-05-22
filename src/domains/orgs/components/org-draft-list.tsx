@@ -1,94 +1,90 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
 import { Input } from "@shared/ui/input";
-import { trpc } from "@shared/lib/trpc";
 import { TiptapEditor } from "@social/components/editor/tiptap-editor";
 import { Pencil, Trash2 } from "lucide-react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface OrgDraftListProps {
-  orgId: number;
+  orgId: Id<"organizations">;
 }
 
 export function OrgDraftList({ orgId }: OrgDraftListProps) {
-  const utils = trpc.useUtils();
-  const { data: drafts, isLoading } = trpc.orgPost.listDrafts.useQuery({ orgId });
+  const drafts = useQuery(api.social.posts.listOrgDrafts, { orgId });
 
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<Id<"posts"> | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
   const [editVisibility, setEditVisibility] = useState<
     "public" | "followers" | "organization"
   >("public");
+  const [pending, setPending] = useState(false);
 
-  const publishMutation = trpc.orgPost.publish.useMutation({
-    onSuccess: () => {
-      utils.orgPost.listDrafts.invalidate({ orgId });
-      utils.orgPost.listByOrg.invalidate({ orgId });
-    },
-  });
+  const publishOrgPost = useMutation(api.social.posts.publishOrgPost);
+  const updateOrgPost = useMutation(api.social.posts.updateOrgPost);
+  const removeOrgPost = useMutation(api.social.posts.removeOrgPost);
 
-  const updateMutation = trpc.orgPost.update.useMutation({
-    onSuccess: () => {
-      setEditingId(null);
-      utils.orgPost.listDrafts.invalidate({ orgId });
-    },
-  });
-
-  const deleteMutation = trpc.orgPost.delete.useMutation({
-    onSuccess: () => {
-      utils.orgPost.listDrafts.invalidate({ orgId });
-    },
-  });
-
-  if (isLoading) {
+  if (drafts === undefined) {
     return <p className="text-muted-foreground text-sm">Loading drafts...</p>;
   }
 
-  if (!drafts || drafts.length === 0) {
-    return null;
-  }
+  if (drafts.length === 0) return null;
 
   const startEditing = (draft: (typeof drafts)[number]) => {
-    setEditingId(draft.id);
+    setEditingId(draft._id);
     setEditTitle(draft.title ?? "");
     setEditBody(draft.body ?? "");
     setEditVisibility(draft.visibility);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingId === null) return;
-    updateMutation.mutate({
-      id: editingId,
-      orgId,
-      title: editTitle || undefined,
-      body: editBody || undefined,
-      visibility: editVisibility,
-    });
-  };
-
-  const handleSaveAndPublish = async (draftId: number) => {
-    if (editingId !== null) {
-      await updateMutation.mutateAsync({
-        id: editingId,
+    setPending(true);
+    try {
+      await updateOrgPost({
+        postId: editingId,
         orgId,
         title: editTitle || undefined,
         body: editBody || undefined,
         visibility: editVisibility,
       });
+      setEditingId(null);
+    } finally {
+      setPending(false);
     }
-    publishMutation.mutate({ id: draftId, orgId });
+  };
+
+  const handleSaveAndPublish = async (draftId: Id<"posts">) => {
+    setPending(true);
+    try {
+      if (editingId !== null) {
+        await updateOrgPost({
+          postId: editingId,
+          orgId,
+          title: editTitle || undefined,
+          body: editBody || undefined,
+          visibility: editVisibility,
+        });
+      }
+      await publishOrgPost({ postId: draftId, orgId });
+      setEditingId(null);
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-medium text-muted-foreground">Drafts</h3>
       {drafts.map((draft) =>
-        editingId === draft.id ? (
-          <Card key={draft.id}>
+        editingId === draft._id ? (
+          <Card key={draft._id}>
             <CardContent className="p-4 space-y-3">
               <Input
                 value={editTitle}
@@ -118,26 +114,26 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => setEditingId(null)}
-                    disabled={updateMutation.isPending}
+                    disabled={pending}
                   >
                     Cancel
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleSave}
-                    disabled={updateMutation.isPending}
+                    onClick={() => void handleSave().catch(() => setPending(false))}
+                    disabled={pending}
                   >
                     Save
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => handleSaveAndPublish(draft.id)}
-                    disabled={
-                      updateMutation.isPending ||
-                      publishMutation.isPending ||
-                      !editTitle
+                    onClick={() =>
+                      void handleSaveAndPublish(draft._id).catch(() =>
+                        setPending(false),
+                      )
                     }
+                    disabled={pending || !editTitle}
                   >
                     Publish
                   </Button>
@@ -146,7 +142,7 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
             </CardContent>
           </Card>
         ) : (
-          <Card key={draft.id}>
+          <Card key={draft._id}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -166,8 +162,7 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">
-                    Updated{" "}
-                    {new Date(draft.updatedAt).toLocaleDateString()}
+                    Updated {new Date(draft.updatedAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -183,9 +178,11 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      publishMutation.mutate({ id: draft.id, orgId })
+                      void publishOrgPost({ postId: draft._id, orgId }).catch(
+                        () => {},
+                      )
                     }
-                    disabled={publishMutation.isPending || !draft.title}
+                    disabled={!draft.title}
                   >
                     Publish
                   </Button>
@@ -194,9 +191,10 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
                     size="icon"
                     className="h-8 w-8 text-destructive hover:text-destructive"
                     onClick={() =>
-                      deleteMutation.mutate({ id: draft.id, orgId })
+                      void removeOrgPost({ postId: draft._id, orgId }).catch(
+                        () => {},
+                      )
                     }
-                    disabled={deleteMutation.isPending}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -204,7 +202,7 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
               </div>
             </CardContent>
           </Card>
-        )
+        ),
       )}
     </div>
   );

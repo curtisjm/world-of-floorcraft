@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
 import { Badge } from "@shared/ui/badge";
 import { Input } from "@shared/ui/input";
 import { Button } from "@shared/ui/button";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 const DANCE_STYLES = [
   { value: "standard", label: "Standard" },
@@ -39,29 +41,51 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const LEVEL_LABELS: Record<string, string> = {
-  newcomer: "Newcomer", bronze: "Bronze", silver: "Silver", gold: "Gold",
-  novice: "Novice", prechamp: "Pre-Champ", champ: "Champ", professional: "Professional",
+  newcomer: "Newcomer",
+  bronze: "Bronze",
+  silver: "Silver",
+  gold: "Gold",
+  novice: "Novice",
+  prechamp: "Pre-Champ",
+  champ: "Champ",
+  professional: "Professional",
 };
+
+type DiscoverItem = {
+  userId: Id<"users">;
+  username: string | null;
+  displayName: string | null;
+  avatarUrl: string | null;
+  competitionLevel: string | null;
+  competitionLevelHigh: string | null;
+  height: string | null;
+  location: string | null;
+  bio: string | null;
+  danceStyles: string[];
+  rolePreference: string;
+  updatedAt: number;
+};
+
+type Cursor = { updatedAt: number; userId: Id<"partnerSearchProfiles"> } | null;
 
 export default function PartnersPage() {
   const [styleFilter, setStyleFilter] = useState<DanceStyle | "">("");
   const [roleFilter, setRoleFilter] = useState<RolePreference | "">("");
   const [locationFilter, setLocationFilter] = useState("");
+  const [pages, setPages] = useState<DiscoverItem[][]>([]);
+  const [cursor, setCursor] = useState<Cursor>(null);
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    trpc.partnerSearch.discover.useInfiniteQuery(
-      {
-        limit: 20,
-        style: styleFilter || undefined,
-        rolePreference: roleFilter || undefined,
-        location: locationFilter || undefined,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
-      }
-    );
+  const page = useQuery(api.social.partnerSearch.discover, {
+    limit: 20,
+    style: styleFilter || undefined,
+    rolePreference: roleFilter || undefined,
+    location: locationFilter || undefined,
+    cursor,
+  });
 
-  const items = data?.pages.flatMap((page) => page.items) ?? [];
+  const items: DiscoverItem[] = [...pages.flat(), ...(page?.items ?? [])];
+  const hasNextPage = !!page?.nextCursor;
+  const isLoading = page === undefined && pages.length === 0;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
@@ -70,7 +94,11 @@ export default function PartnersPage() {
       <div className="flex flex-wrap gap-3 mb-6">
         <select
           value={styleFilter}
-          onChange={(e) => setStyleFilter(e.target.value as DanceStyle | "")}
+          onChange={(e) => {
+            setStyleFilter(e.target.value as DanceStyle | "");
+            setPages([]);
+            setCursor(null);
+          }}
           className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <option value="">All styles</option>
@@ -83,7 +111,11 @@ export default function PartnersPage() {
 
         <select
           value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value as RolePreference | "")}
+          onChange={(e) => {
+            setRoleFilter(e.target.value as RolePreference | "");
+            setPages([]);
+            setCursor(null);
+          }}
           className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <option value="">All roles</option>
@@ -96,7 +128,11 @@ export default function PartnersPage() {
 
         <Input
           value={locationFilter}
-          onChange={(e) => setLocationFilter(e.target.value)}
+          onChange={(e) => {
+            setLocationFilter(e.target.value);
+            setPages([]);
+            setCursor(null);
+          }}
           placeholder="Filter by location..."
           className="h-9 w-48"
         />
@@ -107,7 +143,10 @@ export default function PartnersPage() {
       ) : items.length === 0 ? (
         <p className="text-muted-foreground text-sm">
           No one is currently searching for a partner
-          {styleFilter || roleFilter || locationFilter ? " with those filters" : ""}.
+          {styleFilter || roleFilter || locationFilter
+            ? " with those filters"
+            : ""}
+          .
         </p>
       ) : (
         <div className="flex flex-col gap-3">
@@ -132,7 +171,9 @@ export default function PartnersPage() {
                         {item.displayName ?? item.username ?? "Anonymous"}
                       </span>
                       {item.username && (
-                        <span className="text-xs text-muted-foreground">@{item.username}</span>
+                        <span className="text-xs text-muted-foreground">
+                          @{item.username}
+                        </span>
                       )}
                       <Badge variant="secondary" className="text-xs">
                         {ROLE_LABELS[item.rolePreference] ?? item.rolePreference}
@@ -176,11 +217,15 @@ export default function PartnersPage() {
           {hasNextPage && (
             <Button
               variant="outline"
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
+              onClick={() => {
+                if (page) {
+                  setPages((prev) => [...prev, page.items]);
+                  setCursor(page.nextCursor);
+                }
+              }}
               className="w-full"
             >
-              {isFetchingNextPage ? "Loading..." : "Load more"}
+              Load more
             </Button>
           )}
         </div>

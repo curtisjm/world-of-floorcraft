@@ -2,19 +2,21 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
-import { trpc } from "@shared/lib/trpc";
 import { TiptapEditor } from "./editor/tiptap-editor";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface ArticleEditorProps {
   existingPost?: {
-    id: number;
+    id: Id<"posts">;
     title: string | null;
     body: string | null;
     visibility: "public" | "followers" | "organization";
-    visibilityOrgId: number | null;
-    publishedAt: Date | null;
+    visibilityOrgId: Id<"organizations"> | null;
+    publishedAt: number | null;
   };
 }
 
@@ -22,96 +24,110 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState(existingPost?.title ?? "");
   const [body, setBody] = useState(existingPost?.body ?? "");
-  const [visibility, setVisibility] = useState<"public" | "followers" | "organization">(
-    existingPost?.visibility ?? "public"
+  const [visibility, setVisibility] = useState<
+    "public" | "followers" | "organization"
+  >(existingPost?.visibility ?? "public");
+  const [visibilityOrgId, setVisibilityOrgId] = useState<Id<"organizations"> | null>(
+    existingPost?.visibilityOrgId ?? null,
   );
-  const [visibilityOrgId, setVisibilityOrgId] = useState<number | null>(
-    existingPost?.visibilityOrgId ?? null
+  const [isPending, setIsPending] = useState(false);
+
+  const userOrgs = useQuery(
+    api.orgs.listUserOrgs,
+    visibility === "organization" ? {} : "skip",
   );
 
-  const { data: userOrgs } = trpc.org.listUserOrgs.useQuery(undefined, {
-    enabled: visibility === "organization",
-  });
+  const createArticle = useMutation(api.social.posts.createArticle);
+  const updatePost = useMutation(api.social.posts.update);
 
-  const createMutation = trpc.post.createArticle.useMutation({
-    onSuccess: (post) => {
-      router.push(`/posts/${post.id}`);
-    },
-  });
-
-  const updateMutation = trpc.post.update.useMutation();
-
-  // Guard: prevent autosave from firing during publish
   const isPublishingRef = useRef(false);
-
-  // Auto-save for existing drafts (debounced)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   const autoSave = useCallback(() => {
     if (!existingPost || isPublishingRef.current) return;
     clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => {
       if (isPublishingRef.current) return;
-      updateMutation.mutate({
-        id: existingPost.id,
+      void updatePost({
+        postId: existingPost.id,
         title: title || undefined,
         body: body || undefined,
         visibility,
-        visibilityOrgId: visibility === "organization" ? visibilityOrgId : null,
-      });
+        visibilityOrgId:
+          visibility === "organization" ? visibilityOrgId : null,
+      }).catch(() => {});
     }, 2000);
-  }, [existingPost, title, body, visibility, visibilityOrgId, updateMutation]);
+  }, [existingPost, title, body, visibility, visibilityOrgId, updatePost]);
 
   useEffect(() => {
     autoSave();
     return () => clearTimeout(saveTimeoutRef.current);
   }, [title, body, visibility, autoSave]);
 
-  const handleSaveDraft = () => {
-    if (existingPost) {
-      updateMutation.mutate({
-        id: existingPost.id,
-        title: title || undefined,
-        body: body || undefined,
-        visibility,
-        visibilityOrgId: visibility === "organization" ? visibilityOrgId : null,
-      });
-    } else {
-      createMutation.mutate({
-        title,
-        body,
-        visibility,
-        visibilityOrgId: visibility === "organization" ? visibilityOrgId ?? undefined : undefined,
-        publish: false,
-      });
+  const handleSaveDraft = async () => {
+    setIsPending(true);
+    try {
+      if (existingPost) {
+        await updatePost({
+          postId: existingPost.id,
+          title: title || undefined,
+          body: body || undefined,
+          visibility,
+          visibilityOrgId:
+            visibility === "organization" ? visibilityOrgId : null,
+        });
+      } else {
+        const post = await createArticle({
+          title,
+          body,
+          visibility,
+          visibilityOrgId:
+            visibility === "organization"
+              ? visibilityOrgId ?? undefined
+              : undefined,
+          publish: false,
+        });
+        router.push(`/posts/${post._id}`);
+      }
+    } finally {
+      setIsPending(false);
     }
   };
 
   const handlePublish = async () => {
-    if (existingPost) {
-      isPublishingRef.current = true;
-      clearTimeout(saveTimeoutRef.current);
-      const post = await updateMutation.mutateAsync({
-        id: existingPost.id,
-        title: title || undefined,
-        body: body || undefined,
-        visibility,
-        visibilityOrgId: visibility === "organization" ? visibilityOrgId : null,
-        publish: true,
-      });
-      if (post) router.push(`/posts/${post.id}`);
-    } else {
-      createMutation.mutate({
-        title,
-        body,
-        visibility,
-        visibilityOrgId: visibility === "organization" ? visibilityOrgId ?? undefined : undefined,
-        publish: true,
-      });
+    setIsPending(true);
+    try {
+      if (existingPost) {
+        isPublishingRef.current = true;
+        clearTimeout(saveTimeoutRef.current);
+        const post = await updatePost({
+          postId: existingPost.id,
+          title: title || undefined,
+          body: body || undefined,
+          visibility,
+          visibilityOrgId:
+            visibility === "organization" ? visibilityOrgId : null,
+          publish: true,
+        });
+        if (post) router.push(`/posts/${post._id}`);
+      } else {
+        const post = await createArticle({
+          title,
+          body,
+          visibility,
+          visibilityOrgId:
+            visibility === "organization"
+              ? visibilityOrgId ?? undefined
+              : undefined,
+          publish: true,
+        });
+        router.push(`/posts/${post._id}`);
+      }
+    } finally {
+      setIsPending(false);
     }
   };
 
-  const isPending =
-    createMutation.isPending || updateMutation.isPending;
   const isPublished = !!existingPost?.publishedAt;
 
   return (
@@ -148,11 +164,17 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
           <select
             className="w-full rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35 sm:w-auto"
             value={visibilityOrgId ?? ""}
-            onChange={(e) => setVisibilityOrgId(e.target.value ? Number(e.target.value) : null)}
+            onChange={(e) =>
+              setVisibilityOrgId(
+                e.target.value
+                  ? (e.target.value as Id<"organizations">)
+                  : null,
+              )
+            }
           >
             <option value="">Select organization</option>
             {userOrgs.map((org) => (
-              <option key={org.id} value={org.id}>
+              <option key={org._id} value={org._id}>
                 {org.name}
               </option>
             ))}
@@ -161,12 +183,21 @@ export function ArticleEditor({ existingPost }: ArticleEditorProps) {
 
         <div className="flex gap-3 sm:gap-4">
           {!isPublished && (
-            <Button variant="outline" onClick={handleSaveDraft} disabled={isPending} className="flex-1 sm:flex-initial">
+            <Button
+              variant="outline"
+              onClick={() => void handleSaveDraft().catch(() => {})}
+              disabled={isPending}
+              className="flex-1 sm:flex-initial"
+            >
               Save Draft
             </Button>
           )}
 
-          <Button onClick={handlePublish} disabled={isPending || !title} className="flex-1 sm:flex-initial">
+          <Button
+            onClick={() => void handlePublish().catch(() => {})}
+            disabled={isPending || !title}
+            className="flex-1 sm:flex-initial"
+          >
             {isPublished ? "Update" : "Publish"}
           </Button>
         </div>

@@ -6,10 +6,11 @@ import { LikeButton } from "./like-button";
 import { SaveButton } from "./save-button";
 import { ShareButton } from "./share-button";
 import Link from "next/link";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface InteractionBarProps {
-  postId: number;
-  userId: string | null;
+  postId: Id<"posts">;
+  userId: Id<"users"> | null;
   commentCount?: number;
 }
 

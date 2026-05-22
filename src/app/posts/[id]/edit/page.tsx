@@ -2,8 +2,10 @@
 
 import { use } from "react";
 import { notFound } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
 import { ArticleEditor } from "@/domains/social/components/article-editor";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
 export default function EditPostPage({
   params,
@@ -11,11 +13,10 @@ export default function EditPostPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { data: post, isLoading } = trpc.post.get.useQuery({
-    id: parseInt(id, 10),
-  });
+  const postId = id as Id<"posts">;
+  const post = useQuery(api.social.posts.get, { postId });
 
-  if (isLoading) {
+  if (post === undefined) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
         <p className="text-muted-foreground">Loading...</p>
@@ -23,7 +24,7 @@ export default function EditPostPage({
     );
   }
 
-  if (!post) notFound();
+  if (post === null) notFound();
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
@@ -33,7 +34,7 @@ export default function EditPostPage({
           id: post.id,
           title: post.title,
           body: post.body,
-          visibility: post.visibility as "public" | "followers" | "organization",
+          visibility: post.visibility,
           visibilityOrgId: post.visibilityOrgId,
           publishedAt: post.publishedAt,
         }}

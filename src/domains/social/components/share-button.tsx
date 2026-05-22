@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { Share2, Check } from "lucide-react";
 import { Button } from "@shared/ui/button";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface ShareButtonProps {
-  postId: number;
+  postId: Id<"posts">;
 }
 
 export function ShareButton({ postId }: ShareButtonProps) {

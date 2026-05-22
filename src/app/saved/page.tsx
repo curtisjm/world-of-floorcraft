@@ -2,24 +2,22 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { PostCard } from "@/domains/social/components/post-card";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 export default function SavedPostsPage() {
-  const [activeFolderId, setActiveFolderId] = useState<number | null>(null);
-  const { data: foldersData } = trpc.save.folders.useQuery();
-  const { data: savedPosts } = trpc.save.postsInFolder.useQuery({
+  const [activeFolderId, setActiveFolderId] = useState<Id<"saveFolders"> | null>(
+    null,
+  );
+  const foldersData = useQuery(api.social.saves.folders, {});
+  const savedPosts = useQuery(api.social.saves.postsInFolder, {
     folderId: activeFolderId,
   });
 
-  const utils = trpc.useUtils();
-  const deleteFolderMutation = trpc.save.deleteFolder.useMutation({
-    onSuccess: () => {
-      utils.save.folders.invalidate();
-      setActiveFolderId(null);
-    },
-  });
+  const deleteFolder = useMutation(api.social.saves.deleteFolder);
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
@@ -30,7 +28,9 @@ export default function SavedPostsPage() {
         <div className="w-48 shrink-0 space-y-1">
           <button
             className={`w-full text-left px-3 py-2 rounded text-sm ${
-              activeFolderId === null ? "bg-muted font-medium" : "hover:bg-muted/50"
+              activeFolderId === null
+                ? "bg-muted font-medium"
+                : "hover:bg-muted/50"
             }`}
             onClick={() => setActiveFolderId(null)}
           >
@@ -41,7 +41,9 @@ export default function SavedPostsPage() {
             <div key={folder.id} className="flex items-center group">
               <button
                 className={`flex-1 text-left px-3 py-2 rounded text-sm ${
-                  activeFolderId === folder.id ? "bg-muted font-medium" : "hover:bg-muted/50"
+                  activeFolderId === folder.id
+                    ? "bg-muted font-medium"
+                    : "hover:bg-muted/50"
                 }`}
                 onClick={() => setActiveFolderId(folder.id)}
               >
@@ -51,7 +53,10 @@ export default function SavedPostsPage() {
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                onClick={() => deleteFolderMutation.mutate({ folderId: folder.id })}
+                onClick={() => {
+                  void deleteFolder({ folderId: folder.id }).catch(() => {});
+                  setActiveFolderId(null);
+                }}
               >
                 <Trash2 className="h-3 w-3" />
               </Button>
@@ -78,7 +83,9 @@ export default function SavedPostsPage() {
               />
             ))
           ) : (
-            <p className="text-sm text-muted-foreground">No saved posts in this folder.</p>
+            <p className="text-sm text-muted-foreground">
+              No saved posts in this folder.
+            </p>
           )}
         </div>
       </div>

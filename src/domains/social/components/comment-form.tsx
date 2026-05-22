@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Textarea } from "@shared/ui/textarea";
-import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface CommentFormProps {
-  postId: number;
-  parentId?: number | null;
+  postId: Id<"posts">;
+  parentId?: Id<"comments"> | null;
   onSuccess?: () => void;
   placeholder?: string;
 }
@@ -19,18 +21,21 @@ export function CommentForm({
   placeholder = "Write a comment...",
 }: CommentFormProps) {
   const [body, setBody] = useState("");
-  const utils = trpc.useUtils();
+  const [pending, setPending] = useState(false);
+  const createComment = useMutation(api.social.comments.create);
 
-  const createMutation = trpc.comment.create.useMutation({
-    onSuccess: () => {
+  const handleSubmit = async () => {
+    const trimmed = body.trim();
+    if (!trimmed) return;
+    setPending(true);
+    try {
+      await createComment({ postId, parentId: parentId ?? null, body: trimmed });
       setBody("");
-      utils.comment.listByPost.invalidate({ postId });
-      if (parentId) {
-        utils.comment.replies.invalidate({ commentId: parentId });
-      }
       onSuccess?.();
-    },
-  });
+    } finally {
+      setPending(false);
+    }
+  };
 
   return (
     <div className="flex gap-2">
@@ -43,10 +48,8 @@ export function CommentForm({
       />
       <Button
         size="sm"
-        onClick={() =>
-          createMutation.mutate({ postId, parentId, body })
-        }
-        disabled={!body.trim() || createMutation.isPending}
+        onClick={() => void handleSubmit().catch(() => setPending(false))}
+        disabled={!body.trim() || pending}
       >
         {parentId ? "Reply" : "Comment"}
       </Button>
