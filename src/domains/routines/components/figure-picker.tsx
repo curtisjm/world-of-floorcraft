@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Input } from "@shared/ui/input";
 import { Badge } from "@shared/ui/badge";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 const LEVEL_ORDER = ["student_teacher", "associate", "licentiate", "fellow"] as const;
 const LEVEL_LABELS: Record<string, string> = {
@@ -19,7 +20,7 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 export type PickerFigure = {
-  id: number;
+  id: Id<"figures">;
   name: string;
   variantName: string | null;
   level: string;
@@ -36,10 +37,10 @@ export function FigurePicker({
   maxLevel,
 }: {
   figures: PickerFigure[];
-  allowedFigureIds: Set<number> | null;
+  allowedFigureIds: Set<Id<"figures">> | null;
   showAllFigures: boolean;
   onToggleShowAll: () => void;
-  onSelectFigure: (figureId: number) => void;
+  onSelectFigure: (figureId: Id<"figures">) => void;
   title: string;
   maxLevel?: (typeof LEVEL_ORDER)[number] | null;
 }) {

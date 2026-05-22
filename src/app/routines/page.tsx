@@ -1,6 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
-import { getDb } from "@shared/db";
-import { dances } from "@syllabus/schema";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../convex/_generated/api";
 import { sortDancesForBrowse } from "@syllabus/components/dance/dance-order";
 import {
   Card,
@@ -10,11 +12,8 @@ import {
 } from "@shared/ui/card";
 
 export default async function RoutinesPage() {
-  const db = getDb();
   const allDances = sortDancesForBrowse(
-    await db
-      .select({ id: dances.id, name: dances.name, displayName: dances.displayName, timeSignature: dances.timeSignature })
-      .from(dances)
+    await fetchQuery(api.syllabus.dances.list, {}),
   );
 
   return (

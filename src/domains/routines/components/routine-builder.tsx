@@ -2,7 +2,9 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { Input } from "@shared/ui/input";
 import { Button } from "@shared/ui/button";
 import { Badge } from "@shared/ui/badge";
@@ -26,12 +28,12 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 type RoutineEntry = {
-  id: number;
-  figureId: number;
+  id: Id<"routineEntries">;
+  figureId: Id<"figures">;
   position: number;
   figureName: string;
   figureVariantName: string | null;
-  figureLevel: string;
+  figureLevel: string | null;
   figureNumber: number | null;
 };
 
@@ -47,14 +49,13 @@ export function RoutineBuilder({
   initialName,
   initialEntries,
 }: {
-  routineId: number;
-  danceId: number;
+  routineId: Id<"routines">;
+  danceId: Id<"dances">;
   danceName: string;
   initialName: string;
   initialEntries: RoutineEntry[];
 }) {
   const router = useRouter();
-  const utils = trpc.useUtils();
 
   const [name, setName] = useState(initialName);
   const [entries, setEntries] = useState<RoutineEntry[]>(initialEntries);
@@ -65,11 +66,11 @@ export function RoutineBuilder({
   const [showAllFigures, setShowAllFigures] = useState(false);
   const [maxLevel, setMaxLevel] = useState<Level | null>(null);
 
-  // Fetch all figures for this dance
-  const { data: allFigures } = trpc.figure.list.useQuery({ danceId });
+  // Fetch all figures for this dance.
+  const allFigures = useQuery(api.syllabus.figures.listByDance, { danceId });
 
-  // Fetch edges for the context figure (last entry or selected entry)
-  const contextFigureId = useMemo(() => {
+  // Fetch edges for the context figure (last entry or selected entry).
+  const contextFigureId = useMemo<Id<"figures"> | null>(() => {
     if (entries.length === 0) return null;
     if (insertTarget.type === "append") {
       return entries[entries.length - 1].figureId;
@@ -79,43 +80,32 @@ export function RoutineBuilder({
       return entry?.figureId ?? null;
     }
     if (insertTarget.type === "before") {
-      // For "before", we want the figure before this position
       const idx = entries.findIndex(
         (e) => e.position === insertTarget.position
       );
-      if (idx <= 0) return null; // No context — inserting at the very start
+      if (idx <= 0) return null;
       return entries[idx - 1].figureId;
     }
     return null;
   }, [entries, insertTarget]);
 
-  const { data: neighbors } = trpc.figure.neighbors.useQuery(
-    { figureId: contextFigureId! },
-    { enabled: contextFigureId !== null }
+  const neighbors = useQuery(
+    api.syllabus.figures.neighbors,
+    contextFigureId !== null ? { figureId: contextFigureId } : "skip",
   );
 
   // Set of allowed following figure IDs
-  const allowedFigureIds = useMemo(() => {
+  const allowedFigureIds = useMemo<Set<Id<"figures">> | null>(() => {
     if (!neighbors) return null;
     return new Set(neighbors.follows.map((e) => e.targetFigureId));
   }, [neighbors]);
 
-  const addEntry = trpc.routine.addEntry.useMutation({
-    onSuccess: () => {
-      utils.routine.get.invalidate({ id: routineId });
-    },
-  });
-
-  const removeEntry = trpc.routine.removeEntry.useMutation({
-    onSuccess: () => {
-      utils.routine.get.invalidate({ id: routineId });
-    },
-  });
-
-  const updateRoutine = trpc.routine.update.useMutation();
+  const addEntry = useMutation(api.routines.addEntry);
+  const removeEntry = useMutation(api.routines.removeEntry);
+  const updateRoutine = useMutation(api.routines.update);
 
   const handleSelectFigure = useCallback(
-    async (figureId: number) => {
+    async (figureId: Id<"figures">) => {
       const figure = allFigures?.find((f) => f.id === figureId);
       if (!figure) return;
 
@@ -128,7 +118,7 @@ export function RoutineBuilder({
         position = insertTarget.position + 1;
       }
 
-      const result = await addEntry.mutateAsync({
+      const result = await addEntry({
         routineId,
         figureId,
         position,
@@ -137,7 +127,7 @@ export function RoutineBuilder({
       if (result) {
         // Optimistically update local state
         const newEntry: RoutineEntry = {
-          id: result.id,
+          id: result._id,
           figureId,
           position,
           figureName: figure.name,
@@ -153,7 +143,6 @@ export function RoutineBuilder({
           return [...shifted, newEntry].sort((a, b) => a.position - b.position);
         });
 
-        // After adding, set insert target to append after the new entry
         setInsertTarget({ type: "append" });
         setSelectedIndex(null);
         setShowAllFigures(false);
@@ -163,8 +152,8 @@ export function RoutineBuilder({
   );
 
   const handleRemoveEntry = useCallback(
-    async (entryId: number) => {
-      await removeEntry.mutateAsync({ routineId, entryId });
+    async (entryId: Id<"routineEntries">) => {
+      await removeEntry({ routineId, entryId });
       setEntries((prev) => {
         const removed = prev.find((e) => e.id === entryId);
         if (!removed) return prev;
@@ -184,7 +173,7 @@ export function RoutineBuilder({
 
   const handleSaveName = useCallback(async () => {
     if (name !== initialName) {
-      await updateRoutine.mutateAsync({ id: routineId, name });
+      await updateRoutine({ routineId, name });
     }
   }, [name, initialName, routineId, updateRoutine]);
 
@@ -314,9 +303,11 @@ export function RoutineBuilder({
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge
                           variant="outline"
-                          className={`text-xs ${LEVEL_COLORS[entry.figureLevel] ?? ""}`}
+                          className={`text-xs ${entry.figureLevel ? LEVEL_COLORS[entry.figureLevel] ?? "" : ""}`}
                         >
-                          {LEVEL_LABELS[entry.figureLevel] ?? entry.figureLevel}
+                          {entry.figureLevel
+                            ? LEVEL_LABELS[entry.figureLevel] ?? entry.figureLevel
+                            : "—"}
                         </Badge>
                         {isSelected && (
                           <div className="flex items-center gap-1">

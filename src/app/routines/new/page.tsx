@@ -2,7 +2,9 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { Input } from "@shared/ui/input";
 import { Button } from "@shared/ui/button";
 import {
@@ -32,26 +34,30 @@ function NewRoutineContent() {
   const searchParams = useSearchParams();
   const danceName = searchParams.get("dance") ?? "";
   const danceIdParam = searchParams.get("danceId");
-  const danceId = danceIdParam ? Number(danceIdParam) : null;
+  const danceId = (danceIdParam as Id<"dances"> | null) ?? null;
 
   const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const { data: allDances } = trpc.dance.list.useQuery(undefined, {
-    enabled: !danceId,
-  });
+  const allDances = useQuery(
+    api.syllabus.dances.list,
+    danceId ? "skip" : {},
+  );
 
-  const createRoutine = trpc.routine.create.useMutation({
-    onSuccess: (routine) => {
-      router.push(`/routines/${routine.id}/edit`);
-    },
-  });
+  const createRoutine = useMutation(api.routines.create);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim() || !danceId) return;
-    createRoutine.mutate({
-      danceId,
-      name: name.trim(),
-    });
+    setSubmitting(true);
+    try {
+      const routine = await createRoutine({
+        danceId,
+        name: name.trim(),
+      });
+      router.push(`/routines/${routine.id}/edit`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // If no danceId, show dance selector
@@ -125,9 +131,9 @@ function NewRoutineContent() {
               </Button>
               <Button
                 onClick={handleCreate}
-                disabled={!name.trim() || createRoutine.isPending}
+                disabled={!name.trim() || submitting}
               >
-                {createRoutine.isPending ? "Creating..." : "Create & Build"}
+                {submitting ? "Creating..." : "Create & Build"}
               </Button>
             </div>
           </CardContent>

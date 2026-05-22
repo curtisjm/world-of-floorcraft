@@ -2,7 +2,9 @@
 
 import { use } from "react";
 import { notFound } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { RoutineBuilder } from "@routines/components/routine-builder";
 
 export default function EditRoutinePage({
@@ -11,15 +13,12 @@ export default function EditRoutinePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const routineId = Number(id);
+  const routineId = id as Id<"routines">;
 
-  const { data: routine, isLoading } = trpc.routine.get.useQuery({
-    id: routineId,
-  });
+  const routine = useQuery(api.routines.get, { routineId });
+  const allDances = useQuery(api.syllabus.dances.list, {});
 
-  const { data: allDances } = trpc.dance.list.useQuery();
-
-  if (isLoading) {
+  if (routine === undefined || allDances === undefined) {
     return (
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center justify-center h-64">
@@ -33,7 +32,7 @@ export default function EditRoutinePage({
     notFound();
   }
 
-  const dance = allDances?.find((d) => d.id === routine.danceId);
+  const dance = allDances.find((d) => d.id === routine.danceId);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">

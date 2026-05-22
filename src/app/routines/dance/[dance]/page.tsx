@@ -1,9 +1,10 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { eq } from "drizzle-orm";
-import { getDb } from "@shared/db";
-import { dances } from "@syllabus/schema";
+import { fetchQuery } from "convex/nextjs";
 import { Button } from "@shared/ui/button";
+import { api } from "../../../../../convex/_generated/api";
 import { DanceRoutinesList } from "@routines/components/dance-routines-list";
 
 export default async function DanceRoutinesPage({
@@ -12,13 +13,10 @@ export default async function DanceRoutinesPage({
   params: Promise<{ dance: string }>;
 }) {
   const { dance: danceSlug } = await params;
-  const db = getDb();
 
-  const [dance] = await db
-    .select({ id: dances.id, name: dances.name, displayName: dances.displayName })
-    .from(dances)
-    .where(eq(dances.name, danceSlug));
-
+  const dance = await fetchQuery(api.syllabus.dances.getByName, {
+    name: danceSlug,
+  });
   if (!dance) notFound();
 
   return (

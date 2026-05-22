@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import {
   Card,
   CardDescription,
@@ -15,14 +17,12 @@ export function DanceRoutinesList({
   danceId,
   danceName,
 }: {
-  danceId: number;
+  danceId: Id<"dances">;
   danceName: string;
 }) {
-  const { data: routines, isLoading } = trpc.routine.listByDance.useQuery({
-    danceId,
-  });
+  const routines = useQuery(api.routines.listByDance, { danceId });
 
-  if (isLoading) {
+  if (routines === undefined) {
     return (
       <div className="grid gap-3">
         <Skeleton className="h-20 w-full" />
@@ -31,7 +31,7 @@ export function DanceRoutinesList({
     );
   }
 
-  if (!routines || routines.length === 0) {
+  if (routines.length === 0) {
     return (
       <div className="atelier-empty-state atelier-empty-state-centered min-h-64 justify-center">
         <span className="atelier-empty-glyph" aria-hidden="true" />
