@@ -1,23 +1,41 @@
 "use client";
 import { useState } from "react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface InviteManagerProps {
-  orgId: number;
+  orgId: Id<"organizations">;
 }
 
 export function InviteManager({ orgId }: InviteManagerProps) {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const generateMutation = trpc.invite.generateLink.useMutation({
-    onSuccess: (data) => {
-      const link = `${window.location.origin}/orgs/invite/${data.token}`;
+  const generate = useMutation(api.orgs.generateInviteLink);
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const invite = await generate({ orgId });
+      if (!invite?.token) {
+        setError("Failed to generate invite link");
+        return;
+      }
+      const link = `${window.location.origin}/orgs/invite/${invite.token}`;
       setInviteLink(link);
-    },
-  });
+    } catch (err) {
+      setError(convexErrorMessage(err, "Failed to generate invite link"));
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const handleCopy = () => {
     if (!inviteLink) return;
@@ -29,13 +47,10 @@ export function InviteManager({ orgId }: InviteManagerProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <Button
-        onClick={() => generateMutation.mutate({ orgId })}
-        disabled={generateMutation.isPending}
-        className="w-fit"
-      >
+      <Button onClick={handleGenerate} disabled={generating} className="w-fit">
         Generate Invite Link
       </Button>
+      {error && <p className="text-sm text-destructive">{error}</p>}
       {inviteLink && (
         <div className="flex gap-2">
           <Input value={inviteLink} readOnly className="flex-1" />

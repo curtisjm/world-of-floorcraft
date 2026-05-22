@@ -1,16 +1,17 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { MembershipButton } from "./membership-button";
+import type { Doc } from "../../../../convex/_generated/dataModel";
 
 interface OrgHeaderProps {
   org: {
-    id: number;
+    _id: Doc<"organizations">["_id"];
     slug: string;
     name: string;
     description: string | null;
     avatarUrl: string | null;
-    membershipModel: "open" | "invite" | "request";
-    ownerId: string;
+    membershipModel: Doc<"organizations">["membershipModel"];
+    ownerId: Doc<"organizations">["ownerId"];
     memberCount: number;
   };
   membership: { role: string } | null;
@@ -35,7 +36,7 @@ export function OrgHeader({ org, membership, isOwner, pendingRequest }: OrgHeade
         </p>
         <div className="mt-3">
           <MembershipButton
-            orgId={org.id}
+            orgId={org._id}
             orgSlug={org.slug}
             membershipModel={org.membershipModel}
             membership={membership}

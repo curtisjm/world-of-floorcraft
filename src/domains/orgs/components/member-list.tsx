@@ -1,21 +1,23 @@
 "use client";
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Badge } from "@shared/ui/badge";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface MemberListProps {
-  orgId: number;
+  orgId: Id<"organizations">;
 }
 
 export function MemberList({ orgId }: MemberListProps) {
-  const { data, isLoading } = trpc.membership.listMembers.useQuery({ orgId });
+  const data = useQuery(api.orgs.listMembers, { orgId });
 
-  if (isLoading) {
+  if (data === undefined) {
     return <p className="text-muted-foreground text-sm">Loading members...</p>;
   }
 
-  if (!data || data.length === 0) {
+  if (!data.length) {
     return <p className="text-muted-foreground text-sm">No members yet.</p>;
   }
 
@@ -24,7 +26,7 @@ export function MemberList({ orgId }: MemberListProps) {
       {data.map((member) => (
         <Link
           key={member.userId}
-          href={`/users/${member.username}`}
+          href={member.username ? `/users/${member.username}` : "#"}
           className="flex items-center gap-3 rounded-[2px] border border-transparent p-3 transition-colors hover:border-border hover:bg-accent/50"
         >
           <Avatar className="h-10 w-10 shrink-0">

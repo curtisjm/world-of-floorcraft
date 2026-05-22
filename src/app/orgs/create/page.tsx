@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -13,22 +13,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@shared/ui/select";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../convex/_generated/api";
 
 export default function CreateOrgPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [membershipModel, setMembershipModel] = useState<"open" | "request" | "invite">("open");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const createMutation = trpc.org.create.useMutation({
-    onSuccess: (org) => {
-      router.push(`/orgs/${org.slug}`);
-    },
-  });
+  const create = useMutation(api.orgs.create);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate({ name, description: description || undefined, membershipModel });
+    setSubmitting(true);
+    setError(null);
+    try {
+      const org = await create({
+        name,
+        description: description || undefined,
+        membershipModel,
+      });
+      router.push(`/orgs/${org.slug}`);
+    } catch (err) {
+      setError(convexErrorMessage(err, "Failed to create organization"));
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -74,12 +86,10 @@ export default function CreateOrgPage() {
           </Select>
         </div>
 
-        {createMutation.error && (
-          <p className="text-sm text-destructive">{createMutation.error.message}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Button type="submit" disabled={createMutation.isPending || !name.trim()}>
-          {createMutation.isPending ? "Creating..." : "Create Organization"}
+        <Button type="submit" disabled={submitting || !name.trim()}>
+          {submitting ? "Creating..." : "Create Organization"}
         </Button>
       </form>
     </div>

@@ -1,10 +1,14 @@
 "use client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
 import { Button } from "@shared/ui/button";
-import { trpc } from "@shared/lib/trpc";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface MembershipButtonProps {
-  orgId: number;
+  orgId: Id<"organizations">;
   orgSlug: string;
   membershipModel: "open" | "invite" | "request";
   membership: { role: string } | null;
@@ -21,17 +25,22 @@ export function MembershipButton({
   pendingRequest,
 }: MembershipButtonProps) {
   const router = useRouter();
-  const utils = trpc.useUtils();
+  const [pending, setPending] = useState(false);
 
-  const invalidate = () => {
-    utils.membership.getMyMembership.invalidate({ orgId });
-    utils.joinRequest.getMyRequest.invalidate({ orgId });
-    utils.org.getBySlug.invalidate({ slug: orgSlug });
+  const join = useMutation(api.orgs.join);
+  const leave = useMutation(api.orgs.leave);
+  const requestJoin = useMutation(api.orgs.requestJoin);
+
+  const runMutation = async (fn: () => Promise<unknown>) => {
+    setPending(true);
+    try {
+      await fn();
+    } catch (err) {
+      alert(convexErrorMessage(err, "Failed"));
+    } finally {
+      setPending(false);
+    }
   };
-
-  const joinMutation = trpc.membership.join.useMutation({ onSuccess: invalidate });
-  const leaveMutation = trpc.membership.leave.useMutation({ onSuccess: invalidate });
-  const requestMutation = trpc.joinRequest.request.useMutation({ onSuccess: invalidate });
 
   if (isOwner) {
     return (
@@ -47,8 +56,8 @@ export function MembershipButton({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => leaveMutation.mutate({ orgId })}
-        disabled={leaveMutation.isPending}
+        onClick={() => runMutation(() => leave({ orgId }))}
+        disabled={pending}
       >
         {label}
       </Button>
@@ -59,8 +68,8 @@ export function MembershipButton({
     return (
       <Button
         size="sm"
-        onClick={() => joinMutation.mutate({ orgId })}
-        disabled={joinMutation.isPending}
+        onClick={() => runMutation(() => join({ orgId }))}
+        disabled={pending}
       >
         Join
       </Button>
@@ -78,8 +87,8 @@ export function MembershipButton({
     return (
       <Button
         size="sm"
-        onClick={() => requestMutation.mutate({ orgId })}
-        disabled={requestMutation.isPending}
+        onClick={() => runMutation(() => requestJoin({ orgId }))}
+        disabled={pending}
       >
         Request to Join
       </Button>

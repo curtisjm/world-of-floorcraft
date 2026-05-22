@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -14,31 +14,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@shared/ui/select";
+import { convexErrorMessage } from "@social/lib/convex-error";
 import { JoinRequestList } from "@orgs/components/join-request-list";
 import { InviteManager } from "@orgs/components/invite-manager";
 import { SendInvite } from "@orgs/components/send-invite";
 import { AdminManager } from "@orgs/components/admin-manager";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
-function TransferOwnership({ orgId, orgSlug }: { orgId: number; orgSlug: string }) {
-  const [selectedAdmin, setSelectedAdmin] = useState<string>("");
-  const utils = trpc.useUtils();
+function TransferOwnership({
+  orgId,
+  orgSlug,
+}: {
+  orgId: Id<"organizations">;
+  orgSlug: string;
+}) {
+  const [selectedAdmin, setSelectedAdmin] = useState<Id<"users"> | "">("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  const { data: members } = trpc.membership.listMembers.useQuery({ orgId });
-  const admins = members?.filter((m) => m.role === "admin") ?? [];
+  const members = useQuery(api.orgs.listMembers, { orgId });
+  const admins = members?.filter((m) => m.role === "admin" && !m.isOwner) ?? [];
 
-  const transferMutation = trpc.membership.transferOwnership.useMutation({
-    onSuccess: () => {
-      utils.org.getBySlug.invalidate({ slug: orgSlug });
-      utils.membership.getMyMembership.invalidate({ orgId });
-      router.push(`/orgs/${orgSlug}`);
-    },
-  });
+  const transfer = useMutation(api.orgs.transferOwnership);
 
-  const handleTransfer = () => {
+  const handleTransfer = async () => {
     if (!selectedAdmin) return;
     if (!confirm("Are you sure you want to transfer ownership? This cannot be undone.")) return;
-    transferMutation.mutate({ orgId, newOwnerId: selectedAdmin });
+    setSubmitting(true);
+    setError(null);
+    try {
+      await transfer({ orgId, newOwnerId: selectedAdmin });
+      router.push(`/orgs/${orgSlug}`);
+    } catch (err) {
+      setError(convexErrorMessage(err, "Failed to transfer ownership"));
+      setSubmitting(false);
+    }
   };
 
   if (admins.length === 0) {
@@ -51,7 +63,10 @@ function TransferOwnership({ orgId, orgSlug }: { orgId: number; orgSlug: string 
 
   return (
     <div className="flex flex-col gap-3">
-      <Select value={selectedAdmin} onValueChange={setSelectedAdmin}>
+      <Select
+        value={selectedAdmin || undefined}
+        onValueChange={(v) => setSelectedAdmin(v as Id<"users">)}
+      >
         <SelectTrigger>
           <SelectValue placeholder="Select admin to transfer to" />
         </SelectTrigger>
@@ -63,10 +78,11 @@ function TransferOwnership({ orgId, orgSlug }: { orgId: number; orgSlug: string 
           ))}
         </SelectContent>
       </Select>
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <Button
         variant="destructive"
         onClick={handleTransfer}
-        disabled={!selectedAdmin || transferMutation.isPending}
+        disabled={!selectedAdmin || submitting}
         className="w-fit"
       >
         Transfer Ownership
@@ -79,17 +95,22 @@ export default function OrgSettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
 
-  const { data: org, isLoading: orgLoading } = trpc.org.getBySlug.useQuery({ slug });
-  const { data: membershipData } = trpc.membership.getMyMembership.useQuery(
-    { orgId: org?.id ?? 0 },
-    { enabled: !!org }
+  const org = useQuery(api.orgs.getBySlug, { slug });
+  const membershipData = useQuery(
+    api.orgs.getMyMembership,
+    org ? { orgId: org._id } : "skip",
   );
 
-  const utils = trpc.useUtils();
+  const update = useMutation(api.orgs.update);
+  const remove = useMutation(api.orgs.remove);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [membershipModel, setMembershipModel] = useState<"open" | "request" | "invite">("open");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (org) {
@@ -99,19 +120,7 @@ export default function OrgSettingsPage() {
     }
   }, [org]);
 
-  const updateMutation = trpc.org.update.useMutation({
-    onSuccess: () => {
-      utils.org.getBySlug.invalidate({ slug });
-    },
-  });
-
-  const deleteMutation = trpc.org.delete.useMutation({
-    onSuccess: () => {
-      router.push("/orgs");
-    },
-  });
-
-  if (orgLoading) {
+  if (org === undefined) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-8">
         <p className="text-muted-foreground">Loading...</p>
@@ -119,7 +128,7 @@ export default function OrgSettingsPage() {
     );
   }
 
-  if (!org) {
+  if (org === null) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-8">
         <p className="text-muted-foreground">Organization not found.</p>
@@ -139,19 +148,35 @@ export default function OrgSettingsPage() {
     );
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate({
-      orgId: org.id,
-      name,
-      description: description || undefined,
-      membershipModel,
-    });
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await update({
+        orgId: org._id,
+        name,
+        description: description || null,
+        membershipModel,
+      });
+    } catch (err) {
+      setSaveError(convexErrorMessage(err, "Failed to save changes"));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete "${org.name}"? This cannot be undone.`)) return;
-    deleteMutation.mutate({ orgId: org.id });
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await remove({ orgId: org._id });
+      router.push("/orgs");
+    } catch (err) {
+      setDeleteError(convexErrorMessage(err, "Failed to delete organization"));
+      setDeleting(false);
+    }
   };
 
   return (
@@ -199,12 +224,10 @@ export default function OrgSettingsPage() {
             </Select>
           </div>
 
-          {updateMutation.error && (
-            <p className="text-sm text-destructive">{updateMutation.error.message}</p>
-          )}
+          {saveError && <p className="text-sm text-destructive">{saveError}</p>}
 
-          <Button type="submit" disabled={updateMutation.isPending} className="w-fit">
-            {updateMutation.isPending ? "Saving..." : "Save Changes"}
+          <Button type="submit" disabled={saving} className="w-fit">
+            {saving ? "Saving..." : "Save Changes"}
           </Button>
         </form>
       </section>
@@ -215,7 +238,7 @@ export default function OrgSettingsPage() {
           <Separator className="my-6" />
           <section>
             <h2 className="text-lg font-semibold mb-4">Join Requests</h2>
-            <JoinRequestList orgId={org.id} />
+            <JoinRequestList orgId={org._id} />
           </section>
         </>
       )}
@@ -229,7 +252,7 @@ export default function OrgSettingsPage() {
             <p className="text-sm text-muted-foreground mb-3">
               Search for users to send a direct invite.
             </p>
-            <SendInvite orgId={org.id} />
+            <SendInvite orgId={org._id} />
           </section>
 
           <Separator className="my-6" />
@@ -238,7 +261,7 @@ export default function OrgSettingsPage() {
             <p className="text-sm text-muted-foreground mb-3">
               Generate a shareable link that anyone can use to join.
             </p>
-            <InviteManager orgId={org.id} />
+            <InviteManager orgId={org._id} />
           </section>
         </>
       )}
@@ -250,7 +273,7 @@ export default function OrgSettingsPage() {
         <p className="text-sm text-muted-foreground mb-3">
           Promote members to admin or revoke admin privileges.
         </p>
-        <AdminManager orgId={org.id} />
+        <AdminManager orgId={org._id} />
       </section>
 
       {/* Danger Zone (owner only) */}
@@ -266,7 +289,7 @@ export default function OrgSettingsPage() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Transfer ownership to another admin member.
                 </p>
-                <TransferOwnership orgId={org.id} orgSlug={slug} />
+                <TransferOwnership orgId={org._id} orgSlug={slug} />
               </div>
 
               <div>
@@ -277,12 +300,12 @@ export default function OrgSettingsPage() {
                 <Button
                   variant="destructive"
                   onClick={handleDelete}
-                  disabled={deleteMutation.isPending}
+                  disabled={deleting}
                 >
-                  {deleteMutation.isPending ? "Deleting..." : "Delete Organization"}
+                  {deleting ? "Deleting..." : "Delete Organization"}
                 </Button>
-                {deleteMutation.error && (
-                  <p className="text-sm text-destructive mt-2">{deleteMutation.error.message}</p>
+                {deleteError && (
+                  <p className="text-sm text-destructive mt-2">{deleteError}</p>
                 )}
               </div>
             </div>

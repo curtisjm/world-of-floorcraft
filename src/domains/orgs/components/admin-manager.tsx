@@ -1,34 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Checkbox } from "@shared/ui/checkbox";
 import { Input } from "@shared/ui/input";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface AdminManagerProps {
-  orgId: number;
+  orgId: Id<"organizations">;
 }
 
 export function AdminManager({ orgId }: AdminManagerProps) {
   const [search, setSearch] = useState("");
-  const utils = trpc.useUtils();
+  const [pendingUserId, setPendingUserId] = useState<Id<"users"> | null>(null);
 
-  const { data: members, isLoading } = trpc.membership.listMembers.useQuery({ orgId });
+  const members = useQuery(api.orgs.listMembers, { orgId });
+  const updateRole = useMutation(api.orgs.updateRole);
 
-  const updateRoleMutation = trpc.membership.updateRole.useMutation({
-    onSuccess: () => {
-      utils.membership.listMembers.invalidate({ orgId });
-    },
-  });
-
-  if (isLoading) {
+  if (members === undefined) {
     return <p className="text-muted-foreground text-sm">Loading members...</p>;
   }
 
-  // Filter out the owner — their role is managed via transfer ownership
-  const nonOwnerMembers = members?.filter((m) => !m.isOwner) ?? [];
-
+  const nonOwnerMembers = members.filter((m) => !m.isOwner);
   const filteredMembers = nonOwnerMembers.filter((m) => {
     if (!search.trim()) return true;
     const query = search.toLowerCase();
@@ -38,9 +34,22 @@ export function AdminManager({ orgId }: AdminManagerProps) {
     );
   });
 
-  const handleToggleRole = (userId: string, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "member" : "admin";
-    updateRoleMutation.mutate({ orgId, targetUserId: userId, role: newRole });
+  const handleToggleRole = async (
+    userId: Id<"users">,
+    currentRole: "admin" | "member",
+  ) => {
+    setPendingUserId(userId);
+    try {
+      await updateRole({
+        orgId,
+        targetUserId: userId,
+        role: currentRole === "admin" ? "member" : "admin",
+      });
+    } catch (err) {
+      alert(convexErrorMessage(err, "Failed to update role"));
+    } finally {
+      setPendingUserId(null);
+    }
   };
 
   if (nonOwnerMembers.length === 0) {
@@ -65,9 +74,7 @@ export function AdminManager({ orgId }: AdminManagerProps) {
         ) : (
           filteredMembers.map((member) => {
             const isAdmin = member.role === "admin";
-            const isPending =
-              updateRoleMutation.isPending &&
-              updateRoleMutation.variables?.targetUserId === member.userId;
+            const isPending = pendingUserId === member.userId;
 
             return (
               <label

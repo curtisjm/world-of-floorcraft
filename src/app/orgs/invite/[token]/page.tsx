@@ -2,29 +2,30 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@shared/ui/card";
 import { Building2, CheckCircle, XCircle } from "lucide-react";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../../convex/_generated/api";
 
 export default function InviteTokenPage() {
   const { token } = useParams<{ token: string }>();
   const router = useRouter();
-  const [status, setStatus] = useState<"idle" | "accepted" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "accepting" | "accepted" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const acceptMutation = trpc.invite.accept.useMutation({
-    onSuccess: () => {
-      setStatus("accepted");
-    },
-    onError: (err) => {
-      setStatus("error");
-      setErrorMessage(err.message);
-    },
-  });
+  const acceptInvite = useMutation(api.orgs.acceptInvite);
 
-  const handleAccept = () => {
-    acceptMutation.mutate({ token });
+  const handleAccept = async () => {
+    setStatus("accepting");
+    try {
+      await acceptInvite({ token });
+      setStatus("accepted");
+    } catch (err) {
+      setErrorMessage(convexErrorMessage(err, "Unable to join"));
+      setStatus("error");
+    }
   };
 
   if (status === "accepted") {
@@ -81,13 +82,13 @@ export default function InviteTokenPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center gap-3 pb-8">
-          <Button onClick={handleAccept} disabled={acceptMutation.isPending}>
-            {acceptMutation.isPending ? "Joining..." : "Accept Invite"}
+          <Button onClick={handleAccept} disabled={status === "accepting"}>
+            {status === "accepting" ? "Joining..." : "Accept Invite"}
           </Button>
           <Button
             variant="outline"
             onClick={() => router.push("/orgs")}
-            disabled={acceptMutation.isPending}
+            disabled={status === "accepting"}
           >
             Decline
           </Button>

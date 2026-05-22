@@ -1,11 +1,18 @@
 "use client";
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { usePaginatedQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { OrgCard } from "@orgs/components/org-card";
+import { api } from "../../../convex/_generated/api";
 
 export default function OrgsPage() {
-  const { data, isLoading } = trpc.org.discover.useQuery({ limit: 20 });
+  const { results, status } = usePaginatedQuery(
+    api.orgs.discover,
+    {},
+    { initialNumItems: 20 },
+  );
+
+  const loading = status === "LoadingFirstPage";
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
@@ -16,14 +23,23 @@ export default function OrgsPage() {
         </Link>
       </div>
 
-      {isLoading ? (
+      {loading ? (
         <p className="text-muted-foreground text-sm">Loading organizations...</p>
-      ) : !data?.items.length ? (
+      ) : results.length === 0 ? (
         <p className="text-muted-foreground text-sm">No organizations yet. Be the first to create one!</p>
       ) : (
         <div className="grid gap-3">
-          {data.items.map((org) => (
-            <OrgCard key={org.id} org={org} />
+          {results.map((org) => (
+            <OrgCard
+              key={org._id}
+              org={{
+                slug: org.slug,
+                name: org.name,
+                description: org.description,
+                avatarUrl: org.avatarUrl,
+                memberCount: org.memberCount,
+              }}
+            />
           ))}
         </div>
       )}

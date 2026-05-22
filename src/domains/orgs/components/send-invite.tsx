@@ -1,21 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Input } from "@shared/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { ScrollArea } from "@shared/ui/scroll-area";
 import { Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface SendInviteProps {
-  orgId: number;
+  orgId: Id<"organizations">;
 }
 
 export function SendInvite({ orgId }: SendInviteProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [sentUserIds, setSentUserIds] = useState<Set<string>>(new Set());
+  const [pendingUserId, setPendingUserId] = useState<Id<"users"> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,24 +29,27 @@ export function SendInvite({ orgId }: SendInviteProps) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const searchResults = trpc.profile.search.useQuery(
-    { query: debouncedQuery },
-    { enabled: debouncedQuery.length >= 1 }
+  const searchResults = useQuery(
+    api.social.profiles.search,
+    debouncedQuery.length >= 1 ? { query: debouncedQuery } : "skip",
   );
+  const sendInvite = useMutation(api.orgs.sendInvite);
 
-  const sendMutation = trpc.invite.sendInvite.useMutation({
-    onSuccess: (_data, variables) => {
+  const handleInvite = async (userId: Id<"users">) => {
+    setPendingUserId(userId);
+    try {
+      await sendInvite({ orgId, userId });
       toast.success("Invite sent!");
-      setSentUserIds((prev) => new Set(prev).add(variables.userId));
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
-
-  const handleInvite = (userId: string) => {
-    sendMutation.mutate({ orgId, userId });
+      setSentUserIds((prev) => new Set(prev).add(userId));
+    } catch (err) {
+      toast.error(convexErrorMessage(err, "Failed to send invite"));
+    } finally {
+      setPendingUserId(null);
+    }
   };
+
+  const showResults = debouncedQuery.length >= 1;
+  const isSearching = showResults && searchResults === undefined;
 
   return (
     <div className="flex flex-col gap-3">
@@ -53,33 +60,30 @@ export function SendInvite({ orgId }: SendInviteProps) {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by name or username..."
         />
-        {searchResults.isFetching && (
+        {isSearching && (
           <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
         )}
       </div>
 
-      {debouncedQuery.length >= 1 && (
+      {showResults && (
         <div className="rounded-[2px] border bg-popover">
-          {searchResults.isLoading ? (
+          {isSearching ? (
             <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Searching...
             </div>
-          ) : searchResults.data && searchResults.data.length > 0 ? (
+          ) : searchResults && searchResults.length > 0 ? (
             <ScrollArea className="max-h-48">
               <div className="p-1">
-                {searchResults.data.map((user) => {
-                  const alreadySent = sentUserIds.has(user.id);
+                {searchResults.map((user) => {
+                  const alreadySent = sentUserIds.has(user._id);
+                  const busy = pendingUserId === user._id;
                   return (
                     <button
-                      key={user.id}
+                      key={user._id}
                       type="button"
-                      onClick={() => handleInvite(user.id)}
-                      disabled={
-                        alreadySent ||
-                        (sendMutation.isPending &&
-                          sendMutation.variables?.userId === user.id)
-                      }
+                      onClick={() => handleInvite(user._id)}
+                      disabled={alreadySent || busy}
                       className="flex w-full items-center gap-3 rounded-[2px] px-3 py-2 text-left transition-colors hover:bg-accent disabled:cursor-default disabled:opacity-50"
                     >
                       <Avatar size="sm">
@@ -108,8 +112,7 @@ export function SendInvite({ orgId }: SendInviteProps) {
                             <Check className="h-3 w-3" />
                             Sent
                           </span>
-                        ) : sendMutation.isPending &&
-                          sendMutation.variables?.userId === user.id ? (
+                        ) : busy ? (
                           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                         ) : (
                           <span className="text-xs text-muted-foreground">

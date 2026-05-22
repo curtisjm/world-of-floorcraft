@@ -1,64 +1,29 @@
 "use client";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { OrgHeader } from "@orgs/components/org-header";
 import { MemberList } from "@orgs/components/member-list";
-import { OrgPostComposer } from "@orgs/components/org-post-composer";
-import { OrgPostCard } from "@orgs/components/org-post-card";
-import { OrgDraftList } from "@orgs/components/org-draft-list";
+import { api } from "../../../../convex/_generated/api";
 
-function OrgPosts({ orgId, canPost }: { orgId: number; canPost: boolean }) {
-  const { data, isLoading } = trpc.orgPost.listByOrg.useQuery({ orgId, limit: 20 });
-
-  if (isLoading) {
-    return <p className="text-muted-foreground text-sm">Loading posts...</p>;
-  }
-
-  const posts = data?.items ?? [];
-
-  return (
-    <div className="flex flex-col gap-3">
-      {canPost && <OrgPostComposer orgId={orgId} />}
-      {canPost && <OrgDraftList orgId={orgId} />}
-      {posts.length === 0 && !canPost && (
-        <p className="text-muted-foreground text-sm">No posts yet.</p>
-      )}
-      {posts.map((post) => (
-        <OrgPostCard
-          key={post.id}
-          post={{
-            id: post.id,
-            type: post.type,
-            title: post.title,
-            body: post.body,
-            publishedAt: post.publishedAt,
-            orgName: post.orgName,
-            orgSlug: post.orgSlug,
-            orgAvatarUrl: post.orgAvatarUrl,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+// Org posts (composer, drafts, listing) require Task 7's Convex social-
+// content migration, since Convex org ids are opaque rather than serial
+// integers. The Posts tab returns once Task 7 ports `orgPost.*` and the
+// org-post component family.
 
 export default function OrgProfilePage() {
   const { slug } = useParams<{ slug: string }>();
-
-  const { data: org, isLoading: orgLoading } = trpc.org.getBySlug.useQuery({ slug });
-
-  const { data: membershipData } = trpc.membership.getMyMembership.useQuery(
-    { orgId: org?.id ?? 0 },
-    { enabled: !!org }
+  const org = useQuery(api.orgs.getBySlug, { slug });
+  const membershipData = useQuery(
+    api.orgs.getMyMembership,
+    org ? { orgId: org._id } : "skip",
+  );
+  const myRequest = useQuery(
+    api.orgs.getMyJoinRequest,
+    org ? { orgId: org._id } : "skip",
   );
 
-  const { data: myRequest } = trpc.joinRequest.getMyRequest.useQuery(
-    { orgId: org?.id ?? 0 },
-    { enabled: !!org }
-  );
-
-  if (orgLoading) {
+  if (org === undefined) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-8">
         <p className="text-muted-foreground">Loading...</p>
@@ -66,7 +31,7 @@ export default function OrgProfilePage() {
     );
   }
 
-  if (!org) {
+  if (org === null) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-8">
         <p className="text-muted-foreground">Organization not found.</p>
@@ -95,19 +60,14 @@ export default function OrgProfilePage() {
       />
 
       <div className="mt-8">
-        <Tabs defaultValue="posts">
+        <Tabs defaultValue="members">
           <TabsList>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="posts" className="mt-4">
-            <OrgPosts orgId={org.id} canPost={isOwner || membership?.role === "admin"} />
-          </TabsContent>
-
           <TabsContent value="members" className="mt-4">
-            <MemberList orgId={org.id} />
+            <MemberList orgId={org._id} />
           </TabsContent>
 
           <TabsContent value="about" className="mt-4">

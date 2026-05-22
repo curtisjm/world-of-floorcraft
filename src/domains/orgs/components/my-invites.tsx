@@ -1,60 +1,67 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Card, CardContent } from "@shared/ui/card";
 import { toast } from "sonner";
+import { convexErrorMessage } from "@social/lib/convex-error";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 export function MyInvites() {
   const router = useRouter();
-  const utils = trpc.useUtils();
+  const invites = useQuery(api.orgs.listMyInvites, {});
+  const acceptInvite = useMutation(api.orgs.acceptInvite);
+  const declineInvite = useMutation(api.orgs.declineInvite);
+  const [pendingId, setPendingId] = useState<Id<"orgInvites"> | null>(null);
 
-  const { data: invites, isLoading } = trpc.invite.listMyInvites.useQuery();
-
-  const acceptMutation = trpc.invite.accept.useMutation({
-    onSuccess: (_data, variables) => {
-      toast.success("Invite accepted!");
-      utils.invite.listMyInvites.invalidate();
-      // Find the invite to get the org slug for navigation
-      const invite = invites?.find((i) => i.id === variables.inviteId);
-      if (invite?.orgSlug) {
-        router.push(`/orgs/${invite.orgSlug}`);
-      }
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
-
-  const declineMutation = trpc.invite.decline.useMutation({
-    onSuccess: () => {
-      toast.success("Invite declined.");
-      utils.invite.listMyInvites.invalidate();
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
-
-  if (isLoading) {
+  if (invites === undefined) {
     return <p className="text-sm text-muted-foreground">Loading invites...</p>;
   }
 
-  if (!invites || invites.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">No pending invites.</p>
-    );
+  if (invites.length === 0) {
+    return <p className="text-sm text-muted-foreground">No pending invites.</p>;
   }
+
+  const handleAccept = async (
+    inviteId: Id<"orgInvites">,
+    orgSlug: string | null,
+  ) => {
+    setPendingId(inviteId);
+    try {
+      await acceptInvite({ inviteId });
+      toast.success("Invite accepted!");
+      if (orgSlug) router.push(`/orgs/${orgSlug}`);
+    } catch (err) {
+      toast.error(convexErrorMessage(err, "Failed to accept invite"));
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  const handleDecline = async (inviteId: Id<"orgInvites">) => {
+    setPendingId(inviteId);
+    try {
+      await declineInvite({ inviteId });
+      toast.success("Invite declined.");
+    } catch (err) {
+      toast.error(convexErrorMessage(err, "Failed to decline invite"));
+    } finally {
+      setPendingId(null);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3">
       {invites.map((invite) => {
-        const isExpired = new Date(invite.expiresAt) < new Date();
+        const isExpired = invite.expiresAt < Date.now();
+        const busy = pendingId === invite._id;
 
         return (
-          <Card key={invite.id}>
+          <Card key={invite._id}>
             <CardContent className="flex items-center gap-4 p-4">
               <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={invite.orgAvatarUrl ?? undefined} />
@@ -73,26 +80,16 @@ export function MyInvites() {
               <div className="flex gap-2 shrink-0">
                 <Button
                   size="sm"
-                  onClick={() => acceptMutation.mutate({ inviteId: invite.id })}
-                  disabled={
-                    isExpired ||
-                    acceptMutation.isPending ||
-                    declineMutation.isPending
-                  }
+                  onClick={() => handleAccept(invite._id, invite.orgSlug)}
+                  disabled={isExpired || busy}
                 >
                   Accept
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() =>
-                    declineMutation.mutate({ inviteId: invite.id })
-                  }
-                  disabled={
-                    isExpired ||
-                    acceptMutation.isPending ||
-                    declineMutation.isPending
-                  }
+                  onClick={() => handleDecline(invite._id)}
+                  disabled={isExpired || busy}
                 >
                   Decline
                 </Button>
