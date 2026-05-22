@@ -210,7 +210,6 @@
     font-kerning: normal;
     font-optical-sizing: auto;
     font-synthesis-weight: none;
-    text-rendering: geometricPrecision;
   }
   html {
     --font-sans: var(--font-body);

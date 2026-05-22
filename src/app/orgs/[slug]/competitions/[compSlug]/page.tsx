@@ -160,7 +160,7 @@ export default function OrgCompetitionPage() {
                         </TableCell>
                         <TableCell className="text-center">
                           {entry.checkedIn ? (
-                            <CheckCircle2 className="mx-auto size-4 text-sage" />
+                            <CheckCircle2 className="mx-auto size-4 text-status-sage" />
                           ) : (
                             <XCircle className="size-4 text-muted-foreground/40 mx-auto" />
                           )}

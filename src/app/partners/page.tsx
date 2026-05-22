@@ -71,7 +71,7 @@ export default function PartnersPage() {
         <select
           value={styleFilter}
           onChange={(e) => setStyleFilter(e.target.value as DanceStyle | "")}
-          className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35"
+          className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <option value="">All styles</option>
           {DANCE_STYLES.map((s) => (
@@ -84,7 +84,7 @@ export default function PartnersPage() {
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value as RolePreference | "")}
-          className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35"
+          className="h-9 rounded-[2px] border border-input bg-input-surface px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <option value="">All roles</option>
           {ROLE_PREFERENCES.map((r) => (

@@ -29,7 +29,7 @@ export function PostCard({ post }: PostCardProps) {
     <Card className="atelier-link-card">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <Avatar className="size-9 border" size="lg">
+          <Avatar className="size-9 border">
             {post.authorAvatarUrl && (
               <AvatarImage src={post.authorAvatarUrl} alt={authorName} />
             )}
