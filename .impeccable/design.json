@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-21T19:35:44Z",
+  "title": "Design System: World of Floorcraft",
+  "extensions": {
+    "northStar": "The Atelier Syllabus",
+    "colorMeta": {
+      "carbon": {
+        "role": "background",
+        "displayName": "Carbon",
+        "canonical": "#0a0a0a",
+        "usage": "Dark page background."
+      },
+      "surface": {
+        "role": "surface",
+        "displayName": "Surface",
+        "canonical": "#141414",
+        "usage": "Cards, panels, menus, and framed tools in dark mode."
+      },
+      "chalk": {
+        "role": "foreground",
+        "displayName": "Chalk",
+        "canonical": "#fafafa",
+        "usage": "Primary text on dark surfaces."
+      },
+      "mist": {
+        "role": "body",
+        "displayName": "Mist",
+        "canonical": "#d4d4d4",
+        "usage": "Body and secondary text on dark surfaces."
+      },
+      "smoke": {
+        "role": "meta",
+        "displayName": "Smoke",
+        "canonical": "#737373",
+        "usage": "Meta text, disabled text, and focus rings."
+      },
+      "rule": {
+        "role": "border",
+        "displayName": "Rule",
+        "canonical": "#262626",
+        "usage": "Borders, dividers, and component edges."
+      },
+      "wine": {
+        "role": "destructive",
+        "displayName": "Wine",
+        "canonical": "#7a2228",
+        "usage": "Errors, withdrawals, destructive actions, and failed live states."
+      },
+      "sage": {
+        "role": "success",
+        "displayName": "Sage",
+        "canonical": "#4d6651",
+        "usage": "Confirmed, saved, connected, checked in, and registered states."
+      },
+      "clay": {
+        "role": "warning",
+        "displayName": "Clay",
+        "canonical": "#a55a32",
+        "usage": "Pending, warning, incomplete, deferred, and attention states."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Source Serif 4",
+        "purpose": "Brand, page titles, major headings, and editorial content titles only."
+      },
+      "body": {
+        "displayName": "Inter",
+        "purpose": "Body text, controls, tables, lists, navigation, and operational UI."
+      },
+      "label": {
+        "displayName": "JetBrains Mono",
+        "purpose": "Eyebrows, metadata, badges, table headers, and identifiers."
+      }
+    },
+    "elevationMeta": {
+      "strategy": "Flat by default. Use tonal contrast, borders, rule lines, and occasional contextual blur instead of shadows. Menus stay opaque for readability.",
+      "shadowDefault": "none"
+    },
+    "componentRules": {
+      "shape": "Square or 2px radius for most UI. Preserve circles for avatars, toggles, progress dots, and familiar round indicators.",
+      "color": "Metals and semantic colors require domain meaning. Neutrals carry inactive UI. Use sage for confirmed/saved/live, clay for pending/warning/current attention, wine for destructive/failed, and metals for awarded or syllabus meaning only. Metals should feel polished and luminous, not muddy or dusty.",
+      "alerts": "Use full borders and tonal tints. Do not use side stripes.",
+      "navigation": "Translucent blurred background plus bottom rule.",
+      "menus": "Dropdowns, popovers, and selects use opaque surfaces so underlying text cannot compete.",
+      "blur": "Use blur for sticky chrome and modal/sheet overlays only, never as a general card or menu aesthetic.",
+      "bolder": "Amplify through clearer hierarchy, darker active states, and stronger surface contrast. Do not overscale product titles, thicken header rules, add neon, gradients, shadows, or extra decorative color."
+    },
+    "delightRules": {
+      "strategy": "Subtle product moments only. Delight should appear in completion, loading, empty states, and precise hover feedback.",
+      "loading": "Skeletons use a quiet moving rule line, respect reduced motion, and never delay content.",
+      "emptyStates": "Use the atelier diamond glyph with specific guidance about what the surface becomes once populated.",
+      "brandMark": "The brand mark may respond softly on hover or keyboard focus. Keep it brief and non-decorative."
+    },
+    "colorRules": {
+      "strategy": "Restrained semantic color. Color appears only for primary action, current selection, state indicators, placements, and syllabus levels.",
+      "rawTailwindStatusColors": "Do not use raw Tailwind blue, green, amber, orange, yellow, red, or emerald status colors in product UI. Map those meanings to sage, clay, wine, gold, silver, and bronze.",
+      "utilities": "Use status-sage, status-clay, status-wine, placement-gold, placement-silver, and placement-bronze for product states. Status utilities should have enough tint and border contrast to remain legible against carbon and surface panels."
+    },
+    "antiReferences": [
+      "beige or brown shadcn stone defaults",
+      "rounded card-heavy SaaS layouts",
+      "decorative gradients",
+      "default glassmorphism",
+      "neon dashboards",
+      "purple-blue product palettes",
+      "serif in dense operational UI",
+      "side-stripe alert cards"
+    ]
+  }
+}

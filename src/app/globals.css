@@ -10,133 +10,135 @@
 
   /* ── Atelier palette · light ──
      Cool surfaces, no chromatic accent. The metals carry the brand. */
-  --background: oklch(0.987 0.001 95);   /* paper */
-  --foreground: oklch(0.07 0 0);         /* ink */
-  --card: oklch(1 0 0);                  /* surface */
-  --card-foreground: oklch(0.07 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.07 0 0);
-  --primary: oklch(0.07 0 0);            /* ink */
-  --primary-foreground: oklch(0.987 0 0);
-  --secondary: oklch(0.965 0 0);         /* layer */
-  --secondary-foreground: oklch(0.07 0 0);
-  --muted: oklch(0.965 0 0);
-  --muted-foreground: oklch(0.36 0 0);   /* graphite */
-  --accent: oklch(0.965 0 0);
-  --accent-foreground: oklch(0.07 0 0);
+  --background: #fafaf9;                 /* paper */
+  --foreground: #0a0a0a;                 /* ink */
+  --card: #ffffff;                       /* surface */
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;                    /* ink */
+  --primary-foreground: #fafaf9;
+  --secondary: #f4f4f3;                  /* layer */
+  --secondary-foreground: #0a0a0a;
+  --muted: #f4f4f3;
+  --muted-foreground: #404040;           /* graphite */
+  --accent: #e5e5e5;                     /* rule */
+  --accent-foreground: #0a0a0a;
 
   /* Destructive maps to wine */
-  --destructive: oklch(0.40 0.10 18);
-  --destructive-foreground: oklch(0.987 0 0);
+  --destructive: #7a2228;
+  --destructive-foreground: #fafaf9;
 
-  --border: oklch(0.92 0 0);             /* rule */
-  --input: oklch(0.92 0 0);
-  --input-surface: oklch(0.965 0 0);
-  --ring: oklch(0.55 0 0);
+  --border: #e5e5e5;                     /* rule */
+  --input: #d4d4d4;                      /* rule strong */
+  --input-surface: #f4f4f3;
+  --ring: #737373;                       /* smoke */
+  --overlay: color-mix(in oklch, #0a0a0a 58%, transparent);
 
   /* Charts — monochrome graphite scale */
-  --chart-1: oklch(0.14 0 0);
-  --chart-2: oklch(0.36 0 0);
-  --chart-3: oklch(0.55 0 0);
-  --chart-4: oklch(0.72 0 0);
-  --chart-5: oklch(0.87 0 0);
+  --chart-1: #0a0a0a;
+  --chart-2: #404040;
+  --chart-3: #737373;
+  --chart-4: #d4d4d4;
+  --chart-5: #e5e5e5;
 
   /* ── Refined semantics · material names, not signals ── */
-  --wine: #7a2228;       /* destructive · aged Bordeaux */
-  --wine-tint: rgba(122, 34, 40, 0.07);
-  --sage: #4d6651;       /* success · dusty herb */
-  --sage-tint: rgba(77, 102, 81, 0.08);
-  --clay: #a55a32;       /* warning · burnt terracotta */
-  --clay-tint: rgba(165, 90, 50, 0.08);
+  --wine: #7a2228;                   /* destructive · aged Bordeaux */
+  --wine-tint: rgba(122, 34, 40, 0.11);
+  --sage: #4d6651;                   /* success · dusty herb */
+  --sage-tint: rgba(77, 102, 81, 0.12);
+  --clay: #a55a32;                   /* warning · burnt terracotta */
+  --clay-tint: rgba(165, 90, 50, 0.12);
 
   /* ── The Metals · full stacks (base · highlight · shadow · gleam · matte) ── */
-  --bronze-base: #8b5a2b;
-  --bronze-highlight: #d4a574;
-  --bronze-shadow: #4a2f18;
-  --bronze-gleam: #efd0a0;
-  --bronze-matte: #74553e;
+  --bronze-base: oklch(0.58 0.11 58);
+  --bronze-highlight: oklch(0.84 0.105 66);
+  --bronze-shadow: oklch(0.36 0.075 54);
+  --bronze-gleam: oklch(0.93 0.075 73);
+  --bronze-matte: oklch(0.53 0.082 58);
 
-  --silver-base: #a8a8a8;
-  --silver-highlight: #f0f0f0;
-  --silver-shadow: #5a5a5a;
-  --silver-gleam: #ffffff;
-  --silver-matte: #8a8a8a;
+  --silver-base: oklch(0.76 0.006 245);
+  --silver-highlight: oklch(0.96 0.004 245);
+  --silver-shadow: oklch(0.50 0.006 245);
+  --silver-gleam: oklch(0.99 0.002 245);
+  --silver-matte: oklch(0.66 0.004 245);
 
-  --gold-base: #c8a560;       /* champagne — 18k, not 24k */
-  --gold-highlight: #e8cb8c;
-  --gold-shadow: #7a6238;
-  --gold-gleam: #f5e4c0;
-  --gold-matte: #9a8052;
+  --gold-base: oklch(0.79 0.115 86);       /* luminous champagne, not trophy yellow */
+  --gold-highlight: oklch(0.91 0.095 91);
+  --gold-shadow: oklch(0.56 0.085 80);
+  --gold-gleam: oklch(0.97 0.065 94);
+  --gold-matte: oklch(0.69 0.08 84);
 
   /* Legacy aliases so existing text-bronze / border-bronze etc. still resolve */
   --bronze: var(--bronze-base);
   --silver: var(--silver-base);
   --gold: var(--gold-base);
 
-  --radius: 0.25rem;
+  --radius: 0.125rem;
 
   /* Sidebar tokens */
-  --sidebar: oklch(0.987 0.001 95);
-  --sidebar-foreground: oklch(0.07 0 0);
-  --sidebar-primary: oklch(0.07 0 0);
-  --sidebar-primary-foreground: oklch(0.987 0 0);
-  --sidebar-accent: oklch(0.965 0 0);
-  --sidebar-accent-foreground: oklch(0.07 0 0);
-  --sidebar-border: oklch(0.92 0 0);
-  --sidebar-ring: oklch(0.55 0 0);
+  --sidebar: #fafaf9;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #0a0a0a;
+  --sidebar-primary-foreground: #fafaf9;
+  --sidebar-accent: #f4f4f3;
+  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #737373;
 }
 
 .dark {
   color-scheme: dark;
 
   /* ── Atelier palette · dark ── */
-  --background: oklch(0.07 0 0);         /* carbon */
-  --foreground: oklch(0.985 0 0);        /* chalk */
-  --card: oklch(0.13 0 0);               /* surface */
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.13 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.07 0 0);
-  --secondary: oklch(0.17 0 0);          /* layer */
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.17 0 0);
-  --muted-foreground: oklch(0.72 0 0);
-  --accent: oklch(0.17 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #0a0a0a;                 /* carbon */
+  --foreground: #fafafa;                 /* chalk */
+  --card: #141414;                       /* surface */
+  --card-foreground: #fafafa;
+  --popover: #141414;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1c1c1c;                  /* layer from the preview */
+  --secondary-foreground: #fafafa;
+  --muted: #1c1c1c;
+  --muted-foreground: #d4d4d4;           /* mist */
+  --accent: #262626;                     /* rule */
+  --accent-foreground: #fafafa;
 
-  --destructive: oklch(0.55 0.10 18);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive: #7a2228;
+  --destructive-foreground: #fafafa;
 
-  --border: oklch(0.22 0 0);
-  --input: oklch(0.22 0 0);
-  --input-surface: oklch(0.17 0 0);
-  --ring: oklch(0.55 0 0);
+  --border: #262626;                     /* rule */
+  --input: #262626;
+  --input-surface: #1c1c1c;
+  --ring: #737373;                       /* smoke */
+  --overlay: color-mix(in oklch, #0a0a0a 64%, transparent);
 
-  --chart-1: oklch(0.95 0 0);
-  --chart-2: oklch(0.78 0 0);
-  --chart-3: oklch(0.60 0 0);
-  --chart-4: oklch(0.42 0 0);
-  --chart-5: oklch(0.25 0 0);
+  --chart-1: #fafafa;
+  --chart-2: #d4d4d4;
+  --chart-3: #737373;
+  --chart-4: #262626;
+  --chart-5: #141414;
 
   /* Semantics — lighter for dark backgrounds */
-  --wine: #b5575c;
-  --wine-tint: rgba(181, 87, 92, 0.12);
-  --sage: #9bb29f;
-  --sage-tint: rgba(155, 178, 159, 0.10);
-  --clay: #d49874;
-  --clay-tint: rgba(212, 152, 116, 0.10);
+  --wine: #7a2228;
+  --wine-tint: rgba(122, 34, 40, 0.24);
+  --sage: #4d6651;
+  --sage-tint: rgba(77, 102, 81, 0.24);
+  --clay: #a55a32;
+  --clay-tint: rgba(165, 90, 50, 0.24);
 
   /* Metals stay absolute across modes — they're materials, not surfaces */
 
-  --sidebar: oklch(0.07 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.985 0 0);
-  --sidebar-primary-foreground: oklch(0.07 0 0);
-  --sidebar-accent: oklch(0.17 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.22 0 0);
-  --sidebar-ring: oklch(0.55 0 0);
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1c1c1c;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #737373;
 }
 
 @theme inline {
@@ -158,6 +160,7 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-input-surface: var(--input-surface);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -191,9 +194,9 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  --font-sans: var(--font-sans);
-  --font-heading: var(--font-heading);
-  --font-mono: var(--font-mono);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-code);
 }
 
 @layer base {
@@ -203,12 +206,26 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "kern";
+    font-kerning: normal;
+    font-optical-sizing: auto;
+    font-synthesis-weight: none;
   }
   html {
+    --font-sans: var(--font-body);
+    --font-heading: var(--font-display);
+    --font-mono: var(--font-code);
     @apply font-sans;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.08;
+  }
+  ::selection {
+    background: var(--foreground);
+    color: var(--background);
   }
 }
 
@@ -217,6 +234,421 @@
    Built from CSS gradients only. No WebGL, no canvas, no images.
    ═══════════════════════════════════════════════════════════════ */
 @layer utilities {
+  .atelier-shell {
+    width: min(100%, 82.5rem);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .atelier-section {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    padding-block: clamp(2.5rem, 6vw, 5.5rem);
+  }
+
+  .atelier-section::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: color-mix(in oklch, var(--foreground) 18%, var(--border));
+  }
+
+  .atelier-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--muted-foreground);
+    text-transform: lowercase;
+  }
+
+  .atelier-eyebrow::before {
+    content: "";
+    width: 2rem;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .atelier-page-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 3.2vw, 3rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0;
+    max-width: 14ch;
+  }
+
+  .atelier-page-title em,
+  .atelier-page-title .muted {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .atelier-page-title-wide {
+    max-width: none;
+  }
+
+  .atelier-panel {
+    border: 1px solid color-mix(in oklch, var(--foreground) 10%, var(--border));
+    background: var(--card);
+  }
+
+  .atelier-rule-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklch, var(--border) 58%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklch, var(--border) 50%, transparent) 1px, transparent 1px);
+    background-size: 38px 38px;
+  }
+
+  .atelier-section-head {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    gap: 2rem;
+    align-items: baseline;
+  }
+
+  .atelier-display-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.5rem, 4.8vw, 4.5rem);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: 0;
+  }
+
+  .atelier-display-title em,
+  .atelier-display-title .muted {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .atelier-data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .atelier-data-table thead th {
+    border-bottom: 1px solid color-mix(in oklch, var(--foreground) 16%, var(--border));
+    background: var(--secondary);
+    padding: 0.95rem 1.25rem;
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-align: left;
+    text-transform: lowercase;
+  }
+
+  .atelier-data-table tbody td {
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    vertical-align: top;
+  }
+
+  .atelier-data-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .atelier-data-table tbody tr:hover {
+    background: var(--secondary);
+  }
+
+  .atelier-data-table .num-cell {
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    width: 3rem;
+  }
+
+  @media (max-width: 720px) {
+    .atelier-section-head {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    .atelier-display-title {
+      font-size: clamp(2.25rem, 10vw, 3.25rem);
+    }
+  }
+
+  .atelier-link-card {
+    transition: border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .atelier-link-card:hover {
+    border-color: color-mix(in oklch, var(--foreground) 28%, var(--border));
+    background-color: var(--secondary);
+    transform: translateY(-1px);
+  }
+
+  .brand-link {
+    transition: color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tracking-tight,
+  .tracking-tighter,
+  .tracking-wider,
+  .tracking-wide {
+    letter-spacing: 0;
+  }
+
+  .brand-mark {
+    position: relative;
+    display: inline-block;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: none;
+  }
+
+  .brand-mark::before,
+  .brand-mark::after {
+    content: "";
+    position: absolute;
+    inset: 0.125rem;
+    border: 1px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  .brand-mark::after {
+    inset: 0.5rem;
+    background: currentColor;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .brand-link:hover .brand-mark::after,
+  .brand-link:focus-visible .brand-mark::after {
+    opacity: 0.72;
+    transform: rotate(45deg) scale(0.68);
+  }
+
+  .atelier-empty-state {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 1.25rem;
+    color: var(--muted-foreground);
+  }
+
+  .atelier-empty-state-centered {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .atelier-empty-glyph {
+    position: relative;
+    display: inline-block;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .atelier-empty-glyph::before,
+  .atelier-empty-glyph::after {
+    content: "";
+    position: absolute;
+    inset: 0.25rem;
+    border: 1px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  .atelier-empty-glyph::after {
+    inset: 0.7rem;
+    background: currentColor;
+    opacity: 0.44;
+  }
+
+  .atelier-skeleton {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .atelier-skeleton::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: -45%;
+    width: 45%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklch, var(--foreground) 10%, transparent),
+      transparent
+    );
+    transform: skewX(-12deg);
+    animation: atelier-skeleton-rule 1.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .status-sage {
+    border-color: color-mix(in oklch, var(--sage) 78%, var(--border));
+    background: var(--sage-tint);
+    color: color-mix(in oklch, var(--sage) 82%, var(--foreground));
+  }
+
+  .status-clay {
+    border-color: color-mix(in oklch, var(--clay) 80%, var(--border));
+    background: var(--clay-tint);
+    color: color-mix(in oklch, var(--clay) 86%, var(--foreground));
+  }
+
+  .status-wine {
+    border-color: color-mix(in oklch, var(--wine) 82%, var(--border));
+    background: var(--wine-tint);
+    color: color-mix(in oklch, var(--wine) 80%, var(--foreground));
+  }
+
+  .text-status-sage {
+    color: color-mix(in oklch, var(--sage) 82%, var(--foreground));
+  }
+
+  .text-status-clay {
+    color: color-mix(in oklch, var(--clay) 86%, var(--foreground));
+  }
+
+  .text-status-wine {
+    color: color-mix(in oklch, var(--wine) 80%, var(--foreground));
+  }
+
+  .status-dot-sage { background: color-mix(in oklch, var(--sage) 96%, var(--foreground)); }
+  .status-dot-clay { background: color-mix(in oklch, var(--clay) 96%, var(--foreground)); }
+  .status-dot-wine { background: color-mix(in oklch, var(--wine) 94%, var(--foreground)); }
+
+  .dark .status-sage,
+  .dark .text-status-sage {
+    color: color-mix(in oklch, var(--sage) 74%, var(--foreground));
+  }
+
+  .dark .status-clay,
+  .dark .text-status-clay {
+    color: color-mix(in oklch, var(--clay) 76%, var(--foreground));
+  }
+
+  .dark .status-wine,
+  .dark .text-status-wine {
+    color: color-mix(in oklch, var(--wine) 72%, var(--foreground));
+  }
+
+  .placement-gold {
+    border-color: color-mix(in oklch, var(--gold-base) 70%, var(--border));
+    background: color-mix(in oklch, var(--gold-base) 21%, var(--card));
+    color: var(--gold-matte);
+  }
+
+  .placement-silver {
+    border-color: color-mix(in oklch, var(--silver-matte) 64%, var(--border));
+    background: color-mix(in oklch, var(--silver-base) 18%, var(--card));
+    color: color-mix(in oklch, var(--silver-shadow) 52%, var(--foreground));
+  }
+
+  .placement-bronze {
+    border-color: color-mix(in oklch, var(--bronze-base) 66%, var(--border));
+    background: color-mix(in oklch, var(--bronze-base) 19%, var(--card));
+    color: var(--bronze-base);
+  }
+
+  .dark .placement-gold { color: var(--gold-highlight); }
+  .dark .placement-silver { color: var(--silver-highlight); }
+  .dark .placement-bronze { color: var(--bronze-highlight); }
+
+  .atelier-panel,
+  [data-slot="card"],
+  [data-slot="table-container"],
+  [data-slot="skeleton"] {
+    border-radius: 0 !important;
+    background-color: var(--card);
+  }
+
+  [data-slot="skeleton"] {
+    background-color: var(--secondary);
+  }
+
+  @keyframes atelier-skeleton-rule {
+    from {
+      transform: translateX(0) skewX(-12deg);
+    }
+
+    to {
+      transform: translateX(320%) skewX(-12deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brand-mark::after,
+    .atelier-link-card,
+    .brand-link {
+      transition: none;
+    }
+
+    .atelier-skeleton::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+
+  [data-slot="card"] {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+
+  [data-slot="card"] > [data-slot="card-header"]:first-child {
+    border-bottom: 1px solid var(--border);
+    background-color: var(--secondary);
+  }
+
+  [data-slot="table-container"] {
+    border-color: var(--border);
+  }
+
+  [data-slot="table-head"] {
+    background-color: var(--secondary);
+    color: var(--foreground);
+  }
+
+  [data-slot="table-row"] {
+    border-color: var(--border);
+  }
+
+  [data-slot="tabs-trigger"][data-state="active"] {
+    border-color: var(--foreground) !important;
+    background-color: var(--foreground) !important;
+    color: var(--background) !important;
+  }
+
+  [data-slot="button"],
+  [data-slot="input"],
+  [data-slot="select-trigger"],
+  [data-slot="textarea"],
+  [data-slot="badge"],
+  [data-slot="tabs-list"],
+  [data-slot="tabs-trigger"],
+  [data-slot="select-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="navigation-menu-viewport"],
+  [data-slot="navigation-menu-content"],
+  [data-slot="sheet-content"],
+  [data-slot="dialog-content"],
+  [data-slot="popover-content"],
+  [data-slot="tooltip-content"] {
+    border-radius: 2px !important;
+    box-shadow: none;
+  }
+
+  [data-slot="badge"] {
+    font-family: var(--font-mono);
+    letter-spacing: 0;
+    text-transform: lowercase;
+  }
 
   /* ─── Treatment 1: POLISHED — diagonal linear, fresh polished metal ─── */
   .metal-bronze-polished {
@@ -272,49 +704,37 @@
 
   /* ─── Treatment 3: MATTE — desaturated, contemporary hardware ─── */
   .metal-bronze-matte {
-    background: linear-gradient(160deg, #2a1a0d 0%, var(--bronze-matte) 50%, #2a1a0d 100%);
+    background: linear-gradient(160deg, var(--bronze-shadow) 0%, var(--bronze-matte) 48%, var(--bronze-highlight) 58%, var(--bronze-shadow) 100%);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.1);
   }
   .metal-silver-matte {
-    background: linear-gradient(160deg, #3a3a3a 0%, var(--silver-matte) 50%, #3a3a3a 100%);
+    background: linear-gradient(160deg, var(--silver-shadow) 0%, var(--silver-matte) 48%, var(--silver-highlight) 58%, var(--silver-shadow) 100%);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.15);
   }
   .metal-gold-matte {
-    background: linear-gradient(160deg, #5a4828 0%, var(--gold-matte) 50%, #5a4828 100%);
+    background: linear-gradient(160deg, var(--gold-shadow) 0%, var(--gold-matte) 48%, var(--gold-highlight) 58%, var(--gold-shadow) 100%);
     box-shadow: inset 0 0 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.1);
   }
 
-  /* ─── Treatment 4: INLAID TEXT — background-clip: text ─── */
+  /* ─── Treatment 4: INLAID TEXT ─── */
   .metal-text-bronze,
   .metal-text-silver,
   .metal-text-gold {
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
     font-weight: 500;
   }
   .metal-text-bronze {
-    background-image: linear-gradient(180deg,
-      var(--bronze-shadow) 0%, var(--bronze-base) 25%,
-      var(--bronze-highlight) 50%, var(--bronze-gleam) 62%,
-      var(--bronze-highlight) 70%, var(--bronze-base) 88%,
-      var(--bronze-shadow) 100%);
+    color: var(--bronze-base);
   }
   .metal-text-silver {
-    background-image: linear-gradient(180deg,
-      var(--silver-shadow) 0%, var(--silver-base) 25%,
-      var(--silver-highlight) 50%, var(--silver-gleam) 62%,
-      var(--silver-highlight) 70%, var(--silver-base) 88%,
-      var(--silver-shadow) 100%);
+    color: var(--silver-matte);
   }
   .metal-text-gold {
-    background-image: linear-gradient(180deg,
-      var(--gold-shadow) 0%, var(--gold-base) 25%,
-      var(--gold-highlight) 50%, var(--gold-gleam) 62%,
-      var(--gold-highlight) 70%, var(--gold-base) 88%,
-      var(--gold-shadow) 100%);
+    color: var(--gold-matte);
   }
+
+  .dark .metal-text-bronze { color: var(--bronze-highlight); }
+  .dark .metal-text-silver { color: var(--silver-highlight); }
+  .dark .metal-text-gold { color: var(--gold-highlight); }
 
   /* ─── Treatment 5: WHISPER — inline tag, monospace dot ─── */
   .metal-whisper {
@@ -339,22 +759,22 @@
     flex-shrink: 0;
   }
   .metal-bronze-whisper {
-    background: color-mix(in oklch, var(--bronze-base) 8%, var(--card));
-    border-color: color-mix(in oklch, var(--bronze-base) 35%, var(--border));
+    background: color-mix(in oklch, var(--bronze-base) 16%, var(--card));
+    border-color: color-mix(in oklch, var(--bronze-base) 58%, var(--border));
     color: var(--bronze-base);
   }
   .metal-bronze-whisper::before { background: var(--bronze-base); }
 
   .metal-silver-whisper {
-    background: var(--muted);
-    border-color: var(--border);
-    color: var(--muted-foreground);
+    background: color-mix(in oklch, var(--silver-base) 15%, var(--card));
+    border-color: color-mix(in oklch, var(--silver-matte) 52%, var(--border));
+    color: var(--silver-matte);
   }
   .metal-silver-whisper::before { background: var(--silver-matte); }
 
   .metal-gold-whisper {
-    background: color-mix(in oklch, var(--gold-base) 8%, var(--card));
-    border-color: color-mix(in oklch, var(--gold-base) 35%, var(--border));
+    background: color-mix(in oklch, var(--gold-base) 18%, var(--card));
+    border-color: color-mix(in oklch, var(--gold-base) 60%, var(--border));
     color: var(--gold-matte);
   }
   .metal-gold-whisper::before { background: var(--gold-base); }
@@ -382,6 +802,27 @@
     pointer-events: none;
   }
   .metal-shine:hover::after { transform: translateX(110%); }
+
+  @media (hover: none), (pointer: coarse) {
+    [data-slot="button"],
+    [data-slot="tabs-list"],
+    [data-slot="tabs-trigger"],
+    [data-slot="navigation-menu-trigger"],
+    [data-slot="navigation-menu-link"],
+    [data-slot="select-trigger"],
+    [data-slot="sheet-trigger"] {
+      min-height: 2.75rem;
+    }
+
+    .metal-whisper:is(button) {
+      min-height: 2.75rem;
+      padding-block: 0.5rem;
+    }
+
+    [data-slot="button"][data-size^="icon"] {
+      min-width: 2.75rem;
+    }
+  }
 }
 
 .tiptap.ProseMirror {

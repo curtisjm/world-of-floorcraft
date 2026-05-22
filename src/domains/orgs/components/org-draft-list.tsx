@@ -103,7 +103,7 @@ export function OrgDraftList({ orgId }: OrgDraftListProps) {
               />
               <div className="flex items-center gap-3">
                 <select
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35"
                   value={editVisibility}
                   onChange={(e) =>
                     setEditVisibility(e.target.value as typeof editVisibility)

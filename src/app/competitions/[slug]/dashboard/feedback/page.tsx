@@ -228,7 +228,7 @@ function RatingAnalytics({
                 key={n}
                 className={`size-5 ${
                   n <= Math.round(data.average!)
-                    ? "fill-amber-400 text-amber-400"
+                    ? "fill-gold text-gold"
                     : "text-muted-foreground/30"
                 }`}
               />
@@ -252,7 +252,7 @@ function RatingAnalytics({
               <Star className="size-3 text-muted-foreground" />
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-amber-400 rounded-full transition-all"
+                  className="h-full rounded-full bg-gold transition-all"
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -279,11 +279,11 @@ function YesNoAnalytics({
     <div className="space-y-3">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
-          <CheckCircle2 className="size-4 text-green-500" />
+          <CheckCircle2 className="size-4 text-status-sage" />
           <span className="text-sm font-medium">Yes: {data.yesCount}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <XCircle className="size-4 text-red-500" />
+          <XCircle className="size-4 text-status-wine" />
           <span className="text-sm font-medium">No: {data.noCount}</span>
         </div>
       </div>

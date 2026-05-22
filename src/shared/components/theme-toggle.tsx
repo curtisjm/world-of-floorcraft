@@ -11,7 +11,7 @@ export function ThemeToggle() {
 
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return <Button variant="ghost" size="sm" className="h-8 w-8 p-0" />;
+  if (!mounted) return <Button variant="ghost" size="icon-sm" />;
 
   const next = theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
   const Icon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
@@ -20,12 +20,11 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="sm"
-      className="h-8 w-8 p-0"
+      size="icon-sm"
       onClick={() => setTheme(next)}
       title={`Theme: ${label}`}
     >
-      <Icon className="h-4 w-4" />
+      <Icon />
     </Button>
   );
 }

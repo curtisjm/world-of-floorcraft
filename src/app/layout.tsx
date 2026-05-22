@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "@shared/components/providers";
 import { OnboardingGuard } from "@shared/components/onboarding-guard";
@@ -10,19 +10,26 @@ import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-body",
+  weight: "variable",
+  axes: ["opsz"],
+  display: "swap",
 });
 
-const fraunces = Fraunces({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
-  variable: "--font-heading",
-  weight: ["300", "400", "500", "600"],
+  variable: "--font-display",
+  weight: "variable",
   style: ["normal", "italic"],
+  axes: ["opsz"],
+  display: "swap",
 });
 
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-code",
+  weight: "variable",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -41,13 +48,17 @@ export default function RootLayout({
       <html
         lang="en"
         suppressHydrationWarning
-        className={cn(inter.variable, fraunces.variable, jetBrainsMono.variable)}
+        className={cn(
+          inter.variable,
+          sourceSerif.variable,
+          jetBrainsMono.variable,
+        )}
       >
         <body className="font-sans antialiased">
           <Providers>
             <div className="min-h-screen flex flex-col">
               <MainNav />
-              <main className="flex-1">
+              <main className="flex-1 bg-background">
                 <OnboardingGuard>{children}</OnboardingGuard>
               </main>
             </div>

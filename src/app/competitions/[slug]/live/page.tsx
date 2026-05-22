@@ -159,10 +159,10 @@ export default function CompetitorLiveViewPage() {
           </p>
           <p className={cn(
             "text-xs flex items-center gap-1",
-            connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+            connectionStatus === "connected" && "text-status-sage",
             connectionStatus === "disconnected" && "text-muted-foreground",
-            connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
-            connectionStatus === "failed" && "text-red-600 dark:text-red-400",
+            connectionStatus === "suspended" && "text-status-clay",
+            connectionStatus === "failed" && "text-status-wine",
           )}>
             {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
             {connectionStatus === "connected" && "Live"}
@@ -177,7 +177,7 @@ export default function CompetitorLiveViewPage() {
       {hasMyEvents && (
         <div className="flex items-center justify-between rounded-lg border px-4 py-3">
           <div className="flex items-center gap-2">
-            <Star className="size-4 text-amber-500" />
+            <Star className="size-4 text-gold" />
             <span className="text-sm font-medium">My Events</span>
           </div>
           <Switch
@@ -280,7 +280,7 @@ function EventCard({
     <Card
       className={cn(
         "transition-colors",
-        isMyEvent && "border-primary/40 bg-primary/5",
+        isMyEvent && "border-gold/40 bg-gold/5",
       )}
     >
       <div
@@ -290,7 +290,7 @@ function EventCard({
         <div className="flex items-center gap-2 min-w-0">
           <span className="font-medium truncate">{event.name}</span>
           {isMyEvent && (
-            <Star className="size-3.5 text-amber-500 fill-amber-500 shrink-0" />
+            <Star className="size-3.5 text-gold fill-gold shrink-0" />
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -354,17 +354,17 @@ function StatusBadge({ status }: { status: "upcoming" | "in_progress" | "complet
   switch (status) {
     case "in_progress":
       return (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+        <Badge variant="secondary" className="status-clay">
           <span className="relative flex size-2 mr-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75" />
-            <span className="relative inline-flex rounded-full size-2 bg-blue-500" />
+            <span className="status-dot-clay animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" />
+            <span className="status-dot-clay relative inline-flex rounded-full size-2" />
           </span>
           In Progress
         </Badge>
       );
     case "completed":
       return (
-        <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+        <Badge variant="secondary" className="status-sage">
           Completed
         </Badge>
       );
@@ -440,11 +440,11 @@ function PlacementRow({
 }) {
   const medalColor =
     placement === 1
-      ? "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700"
+      ? "placement-gold"
       : placement === 2
-        ? "bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-600"
+        ? "placement-silver"
         : placement === 3
-          ? "bg-orange-50 text-orange-800 border-orange-300 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-700"
+          ? "placement-bronze"
           : "bg-background text-foreground border-border";
 
   const isMedal = placement <= 3;
@@ -488,10 +488,10 @@ function PlacementRow({
 
 function NoteCard({ note }: { note: AnnouncementNote }) {
   return (
-    <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+    <Card className="status-clay">
       <CardContent className="py-3 px-4 flex items-start gap-2.5">
-        <Megaphone className="size-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-amber-900 dark:text-amber-200">
+        <Megaphone className="size-4 text-status-clay shrink-0 mt-0.5" />
+        <p className="text-sm text-foreground">
           {note.content}
         </p>
       </CardContent>

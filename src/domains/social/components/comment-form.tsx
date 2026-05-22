@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@shared/ui/button";
+import { Textarea } from "@shared/ui/textarea";
 import { trpc } from "@shared/lib/trpc";
 
 interface CommentFormProps {
@@ -33,8 +34,8 @@ export function CommentForm({
 
   return (
     <div className="flex gap-2">
-      <textarea
-        className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+      <Textarea
+        className="flex-1 resize-none"
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder={placeholder}

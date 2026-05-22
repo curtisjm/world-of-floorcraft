@@ -28,7 +28,7 @@ interface PartnerSearchCardProps {
 
 export function PartnerSearchCard({ profile }: PartnerSearchCardProps) {
   return (
-    <div className="rounded-lg border bg-card p-4 flex flex-col gap-3">
+    <div className="flex flex-col gap-3 border bg-card p-4">
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold">Looking for a Partner</span>
         <Badge variant="secondary" className="text-xs">

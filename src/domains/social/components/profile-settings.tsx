@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Switch } from "@shared/ui/switch";
+import { Textarea } from "@shared/ui/textarea";
 import { trpc } from "@shared/lib/trpc";
 
 const COMPETITION_LEVELS = [
@@ -36,6 +37,9 @@ const ROLE_PREFERENCES = [
 ] as const;
 
 type RolePreference = (typeof ROLE_PREFERENCES)[number]["value"];
+
+const selectClassName =
+  "flex h-10 w-full rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35";
 
 export function ProfileSettings() {
   const utils = trpc.useUtils();
@@ -189,14 +193,14 @@ export function ProfileSettings() {
         <label className="text-sm font-medium" htmlFor="bio">
           Bio
         </label>
-        <textarea
+        <Textarea
           id="bio"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           placeholder="Tell us about yourself..."
           maxLength={500}
           rows={3}
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+          className="resize-none"
         />
         <p className="text-xs text-muted-foreground">{bio.length}/500</p>
       </div>
@@ -215,7 +219,7 @@ export function ProfileSettings() {
               setCompetitionLevelHigh("");
             }
           }}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className={selectClassName}
         >
           <option value="">— None —</option>
           {COMPETITION_LEVELS.map((level) => (
@@ -250,7 +254,7 @@ export function ProfileSettings() {
                 id="competitionLevelHigh"
                 value={competitionLevelHigh}
                 onChange={(e) => setCompetitionLevelHigh(e.target.value as CompetitionLevel | "")}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className={selectClassName}
               >
                 <option value="">— None —</option>
                 {COMPETITION_LEVELS.map((level) => (
@@ -300,7 +304,7 @@ export function ProfileSettings() {
         </div>
 
         {lookingForPartner && (
-          <div className="flex flex-col gap-4 ml-1 pl-4 border-l-2 border-primary/20">
+          <div className="flex flex-col gap-4 border bg-card p-4">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Dance style(s)</label>
               <div className="flex flex-wrap gap-2">
@@ -315,10 +319,10 @@ export function ProfileSettings() {
                           : [...prev, style.value]
                       );
                     }}
-                    className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                    className={`rounded-[2px] border px-3 py-1.5 text-sm transition-colors ${
                       partnerStyles.includes(style.value)
                         ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-input hover:bg-muted"
+                        : "border-input bg-input-surface hover:bg-muted"
                     }`}
                   >
                     {style.label}
@@ -338,7 +342,7 @@ export function ProfileSettings() {
                 id="partnerRole"
                 value={partnerRole}
                 onChange={(e) => setPartnerRole(e.target.value as RolePreference | "")}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className={selectClassName}
               >
                 <option value="">— Select —</option>
                 {ROLE_PREFERENCES.map((role) => (
@@ -379,14 +383,14 @@ export function ProfileSettings() {
               <label className="text-sm font-medium" htmlFor="partnerBio">
                 Partner search bio
               </label>
-              <textarea
+              <Textarea
                 id="partnerBio"
                 value={partnerBio}
                 onChange={(e) => setPartnerBio(e.target.value)}
                 placeholder="What are you looking for in a partner? Experience, goals, availability..."
                 maxLength={500}
                 rows={3}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                className="resize-none"
               />
               <p className="text-xs text-muted-foreground">{partnerBio.length}/500</p>
             </div>
@@ -399,7 +403,7 @@ export function ProfileSettings() {
       )}
 
       {success && (
-        <p className="text-sm text-green-500">Profile updated successfully.</p>
+        <p className="text-sm text-sage">Profile updated successfully.</p>
       )}
 
       <Button

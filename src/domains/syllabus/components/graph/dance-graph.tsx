@@ -18,13 +18,13 @@ import "@xyflow/react/dist/style.css";
 import { FigureNode, type FigureNodeData } from "./figure-node";
 import { computeFullGraphLayout } from "./full-layout";
 
-const EDGE_COLOR = "#888";
+const EDGE_COLOR = "oklch(0.55 0 0)";
 
 const LEVEL_NODE_COLORS: Record<string, string> = {
-  student_teacher: "#CD7F32",
-  associate: "#CD7F32",
-  licentiate: "#C0C0C0",
-  fellow: "#FFD700",
+  student_teacher: "var(--bronze-base)",
+  associate: "var(--bronze-base)",
+  licentiate: "var(--silver-matte)",
+  fellow: "var(--gold-base)",
 };
 
 type LevelGroup = "bronze" | "silver" | "gold";
@@ -37,15 +37,15 @@ const LEVEL_TO_GROUP: Record<string, LevelGroup> = {
 };
 
 const TOGGLE_CONFIG: { key: LevelGroup; label: string; color: string }[] = [
-  { key: "bronze", label: "Bronze", color: "#CD7F32" },
-  { key: "silver", label: "Silver", color: "#C0C0C0" },
-  { key: "gold", label: "Gold", color: "#FFD700" },
+  { key: "bronze", label: "Bronze", color: "var(--bronze-base)" },
+  { key: "silver", label: "Silver", color: "var(--silver-matte)" },
+  { key: "gold", label: "Gold", color: "var(--gold-base)" },
 ];
 
 const LEVEL_LEGEND = [
-  { label: "Bronze (Student Teacher + Associate)", color: "#CD7F32" },
-  { label: "Silver (Licentiate)", color: "#C0C0C0" },
-  { label: "Gold (Fellow)", color: "#FFD700" },
+  { label: "Bronze (Student Teacher + Associate)", color: "var(--bronze-base)" },
+  { label: "Silver (Licentiate)", color: "var(--silver-matte)" },
+  { label: "Gold (Fellow)", color: "var(--gold-base)" },
 ];
 
 export interface GraphFigure {
@@ -365,7 +365,7 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
   useEffect(() => { setEdges(displayEdges); }, [displayEdges, setEdges]);
 
   return (
-    <div className="h-[calc(100vh-200px)] min-h-[500px] rounded-lg border border-border overflow-hidden">
+    <div className="h-[calc(100vh-200px)] min-h-[500px] overflow-hidden border border-border bg-card">
       <ReactFlow
         nodes={nodes}
         edges={flowEdges}
@@ -382,26 +382,26 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
           type: "smoothstep",
         }}
       >
-        <Background color="#333" gap={20} />
-        <Controls className="!bg-card !border-border !shadow-lg [&>button]:!bg-card [&>button]:!border-border [&>button]:!text-foreground [&>button:hover]:!bg-secondary" />
+        <Background color="var(--border)" gap={20} />
+        <Controls className="!border-border !bg-card !shadow-none [&>button]:!border-border [&>button]:!bg-card [&>button]:!text-foreground [&>button:hover]:!bg-secondary" />
         <MiniMap
           nodeColor={(node) => {
             const level = (node.data as FigureNodeData)?.level;
-            return LEVEL_NODE_COLORS[level] ?? "#666";
+            return LEVEL_NODE_COLORS[level] ?? "oklch(0.38 0 0)";
           }}
           className="!bg-card !border-border"
-          maskColor="rgba(0,0,0,0.7)"
+          maskColor="oklch(0.07 0 0 / 0.72)"
         />
         <Panel position="top-right" className="flex gap-2">
           {TOGGLE_CONFIG.map(({ key, label, color }) => (
             <button
               key={key}
               onClick={() => toggleLevel(key)}
-              className="px-3 py-1.5 rounded-md text-xs font-medium border-2 transition-all"
+              className="rounded-[2px] border px-3 py-1.5 text-xs font-medium transition-all"
               style={{
                 borderColor: color,
                 backgroundColor: enabledLevels[key] ? color : "transparent",
-                color: enabledLevels[key] ? "#000" : color,
+                color: enabledLevels[key] ? "oklch(0.07 0 0)" : color,
                 opacity: enabledLevels[key] ? 1 : 0.5,
               }}
             >
@@ -412,16 +412,16 @@ export function DanceGraph({ danceSlug, figures, edges, centerFigureId }: DanceG
         {isFullGraph && (
           <Panel
             position="top-left"
-            className="rounded-md border border-border bg-card/90 px-3 py-2 shadow-sm backdrop-blur"
+            className="border border-border bg-card px-3 py-2"
           >
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            <p className="mb-2 font-mono text-[11px] font-medium lowercase text-muted-foreground">
               Levels
             </p>
-            <div className="space-y-1.5">
+            <div className="flex flex-col gap-1.5">
               {LEVEL_LEGEND.map((item) => (
                 <div key={item.label} className="flex items-center gap-2 text-xs">
                   <span
-                    className="h-2.5 w-2.5 rounded-full"
+                    className="h-2.5 w-2.5 rounded-[2px]"
                     style={{ backgroundColor: item.color }}
                   />
                   <span className="text-foreground">{item.label}</span>

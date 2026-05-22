@@ -34,7 +34,7 @@ export function OrgPostComposer({ orgId }: OrgPostComposerProps) {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="w-full rounded-lg border border-dashed border-muted-foreground/30 px-4 py-3 text-left text-sm text-muted-foreground hover:border-muted-foreground/60 hover:bg-muted/50 transition-colors"
+        className="w-full rounded-[2px] border border-dashed border-muted-foreground/30 px-4 py-3 text-left text-sm text-muted-foreground transition-colors hover:border-muted-foreground/60 hover:bg-muted/50"
       >
         Write a post for this organization...
       </button>
@@ -64,7 +64,7 @@ export function OrgPostComposer({ orgId }: OrgPostComposerProps) {
   };
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-4">
+    <div className="space-y-4 border bg-card p-4">
       <Input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -80,7 +80,7 @@ export function OrgPostComposer({ orgId }: OrgPostComposerProps) {
 
       <div className="flex items-center gap-3">
         <select
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="rounded-[2px] border border-input bg-input-surface px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/35"
           value={visibility}
           onChange={(e) => setVisibility(e.target.value as typeof visibility)}
         >

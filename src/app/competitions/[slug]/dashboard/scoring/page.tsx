@@ -126,7 +126,7 @@ function ScrutineerPanel({ competitionId }: { competitionId: number }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Radio className="size-4 text-green-500" />
+          <Radio className="size-4 text-status-sage" />
           Live Scrutineer Controls
         </CardTitle>
       </CardHeader>
@@ -434,7 +434,7 @@ function RoundDetailDialog({
               <div
                 key={r.entryId}
                 className={`flex items-center justify-between text-sm p-2 rounded-md ${
-                  r.advanced ? "bg-green-500/10" : "bg-muted/30"
+                  r.advanced ? "status-sage" : "bg-muted/30"
                 }`}
               >
                 <span>Entry #{r.entryId}</span>
@@ -457,7 +457,7 @@ function RoundDetailDialog({
                 <div
                   key={r.entryId}
                   className={`flex items-center justify-between text-sm p-2 rounded-md ${
-                    r.placement <= 3 ? "bg-yellow-500/10" : "bg-muted/30"
+                    r.placement <= 3 ? "placement-gold" : "bg-muted/30"
                   }`}
                 >
                   <span className="font-medium">#{r.placement}</span>

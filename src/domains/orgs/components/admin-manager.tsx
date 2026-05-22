@@ -72,7 +72,7 @@ export function AdminManager({ orgId }: AdminManagerProps) {
             return (
               <label
                 key={member.userId}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                className="flex cursor-pointer items-center gap-3 rounded-[2px] border border-transparent p-3 transition-colors hover:border-border hover:bg-accent/50"
               >
                 <Checkbox
                   checked={isAdmin}

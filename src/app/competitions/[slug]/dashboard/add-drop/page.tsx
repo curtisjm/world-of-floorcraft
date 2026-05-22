@@ -77,9 +77,9 @@ export default function AddDropManagementPage() {
 
       {/* Needs Review */}
       {needsReview.length > 0 && (
-        <Card className="border-yellow-500/50">
+        <Card className="status-clay">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base text-yellow-600">
+            <CardTitle className="text-status-clay text-base">
               Needs Review ({needsReview.length})
             </CardTitle>
             <p className="text-xs text-muted-foreground">
@@ -193,7 +193,7 @@ function RequestList({
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 text-green-600"
+              className="size-7 text-status-sage"
               onClick={() => onApprove(req.id)}
               disabled={isPending}
             >

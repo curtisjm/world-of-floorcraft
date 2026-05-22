@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
+import { Skeleton } from "@shared/ui/skeleton";
 
 export function DanceRoutinesList({
   danceId,
@@ -23,19 +24,22 @@ export function DanceRoutinesList({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <p className="text-muted-foreground">Loading routines...</p>
+      <div className="grid gap-3">
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
       </div>
     );
   }
 
   if (!routines || routines.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 rounded-lg border border-dashed border-border">
-        <div className="text-center space-y-2">
-          <p className="text-muted-foreground">No routines yet.</p>
+      <div className="atelier-empty-state atelier-empty-state-centered min-h-64 justify-center">
+        <span className="atelier-empty-glyph" aria-hidden="true" />
+        <div className="space-y-2">
+          <p className="text-foreground">No routines yet.</p>
           <p className="text-sm text-muted-foreground">
-            Create your first {danceName} routine to get started.
+            Build the first {danceName} sequence when you are ready to test the
+            floor plan.
           </p>
         </div>
       </div>

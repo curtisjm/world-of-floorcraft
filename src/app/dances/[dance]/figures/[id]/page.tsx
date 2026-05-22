@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
-import { Separator } from "@shared/ui/separator";
 import { getDb } from "@shared/db";
 import { dances, figures, figureEdges } from "@syllabus/schema";
 
@@ -38,40 +37,77 @@ interface Step {
 
 function StepTable({ steps }: { steps: Step[] }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left">
-            <th className="py-2 pr-4 text-muted-foreground font-medium">#</th>
-            <th className="py-2 pr-4 text-muted-foreground font-medium">
-              Position
-            </th>
-            <th className="py-2 pr-4 text-muted-foreground font-medium">
-              Alignment
-            </th>
-            <th className="py-2 pr-4 text-muted-foreground font-medium">
-              Turn
-            </th>
-            <th className="py-2 text-muted-foreground font-medium">
-              Rise & Fall
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {steps.map((step) => (
-            <tr key={step.step_number} className="border-b border-border/50">
-              <td className="py-2 pr-4 font-mono text-muted-foreground">
-                {step.step_number}
-              </td>
-              <td className="py-2 pr-4">{step.feet_position}</td>
-              <td className="py-2 pr-4">{step.alignment}</td>
-              <td className="py-2 pr-4">{step.amount_of_turn ?? "—"}</td>
-              <td className="py-2">{step.rise_and_fall ?? "—"}</td>
+    <>
+      <div className="space-y-3 md:hidden">
+        {steps.map((step) => (
+          <article
+            key={step.step_number}
+            data-adapted-step-card
+            className="atelier-panel grid gap-4 p-4 text-sm"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <span className="font-mono text-xs text-muted-foreground">
+                step {step.step_number}
+              </span>
+              <span className="text-base font-medium text-foreground">
+                {step.feet_position}
+              </span>
+            </div>
+            <dl className="grid gap-3">
+              <div>
+                <dt className="font-mono text-xs lowercase text-muted-foreground">
+                  alignment
+                </dt>
+                <dd className="mt-1 text-foreground">{step.alignment}</dd>
+              </div>
+              <div>
+                <dt className="font-mono text-xs lowercase text-muted-foreground">
+                  turn
+                </dt>
+                <dd className="mt-1 text-foreground">
+                  {step.amount_of_turn ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="font-mono text-xs lowercase text-muted-foreground">
+                  rise & fall
+                </dt>
+                <dd className="mt-1 text-foreground">
+                  {step.rise_and_fall ?? "—"}
+                </dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+      </div>
+
+      <div className="atelier-panel hidden overflow-x-auto md:block">
+        <table className="atelier-data-table min-w-[56rem] text-sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>position</th>
+              <th>alignment</th>
+              <th>turn</th>
+              <th>rise & fall</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {steps.map((step) => (
+              <tr key={step.step_number}>
+                <td className="num-cell">
+                  {step.step_number}
+                </td>
+                <td>{step.feet_position}</td>
+                <td>{step.alignment}</td>
+                <td>{step.amount_of_turn ?? "—"}</td>
+                <td>{step.rise_and_fall ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
@@ -85,18 +121,24 @@ function TechDetails({
   sway: string | null;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-4 text-sm">
+    <div className="grid gap-px border border-border bg-border text-sm sm:grid-cols-3">
       <div>
-        <span className="font-medium text-foreground">Footwork:</span>{" "}
-        <span className="text-muted-foreground">{footwork ?? "—"}</span>
+        <div className="bg-card p-4">
+          <span className="font-medium text-foreground">Footwork:</span>{" "}
+          <span className="text-muted-foreground">{footwork ?? "—"}</span>
+        </div>
       </div>
       <div>
-        <span className="font-medium text-foreground">CBM:</span>{" "}
-        <span className="text-muted-foreground">{cbm ?? "—"}</span>
+        <div className="bg-card p-4">
+          <span className="font-medium text-foreground">CBM:</span>{" "}
+          <span className="text-muted-foreground">{cbm ?? "—"}</span>
+        </div>
       </div>
       <div>
-        <span className="font-medium text-foreground">Sway:</span>{" "}
-        <span className="text-muted-foreground">{sway ?? "—"}</span>
+        <div className="bg-card p-4">
+          <span className="font-medium text-foreground">Sway:</span>{" "}
+          <span className="text-muted-foreground">{sway ?? "—"}</span>
+        </div>
       </div>
     </div>
   );
@@ -172,103 +214,121 @@ export default async function FigureDetailPage({
   const followerSteps = figure.followerSteps as Step[] | null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 sm:py-12">
-      <div className="space-y-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2 sm:gap-3">
-              <Badge
-                variant="outline"
-                className={LEVEL_COLORS[figure.level]}
-              >
-                {LEVEL_LABELS[figure.level]}
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                {dance?.displayName}
-                {figure.figureNumber != null && ` — Figure #${figure.figureNumber}`}
-              </span>
+    <div className="atelier-shell py-10 sm:py-14">
+      <section className="border-b border-border pb-14">
+        <div className="atelier-section-head">
+          <span className="font-mono text-xs lowercase text-muted-foreground">
+            fig.{figure.figureNumber ?? figure.id.toString().padStart(3, "0")}
+          </span>
+          <div className="flex min-w-0 flex-col gap-8">
+            <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="mb-5 flex flex-wrap items-center gap-3">
+                  <Badge
+                    variant="outline"
+                    className={LEVEL_COLORS[figure.level]}
+                  >
+                    {LEVEL_LABELS[figure.level]}
+                  </Badge>
+                  <span className="font-mono text-xs lowercase text-muted-foreground">
+                    {dance?.displayName}
+                    {figure.timing && ` · ${figure.timing}`}
+                    {figure.beatValue && ` · beat ${figure.beatValue}`}
+                  </span>
+                </div>
+                <h1 className="atelier-display-title max-w-5xl">
+                  {figure.name}
+                  {figure.variantName && (
+                    <span className="muted text-muted-foreground">
+                      {" "}
+                      ({figure.variantName})
+                    </span>
+                  )}
+                </h1>
+              </div>
+              <div className="flex flex-wrap gap-2 lg:pt-8">
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/dances/${danceSlug}/figures/${figureId}/graph`}>
+                    Local graph
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href={`/dances/${danceSlug}`}>Back to {dance?.displayName}</Link>
+                </Button>
+              </div>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {figure.name}
-              {figure.variantName && (
-                <span className="text-muted-foreground font-normal text-xl ml-2 sm:text-2xl sm:ml-3">
-                  ({figure.variantName})
-                </span>
-              )}
-            </h1>
-            {figure.timing && (
-              <p className="text-muted-foreground mt-1">
-                Timing: {figure.timing}
-                {figure.beatValue && ` — Beat value: ${figure.beatValue}`}
-              </p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/dances/${danceSlug}/figures/${figureId}/graph`}>
-                Local Graph
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/dances/${danceSlug}`}>Back to {dance?.displayName}</Link>
-            </Button>
           </div>
         </div>
+      </section>
 
-        <Separator />
-
+      <div className="space-y-10 py-12">
         {/* Step charts */}
         {(leaderSteps || followerSteps) && (
-          <Tabs defaultValue="leader">
-            <TabsList>
-              <TabsTrigger value="leader">Leader&apos;s Steps</TabsTrigger>
-              <TabsTrigger value="follower">Follower&apos;s Steps</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="leader" className="mt-6 space-y-4">
-              {leaderSteps && leaderSteps.length > 0 ? (
-                <>
-                  <StepTable steps={leaderSteps} />
-                  <TechDetails
-                    footwork={figure.leaderFootwork}
-                    cbm={figure.leaderCbm}
-                    sway={figure.leaderSway}
-                  />
-                </>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  No step data available — see base figure.
+          <section className="space-y-5">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="font-mono text-xs lowercase text-muted-foreground">
+                  syllabus chart
                 </p>
-              )}
-            </TabsContent>
+                <h2 className="mt-2 font-heading text-2xl font-medium">
+                  Steps
+                </h2>
+              </div>
+            </div>
 
-            <TabsContent value="follower" className="mt-6 space-y-4">
-              {followerSteps && followerSteps.length > 0 ? (
-                <>
-                  <StepTable steps={followerSteps} />
-                  <TechDetails
-                    footwork={figure.followerFootwork}
-                    cbm={figure.followerCbm}
-                    sway={figure.followerSway}
-                  />
-                </>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  No step data available — see base figure.
-                </p>
-              )}
-            </TabsContent>
-          </Tabs>
+            <Tabs defaultValue="leader">
+              <TabsList>
+                <TabsTrigger value="leader">Leader&apos;s Steps</TabsTrigger>
+                <TabsTrigger value="follower">Follower&apos;s Steps</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="leader" className="mt-5 space-y-4">
+                {leaderSteps && leaderSteps.length > 0 ? (
+                  <>
+                    <StepTable steps={leaderSteps} />
+                    <TechDetails
+                      footwork={figure.leaderFootwork}
+                      cbm={figure.leaderCbm}
+                      sway={figure.leaderSway}
+                    />
+                  </>
+                ) : (
+                  <p className="atelier-panel p-6 text-sm text-muted-foreground">
+                    No step data available; see base figure.
+                  </p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="follower" className="mt-5 space-y-4">
+                {followerSteps && followerSteps.length > 0 ? (
+                  <>
+                    <StepTable steps={followerSteps} />
+                    <TechDetails
+                      footwork={figure.followerFootwork}
+                      cbm={figure.followerCbm}
+                      sway={figure.followerSway}
+                    />
+                  </>
+                ) : (
+                  <p className="atelier-panel p-6 text-sm text-muted-foreground">
+                    No step data available; see base figure.
+                  </p>
+                )}
+              </TabsContent>
+            </Tabs>
+          </section>
         )}
 
         {/* Notes */}
         {figure.notes && (figure.notes as string[]).length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Notes</CardTitle>
+          <Card className="gap-0 py-0">
+            <CardHeader className="border-b bg-secondary px-6 py-4">
+              <CardTitle className="font-mono text-xs font-medium lowercase text-muted-foreground">
+                notes
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+            <CardContent className="px-6 py-6">
+              <ul className="space-y-4 text-[0.95rem] leading-relaxed text-muted-foreground">
                 {(figure.notes as string[]).map((note, i) => (
                   <li key={i}>{note}</li>
                 ))}
@@ -278,30 +338,36 @@ export default async function FigureDetailPage({
         )}
 
         {/* Precede / Follow */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                Preceded By ({precedeEdges.length})
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <Card className="gap-0 overflow-hidden py-0">
+            <CardHeader className="border-b bg-secondary px-6 py-4">
+              <CardTitle className="font-mono text-xs font-medium lowercase text-muted-foreground">
+                preceded by ({precedeEdges.length})
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="max-h-[36rem] overflow-y-auto px-0">
               {precedeEdges.length > 0 ? (
-                <ul className="space-y-2">
+                <ul className="divide-y divide-border">
                   {precedeEdges.map((edge) => {
                     const neighbor = neighborMap.get(edge.sourceFigureId);
                     return (
-                      <li key={edge.id} className="flex items-center justify-between text-sm">
+                      <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                         <Link
                           href={`/dances/${danceSlug}/figures/${edge.sourceFigureId}`}
-                          className="hover:text-foreground text-muted-foreground transition-colors"
+                          className="flex min-h-11 min-w-0 flex-col justify-center text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
-                          {neighbor?.name ?? `Figure #${edge.sourceFigureId}`}
-                          {neighbor?.variantName && ` (${neighbor.variantName})`}
+                          <span className="block truncate">
+                            {neighbor?.name ?? `Figure #${edge.sourceFigureId}`}
+                          </span>
+                          {neighbor?.variantName && (
+                            <span className="mt-1 block truncate text-sm font-normal text-muted-foreground">
+                              {neighbor.variantName}
+                            </span>
+                          )}
                         </Link>
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-2 lg:justify-end">
                           {edge.conditions && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="min-w-0 max-w-[20rem] text-xs leading-relaxed text-muted-foreground">
                               {edge.conditions}
                             </span>
                           )}
@@ -317,36 +383,42 @@ export default async function FigureDetailPage({
                   })}
                 </ul>
               ) : (
-                <p className="text-muted-foreground text-sm">
+                <p className="px-6 py-5 text-sm text-muted-foreground">
                   No precede data available.
                 </p>
               )}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                Followed By ({followEdges.length})
+          <Card className="gap-0 overflow-hidden py-0">
+            <CardHeader className="border-b bg-secondary px-6 py-4">
+              <CardTitle className="font-mono text-xs font-medium lowercase text-muted-foreground">
+                followed by ({followEdges.length})
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="max-h-[36rem] overflow-y-auto px-0">
               {followEdges.length > 0 ? (
-                <ul className="space-y-2">
+                <ul className="divide-y divide-border">
                   {followEdges.map((edge) => {
                     const neighbor = neighborMap.get(edge.targetFigureId);
                     return (
-                      <li key={edge.id} className="flex items-center justify-between text-sm">
+                      <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                         <Link
                           href={`/dances/${danceSlug}/figures/${edge.targetFigureId}`}
-                          className="hover:text-foreground text-muted-foreground transition-colors"
+                          className="flex min-h-11 min-w-0 flex-col justify-center text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
-                          {neighbor?.name ?? `Figure #${edge.targetFigureId}`}
-                          {neighbor?.variantName && ` (${neighbor.variantName})`}
+                          <span className="block truncate">
+                            {neighbor?.name ?? `Figure #${edge.targetFigureId}`}
+                          </span>
+                          {neighbor?.variantName && (
+                            <span className="mt-1 block truncate text-sm font-normal text-muted-foreground">
+                              {neighbor.variantName}
+                            </span>
+                          )}
                         </Link>
-                        <div className="flex items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-2 lg:justify-end">
                           {edge.conditions && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="min-w-0 max-w-[20rem] text-xs leading-relaxed text-muted-foreground">
                               {edge.conditions}
                             </span>
                           )}
@@ -362,7 +434,7 @@ export default async function FigureDetailPage({
                   })}
                 </ul>
               ) : (
-                <p className="text-muted-foreground text-sm">
+                <p className="px-6 py-5 text-sm text-muted-foreground">
                   No follow data available.
                 </p>
               )}

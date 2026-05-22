@@ -31,7 +31,7 @@ export function TiptapEditor({
       LinkExtension.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-400 underline",
+          class: "text-foreground underline underline-offset-4",
         },
       }),
       Placeholder.configure({
@@ -39,7 +39,7 @@ export function TiptapEditor({
       }),
       ImageExtension.configure({
         HTMLAttributes: {
-          class: "rounded-lg max-w-full",
+          class: "max-w-full rounded-[2px]",
         },
       }),
       Table.configure({
@@ -65,7 +65,7 @@ export function TiptapEditor({
   });
 
   return (
-    <div className="border border-input rounded-md overflow-hidden">
+    <div className="overflow-hidden rounded-[2px] border border-input">
       <Toolbar editor={editor} />
       <EditorContent editor={editor} />
     </div>

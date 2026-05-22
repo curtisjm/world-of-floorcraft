@@ -32,7 +32,7 @@ export default function InviteTokenPage() {
       <div className="max-w-md mx-auto px-6 py-16">
         <Card>
           <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-            <CheckCircle className="h-12 w-12 text-emerald-500" />
+            <CheckCircle className="h-12 w-12 text-status-sage" />
             <h2 className="text-xl font-semibold">You&apos;re in!</h2>
             <p className="text-sm text-muted-foreground">
               You&apos;ve successfully joined the organization.

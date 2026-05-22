@@ -189,8 +189,8 @@ function EventRoundsCard({
                           className={cn(
                             "text-xs",
                             round.heatsApproved
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              : "text-amber-600 dark:text-amber-400",
+                              ? "status-sage"
+                              : "text-status-clay",
                           )}
                         >
                           {round.heatsApproved ? (

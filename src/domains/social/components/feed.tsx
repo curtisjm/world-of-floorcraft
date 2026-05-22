@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { trpc } from "@shared/lib/trpc";
 import { Button } from "@shared/ui/button";
+import { Skeleton } from "@shared/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { PostCard } from "./post-card";
 
@@ -39,19 +40,28 @@ function FollowingFeed() {
   const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   if (isLoading) {
-    return <p className="text-muted-foreground text-sm">Loading...</p>;
+    return (
+      <div className="grid gap-3">
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+      </div>
+    );
   }
 
   if (allPosts.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        No posts yet. Follow other dancers to see their posts here.
-      </p>
+      <div className="atelier-empty-state">
+        <span className="atelier-empty-glyph" aria-hidden="true" />
+        <p className="text-sm">
+          Follow dancers, studios, or competitors and this becomes your
+          floor-side notebook.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {allPosts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
@@ -81,19 +91,25 @@ function ExploreFeed() {
   const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   if (isLoading) {
-    return <p className="text-muted-foreground text-sm">Loading...</p>;
+    return (
+      <div className="grid gap-3">
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+      </div>
+    );
   }
 
   if (allPosts.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        No public posts yet. Be the first to share something!
-      </p>
+      <div className="atelier-empty-state">
+        <span className="atelier-empty-glyph" aria-hidden="true" />
+        <p className="text-sm">No public notes yet. The first one sets the tone.</p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {allPosts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}

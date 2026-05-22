@@ -10,6 +10,6 @@ export const clerkAppearance = {
     colorPrimaryForeground: "var(--primary-foreground)",
     colorNeutral: "var(--muted)",
     borderRadius: "var(--radius)",
-    fontFamily: "var(--font-inter), sans-serif",
+    fontFamily: "var(--font-body), sans-serif",
   },
 } satisfies Appearance;

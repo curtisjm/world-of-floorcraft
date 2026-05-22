@@ -140,12 +140,12 @@ export default function StatsPage() {
           {awards?.totals ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-md bg-yellow-50 dark:bg-yellow-900/10">
+                <div className="placement-gold rounded-[2px] border p-3">
                   <p className="text-sm text-muted-foreground">Medals (1st-3rd)</p>
                   <p className="text-xl font-bold">{awards.totals.medalsWithBuffer}</p>
                   <p className="text-xs text-muted-foreground">Base: {awards.totals.medals}</p>
                 </div>
-                <div className="p-3 rounded-md bg-blue-50 dark:bg-blue-900/10">
+                <div className="placement-silver rounded-[2px] border p-3">
                   <p className="text-sm text-muted-foreground">Ribbons (4th+)</p>
                   <p className="text-xl font-bold">{awards.totals.ribbonsWithBuffer}</p>
                   <p className="text-xs text-muted-foreground">Base: {awards.totals.ribbons}</p>

@@ -25,7 +25,6 @@ import {
 import { Separator } from "@shared/ui/separator";
 import { cn } from "@shared/lib/utils";
 import {
-  BookOpen,
   Music,
   Route,
   Newspaper,
@@ -36,7 +35,6 @@ import {
   Bookmark,
   Settings,
   Trophy,
-  Users,
   Menu,
   HeartHandshake,
 } from "lucide-react";
@@ -64,9 +62,9 @@ function NavLink({
     <NavigationMenuLink asChild>
       <Link
         href={href}
-        className="flex items-center gap-2 rounded-sm p-2 text-sm transition-all outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        className="flex items-start gap-3 rounded-sm border border-transparent p-2.5 text-sm transition-all outline-none hover:border-border hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
       >
-        {Icon && <Icon className="size-4 text-muted-foreground" />}
+        {Icon && <Icon className="mt-0.5 size-4 text-muted-foreground" />}
         <div>
           <div className="font-medium">{children}</div>
           {description && (
@@ -94,7 +92,7 @@ function MobileNavLink({
       <Link
         href={href}
         onClick={onClick}
-        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="flex min-h-11 items-center gap-3 rounded-sm border border-transparent px-3 py-2 text-sm transition-colors hover:border-border hover:bg-accent hover:text-accent-foreground"
       >
         {Icon && <Icon className="size-4 text-muted-foreground" />}
         <span>{children}</span>
@@ -119,11 +117,17 @@ export function MainNav() {
     pathname.startsWith("/saved");
 
   return (
-    <header className="border-b border-border px-4 py-3 md:px-6">
-      <nav className="max-w-7xl mx-auto flex items-center justify-between">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/82 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
+      <nav className="atelier-shell flex items-center justify-between py-4">
         <div className="flex items-center gap-2">
-          <Link href="/" className="text-lg font-bold tracking-tight mr-2 md:text-xl md:mr-4">
-            World of Floorcraft
+          <Link
+            href="/"
+            className="brand-link mr-2 flex min-h-11 items-center gap-3 text-foreground md:mr-6"
+          >
+            <span className="brand-mark" aria-hidden="true" />
+            <span className="font-heading text-[1.0625rem] font-medium leading-none">
+              World <span className="italic font-normal">of</span> Floorcraft
+            </span>
           </Link>
 
           {/* Desktop navigation */}
@@ -136,7 +140,6 @@ export function MainNav() {
                     isSyllabusActive ? "text-foreground" : "text-muted-foreground"
                   }
                 >
-                  <BookOpen className="size-4 mr-1" />
                   Syllabus
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -148,7 +151,7 @@ export function MainNav() {
                     >
                       All Dances
                     </NavLink>
-                    <div className="my-1 h-px bg-border" />
+                    <Separator className="my-1" />
                     <div className="grid gap-0.5">
                       {DANCES.map((dance) => (
                         <NavLink
@@ -160,7 +163,7 @@ export function MainNav() {
                         </NavLink>
                       ))}
                     </div>
-                    <div className="my-1 h-px bg-border" />
+                    <Separator className="my-1" />
                     <NavLink
                       href="/routines"
                       icon={Route}
@@ -179,7 +182,6 @@ export function MainNav() {
                     isSocialActive ? "text-foreground" : "text-muted-foreground"
                   }
                 >
-                  <Users className="size-4 mr-1" />
                   Social
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -196,7 +198,7 @@ export function MainNav() {
                         New Post
                       </NavLink>
                     </SignedIn>
-                    <div className="my-1 h-px bg-border" />
+                    <Separator className="my-1" />
                     <NavLink
                       href="/orgs"
                       icon={Building2}
@@ -215,7 +217,7 @@ export function MainNav() {
                       >
                         Partner Search
                       </NavLink>
-                      <div className="my-1 h-px bg-border" />
+                      <Separator className="my-1" />
                       <NavLink href="/settings/profile" icon={User}>
                         My Profile
                       </NavLink>
@@ -235,13 +237,12 @@ export function MainNav() {
                 <Link
                   href="/competitions"
                   className={cn(
-                    "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-[color,box-shadow] outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                    "group inline-flex min-h-11 w-max items-center justify-center rounded-[2px] border border-transparent bg-transparent px-3 py-2 text-sm font-medium transition-[background-color,border-color,color] outline-none hover:bg-secondary hover:text-accent-foreground focus:bg-secondary focus:text-accent-foreground",
                     pathname.startsWith("/competitions")
                       ? "text-foreground"
                       : "text-muted-foreground"
                   )}
                 >
-                  <Trophy className="size-4 mr-1" />
                   Competitions
                 </Link>
               </NavigationMenuItem>
@@ -253,7 +254,7 @@ export function MainNav() {
           <SignedOut>
             <Link
               href="/sign-in"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center whitespace-nowrap text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Sign in
             </Link>
@@ -268,7 +269,7 @@ export function MainNav() {
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <button
-                className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors md:hidden"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[2px] border border-border bg-card p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
                 aria-label="Open menu"
               >
                 <Menu className="size-5" />
@@ -281,7 +282,7 @@ export function MainNav() {
 
               <div className="flex flex-col px-3 pb-6">
                 {/* Syllabus section */}
-                <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <p className="px-3 py-2 font-mono text-xs font-medium lowercase text-muted-foreground">
                   Syllabus
                 </p>
                 <MobileNavLink href="/dances" icon={Music}>
@@ -303,7 +304,7 @@ export function MainNav() {
                 <Separator className="my-3" />
 
                 {/* Social section */}
-                <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <p className="px-3 py-2 font-mono text-xs font-medium lowercase text-muted-foreground">
                   Social
                 </p>
                 <MobileNavLink href="/feed" icon={Newspaper}>
@@ -336,7 +337,7 @@ export function MainNav() {
                 {/* Account section (signed in) */}
                 <SignedIn>
                   <Separator className="my-3" />
-                  <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <p className="px-3 py-2 font-mono text-xs font-medium lowercase text-muted-foreground">
                     Account
                   </p>
                   <MobileNavLink href="/settings/profile" icon={User}>

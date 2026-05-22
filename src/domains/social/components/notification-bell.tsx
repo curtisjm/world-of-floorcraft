@@ -31,7 +31,7 @@ export function NotificationBell() {
           {displayCount !== null && (
             <span
               className={cn(
-                "absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-red-500 text-white font-bold leading-none ring-2 ring-background",
+                "absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-wine text-destructive-foreground font-bold leading-none ring-2 ring-background",
                 displayCount.length > 2
                   ? "min-w-[1.4rem] px-1 text-[0.6rem] h-[1.1rem]"
                   : "size-[1.1rem] text-[0.6rem]"
@@ -48,7 +48,7 @@ export function NotificationBell() {
         align="end"
         sideOffset={8}
       >
-        <NotificationPanel onClose={() => setOpen(false)} />
+        <NotificationPanel />
       </PopoverContent>
     </Popover>
   );

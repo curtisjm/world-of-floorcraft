@@ -14,7 +14,7 @@ export function PastCompetitionsTab({ userId }: { userId: string }) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 rounded-lg" />
+          <Skeleton key={i} className="h-28 rounded-none" />
         ))}
       </div>
     );
@@ -90,16 +90,16 @@ export function PastCompetitionsTab({ userId }: { userId: string }) {
 function PlacementBadge({ placement }: { placement: number }) {
   const variant =
     placement === 1
-      ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30"
+      ? "border-gold/50 bg-card text-gold"
       : placement === 2
-        ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30"
+        ? "border-silver/50 bg-card text-silver"
         : placement === 3
-          ? "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30"
-          : "text-muted-foreground bg-muted";
+          ? "border-bronze/50 bg-card text-bronze"
+          : "border-border bg-secondary text-muted-foreground";
 
   return (
     <span
-      className={`inline-flex items-center justify-center size-7 rounded-full text-xs font-bold tabular-nums shrink-0 ${variant}`}
+      className={`inline-flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold tabular-nums ${variant}`}
     >
       {placement}
     </span>

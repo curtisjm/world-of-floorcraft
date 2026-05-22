@@ -12,12 +12,12 @@ export function MessagingLayout({ children }: MessagingLayoutProps) {
   const hasActiveConversation = pathname !== "/messages";
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="atelier-shell flex h-[calc(100vh-4rem)] py-6">
       {/* Sidebar: full-screen on mobile when no conversation, always visible on desktop */}
       <div
         className={`${
           hasActiveConversation ? "hidden" : "flex"
-        } md:flex w-full md:w-80 flex-col border-r`}
+        } md:flex w-full md:w-80 flex-col border border-border bg-card`}
       >
         <ConversationSidebar />
       </div>
@@ -25,7 +25,7 @@ export function MessagingLayout({ children }: MessagingLayoutProps) {
       <div
         className={`${
           hasActiveConversation ? "flex" : "hidden"
-        } md:flex flex-1 flex-col`}
+        } md:flex flex-1 flex-col border-y border-r border-border bg-card`}
       >
         {children}
       </div>

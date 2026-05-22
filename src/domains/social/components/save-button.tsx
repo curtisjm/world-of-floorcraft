@@ -64,8 +64,8 @@ export function SaveButton({ postId }: SaveButtonProps) {
       </Button>
 
       {open && (
-        <div className="absolute bottom-full right-0 mb-2 w-56 rounded-md border border-border bg-popover p-2 shadow-md z-50">
-          <label className="flex items-center gap-2 px-2 py-1 text-sm hover:bg-muted rounded cursor-pointer">
+        <div className="absolute bottom-full right-0 z-50 mb-2 w-56 rounded-[2px] border border-border bg-popover p-2 shadow-none">
+          <label className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1 text-sm hover:bg-muted">
             <input
               type="checkbox"
               checked={folderIdSet.has(null)}
@@ -77,7 +77,7 @@ export function SaveButton({ postId }: SaveButtonProps) {
           {folders?.folders.map((folder) => (
             <label
               key={folder.id}
-              className="flex items-center gap-2 px-2 py-1 text-sm hover:bg-muted rounded cursor-pointer"
+              className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1 text-sm hover:bg-muted"
             >
               <input
                 type="checkbox"

@@ -53,7 +53,7 @@ export default function FeedbackPage() {
         <BackLink slug={slug} />
         <Card>
           <CardContent className="py-12 text-center space-y-3">
-            <CheckCircle2 className="size-10 mx-auto text-green-500" />
+            <CheckCircle2 className="size-10 mx-auto text-status-sage" />
             <h2 className="text-lg font-semibold">Thank you!</h2>
             <p className="text-muted-foreground">
               Your feedback has been submitted. Thank you for helping improve
@@ -243,7 +243,7 @@ function RatingInput({
           <Star
             className={`size-7 ${
               n <= rating
-                ? "fill-amber-400 text-amber-400"
+                ? "fill-gold text-gold"
                 : "text-muted-foreground/40"
             }`}
           />

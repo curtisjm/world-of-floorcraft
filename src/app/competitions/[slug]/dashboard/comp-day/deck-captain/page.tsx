@@ -45,10 +45,10 @@ export default function DeckCaptainPage() {
         <h2 className="text-base sm:text-lg font-semibold">Deck Captain</h2>
         <span className={cn(
           "text-xs flex items-center gap-1",
-          connectionStatus === "connected" && "text-green-600 dark:text-green-400",
+          connectionStatus === "connected" && "text-status-sage",
           connectionStatus === "disconnected" && "text-muted-foreground",
-          connectionStatus === "suspended" && "text-yellow-600 dark:text-yellow-400",
-          connectionStatus === "failed" && "text-red-600 dark:text-red-400",
+          connectionStatus === "suspended" && "text-status-clay",
+          connectionStatus === "failed" && "text-status-wine",
         )}>
           {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
           {connectionStatus === "connected" && "Live"}
@@ -182,7 +182,7 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
         <div className="flex items-center gap-2">
           <Badge
             variant="secondary"
-            className="bg-green-500/15 text-green-700 dark:text-green-400"
+            className="status-sage"
           >
             <CheckCircle2 className="size-3 mr-1" />
             {readyCount} ready
@@ -190,7 +190,7 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
           {scratchedCount > 0 && (
             <Badge
               variant="secondary"
-              className="bg-red-500/15 text-red-700 dark:text-red-400"
+              className="status-wine"
             >
               <XCircle className="size-3 mr-1" />
               {scratchedCount} scratched
@@ -220,9 +220,9 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
               entry.status === null &&
                 "border-border bg-muted text-muted-foreground hover:border-foreground/20",
               entry.status === "ready" &&
-                "border-green-500/30 bg-green-500/15 text-foreground hover:border-green-500/50",
+                "status-sage hover:border-sage",
               entry.status === "scratched" &&
-                "border-red-500/30 bg-red-500/15 text-foreground hover:border-red-500/50",
+                "status-wine hover:border-wine",
             )}
           >
             {/* Stay on floor indicator */}
@@ -258,10 +258,10 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
 
             {/* Status icon overlay */}
             {entry.status === "ready" && (
-              <CheckCircle2 className="absolute bottom-1.5 right-1.5 size-4 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className="absolute bottom-1.5 right-1.5 size-4 text-status-sage" />
             )}
             {entry.status === "scratched" && (
-              <XCircle className="absolute bottom-1.5 right-1.5 size-4 text-red-600 dark:text-red-400" />
+              <XCircle className="absolute bottom-1.5 right-1.5 size-4 text-status-wine" />
             )}
           </button>
         ))}
@@ -274,11 +274,11 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
           Tap to check in
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded border border-green-500/30 bg-green-500/15" />
+          <span className="status-sage inline-block size-3 rounded border" />
           Tap to scratch
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded border border-red-500/30 bg-red-500/15" />
+          <span className="status-wine inline-block size-3 rounded border" />
           Tap to unscratch
         </span>
       </div>
@@ -335,7 +335,7 @@ function ScheduleTab({ competitionId }: { competitionId: number }) {
                     className={cn(
                       "flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm",
                       round.status === "in_progress" &&
-                        "bg-blue-500/10 border border-blue-500/20 font-medium",
+                        "status-clay border font-medium",
                       round.status === "completed" && "text-muted-foreground",
                       round.status === "pending" && "text-muted-foreground",
                     )}

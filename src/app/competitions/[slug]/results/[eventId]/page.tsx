@@ -150,11 +150,11 @@ function SummaryView({
             {summary.map((entry) => {
               const medalBg =
                 entry.placement === 1
-                  ? "bg-amber-50 dark:bg-amber-950/20"
+                  ? "bg-gold/10"
                   : entry.placement === 2
-                    ? "bg-gray-50 dark:bg-gray-900/20"
+                    ? "bg-silver/10"
                     : entry.placement === 3
-                      ? "bg-orange-50 dark:bg-orange-950/20"
+                      ? "bg-bronze/10"
                       : "";
 
               return (

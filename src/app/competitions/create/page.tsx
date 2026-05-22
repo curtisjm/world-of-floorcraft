@@ -324,7 +324,7 @@ export default function CreateCompetitionPage() {
             </p>
 
             {scheduleApplied ? (
-              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/10 text-green-800 dark:text-green-400 text-sm">
+              <div className="status-sage rounded-[2px] border p-4 text-sm">
                 <Check className="size-4 inline mr-2" />
                 Default schedule template applied. You can customize it from the dashboard.
               </div>
@@ -383,7 +383,7 @@ export default function CreateCompetitionPage() {
             </p>
 
             {eventsGenerated ? (
-              <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/10 text-green-800 dark:text-green-400 text-sm">
+              <div className="status-sage rounded-[2px] border p-4 text-sm">
                 <Check className="size-4 inline mr-2" />
                 Events generated. You can customize them from the dashboard.
               </div>

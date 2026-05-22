@@ -9,13 +9,13 @@ import { Skeleton } from "@shared/ui/skeleton";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@shared/ui/select";
 import { CompetitionCard } from "@competitions/components/competition-card";
-import { cn } from "@shared/lib/utils";
-import { Plus, Calendar, MapPin, ChevronRight, Trophy } from "lucide-react";
+import { Plus, Calendar, MapPin, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@shared/ui/card";
 
 const statusFilters = [
@@ -62,53 +62,59 @@ export default function CompetitionsPage() {
     );
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Competitions</h1>
-        <Link href="/competitions/create">
-          <Button>
-            <Plus className="size-4 mr-2" />
-            Create Competition
+    <div className="atelier-shell">
+      <div className="atelier-section flex max-w-4xl flex-col gap-7">
+        <div className="max-w-2xl">
+          <p className="atelier-eyebrow mb-4">competition desk</p>
+          <h1 className="atelier-page-title">Competitions</h1>
+          <p className="mt-3 text-muted-foreground">
+            Browse upcoming events, live rounds, and historical results.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-fit max-w-full flex-wrap gap-1 rounded-sm border bg-muted p-1">
+            {statusFilters.map((filter) => (
+              <Button
+                key={filter.label}
+                type="button"
+                variant={statusFilter === filter.value ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter(filter.value)}
+                className="min-h-11 min-w-11 sm:h-8 sm:min-h-8"
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+
+          <Button asChild>
+            <Link href="/competitions/create">
+              <Plus data-icon="inline-start" />
+              Create competition
+            </Link>
           </Button>
-        </Link>
-      </div>
+        </div>
 
-      {/* Status filter */}
-      <div className="flex gap-1 mb-6 p-1 bg-muted rounded-lg w-fit">
-        {statusFilters.map((filter) => (
-          <button
-            key={filter.label}
-            onClick={() => setStatusFilter(filter.value)}
-            className={cn(
-              "px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
-              statusFilter === filter.value
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {filter.label}
-          </button>
-        ))}
+        {isPast ? (
+          <PastTab
+            year={year}
+            setYear={(y) => { setYear(y); setOffset(0); }}
+            style={style}
+            setStyle={(s) => { setStyle(s); setOffset(0); }}
+            offset={offset}
+            setOffset={setOffset}
+            data={pastData}
+            isLoading={pastLoading}
+          />
+        ) : (
+          <ActiveTab
+            data={data}
+            isLoading={isLoading}
+            statusFilter={statusFilter}
+          />
+        )}
       </div>
-
-      {isPast ? (
-        <PastTab
-          year={year}
-          setYear={(y) => { setYear(y); setOffset(0); }}
-          style={style}
-          setStyle={(s) => { setStyle(s); setOffset(0); }}
-          offset={offset}
-          setOffset={setOffset}
-          data={pastData}
-          isLoading={pastLoading}
-        />
-      ) : (
-        <ActiveTab
-          data={data}
-          isLoading={isLoading}
-          statusFilter={statusFilter}
-        />
-      )}
     </div>
   );
 }
@@ -127,35 +133,36 @@ function ActiveTab({
   return (
     <>
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-lg border border-border p-4 space-y-3">
+            <Card key={i} className="gap-3 p-4">
               <div className="flex items-start justify-between">
                 <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-5 w-20" />
               </div>
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-32" />
-            </div>
+            </Card>
           ))}
         </div>
       ) : !data?.items.length ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">
+        <div className="atelier-empty-state atelier-empty-state-centered px-6 py-12">
+          <span className="atelier-empty-glyph" aria-hidden="true" />
+          <p className="text-muted-foreground">
             {statusFilter
               ? "No competitions match this filter."
-              : "No competitions yet. Create the first one!"}
+              : "Create the first competition when the syllabus is ready for the floor."}
           </p>
           {!statusFilter && (
             <Link href="/competitions/create">
-              <Button variant="outline">Create Competition</Button>
+              <Button variant="outline">Create competition</Button>
             </Link>
           )}
         </div>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-[repeat(auto-fit,minmax(18rem,1fr))]">
             {data.items.map((comp) => (
               <CompetitionCard
                 key={comp.id}
@@ -207,7 +214,7 @@ function PastTab({
   return (
     <>
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="mb-6 flex flex-wrap gap-3">
         <Select
           value={year?.toString() ?? "all"}
           onValueChange={(v) => setYear(v === "all" ? undefined : parseInt(v, 10))}
@@ -216,12 +223,14 @@ function PastTab({
             <SelectValue placeholder="Year" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All years</SelectItem>
-            {YEARS.map((y) => (
-              <SelectItem key={y} value={y.toString()}>
-                {y}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              <SelectItem value="all">All years</SelectItem>
+              {YEARS.map((y) => (
+                <SelectItem key={y} value={y.toString()}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
 
@@ -233,12 +242,14 @@ function PastTab({
             <SelectValue placeholder="Style" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All styles</SelectItem>
-            {STYLES.map((s) => (
-              <SelectItem key={s} value={s} className="capitalize">
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              <SelectItem value="all">All styles</SelectItem>
+              {STYLES.map((s) => (
+                <SelectItem key={s} value={s} className="capitalize">
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
 
@@ -250,32 +261,32 @@ function PastTab({
       </div>
 
       {isLoading && (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-lg" />
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
       )}
 
       {!isLoading && competitions.length === 0 && (
-        <div className="text-center py-12">
-          <Trophy className="size-10 mx-auto mb-3 opacity-30 text-muted-foreground" />
+        <div className="atelier-empty-state atelier-empty-state-centered px-6 py-12">
+          <span className="atelier-empty-glyph" aria-hidden="true" />
           <p className="text-muted-foreground">No past competitions found.</p>
         </div>
       )}
 
       {competitions.length > 0 && (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           {competitions.map((comp) => (
             <Link
               key={comp.id}
               href={`/competitions/${comp.slug}/results`}
               className="block"
             >
-              <Card className="hover:bg-accent/30 transition-colors group">
+              <Card className="atelier-link-card group">
                 <CardContent className="py-4 px-5">
                   <div className="flex items-center justify-between">
-                    <div className="min-w-0 space-y-1">
+                    <div className="flex min-w-0 flex-col gap-1">
                       <p className="font-medium truncate">{comp.name}</p>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                         {comp.organizationName && (
