@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@shared/ui/tooltip";
 import { Toaster } from "@shared/ui/sonner";
 import { trpc } from "@shared/lib/trpc";
+import { ConvexClientProvider } from "@shared/components/convex-client-provider";
 
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
@@ -30,14 +31,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            {children}
-            <Toaster richColors closeButton />
-          </TooltipProvider>
-        </QueryClientProvider>
-      </trpc.Provider>
+      <ConvexClientProvider>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              {children}
+              <Toaster richColors closeButton />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </trpc.Provider>
+      </ConvexClientProvider>
     </ThemeProvider>
   );
 }

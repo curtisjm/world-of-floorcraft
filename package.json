@@ -53,6 +53,7 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "convex": "^1.39.1",
     "dompurify": "^3.3.3",
     "drizzle-orm": "^0.45.2",
     "jose": "^6.2.2",
@@ -80,6 +81,7 @@
   },
   "devDependencies": {
     "@clerk/testing": "^2.0.12",
+    "@edge-runtime/vm": "^5.0.0",
     "@eslint/eslintrc": "^3.3.0",
     "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.1.0",
@@ -88,6 +90,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "convex-test": "^0.0.53",
     "drizzle-kit": "^0.31.9",
     "eslint": "^9.25.0",
     "eslint-config-next": "^15.3.0",
