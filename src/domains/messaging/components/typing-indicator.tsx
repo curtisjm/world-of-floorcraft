@@ -1,17 +1,16 @@
 "use client";
 
+import type { Id } from "../../../../convex/_generated/dataModel";
+
 interface TypingIndicatorProps {
-  typingUsers: string[];
-  userNames: Map<string, string>;
-  currentUserId: string;
+  typingUsers: Id<"users">[];
+  userNames: Map<Id<"users">, string>;
 }
 
-export function TypingIndicator({ typingUsers, userNames, currentUserId }: TypingIndicatorProps) {
-  const others = typingUsers.filter((id) => id !== currentUserId);
+export function TypingIndicator({ typingUsers, userNames }: TypingIndicatorProps) {
+  if (typingUsers.length === 0) return null;
 
-  if (others.length === 0) return null;
-
-  const names = others.map((id) => userNames.get(id) ?? "Someone");
+  const names = typingUsers.map((id) => userNames.get(id) ?? "Someone");
   let text: string;
 
   if (names.length === 1) {

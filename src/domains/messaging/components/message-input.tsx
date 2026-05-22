@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useMutation } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Send } from "lucide-react";
-import { trpc } from "@shared/lib/trpc";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface MessageInputProps {
-  conversationId: number;
+  conversationId: Id<"conversations">;
   onTyping?: () => void;
   onBlur?: () => void;
   onSend?: () => void;
@@ -15,24 +17,24 @@ interface MessageInputProps {
 
 export function MessageInput({ conversationId, onTyping, onBlur, onSend }: MessageInputProps) {
   const [text, setText] = useState("");
-  const utils = trpc.useUtils();
-
-  const sendMutation = trpc.message.send.useMutation({
-    onSuccess: () => {
-      setText("");
-      utils.message.history.invalidate({ conversationId });
-    },
-  });
+  const [isPending, setIsPending] = useState(false);
+  const send = useMutation(api.messaging.send);
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
       const trimmed = text.trim();
-      if (!trimmed) return;
-      sendMutation.mutate({ conversationId, body: trimmed });
-      onSend?.();
+      if (!trimmed || isPending) return;
+      setIsPending(true);
+      try {
+        await send({ conversationId, body: trimmed });
+        setText("");
+        onSend?.();
+      } finally {
+        setIsPending(false);
+      }
     },
-    [text, conversationId, sendMutation, onSend]
+    [text, conversationId, send, onSend, isPending]
   );
 
   const handleChange = useCallback(
@@ -56,7 +58,7 @@ export function MessageInput({ conversationId, onTyping, onBlur, onSend }: Messa
       <Button
         type="submit"
         size="icon"
-        disabled={!text.trim() || sendMutation.isPending}
+        disabled={!text.trim() || isPending}
       >
         <Send className="h-4 w-4" />
       </Button>

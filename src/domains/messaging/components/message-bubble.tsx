@@ -2,14 +2,15 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { cn } from "@shared/lib/utils";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface MessageBubbleProps {
   message: {
     body: string;
-    createdAt: string;
+    createdAt: number;
   };
   sender: {
-    id: string;
+    id: Id<"users">;
     displayName: string | null;
     username: string | null;
     avatarUrl: string | null;

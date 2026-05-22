@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Badge } from "@shared/ui/badge";
@@ -16,9 +16,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@shared/ui/dialog";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 type UserResult = {
-  id: string;
+  _id: Id<"users">;
   username: string | null;
   displayName: string | null;
   avatarUrl: string | null;
@@ -30,6 +32,8 @@ export function NewConversation() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<UserResult[]>([]);
   const [groupName, setGroupName] = useState("");
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -41,24 +45,14 @@ export function NewConversation() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const searchResults = trpc.profile.search.useQuery(
-    { query: debouncedQuery },
-    { enabled: debouncedQuery.length >= 1 }
+  const searchResults = useQuery(
+    api.social.profiles.search,
+    debouncedQuery.length >= 1 ? { query: debouncedQuery } : "skip",
   );
+  const isSearching = debouncedQuery.length >= 1 && searchResults === undefined;
 
-  const dmMutation = trpc.conversation.getOrCreateDM.useMutation({
-    onSuccess: (result) => {
-      handleClose();
-      router.push(`/messages/${result.id}`);
-    },
-  });
-
-  const groupMutation = trpc.conversation.createGroup.useMutation({
-    onSuccess: (result) => {
-      handleClose();
-      router.push(`/messages/${result.id}`);
-    },
-  });
+  const getOrCreateDM = useMutation(api.messaging.getOrCreateDM);
+  const createGroup = useMutation(api.messaging.createGroup);
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -66,39 +60,48 @@ export function NewConversation() {
     setDebouncedQuery("");
     setSelectedUsers([]);
     setGroupName("");
+    setError(null);
   }, []);
 
   const addUser = (user: UserResult) => {
-    if (!selectedUsers.find((u) => u.id === user.id)) {
+    if (!selectedUsers.find((u) => u._id === user._id)) {
       setSelectedUsers((prev) => [...prev, user]);
     }
     setSearchQuery("");
     inputRef.current?.focus();
   };
 
-  const removeUser = (userId: string) => {
-    setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
+  const removeUser = (userId: Id<"users">) => {
+    setSelectedUsers((prev) => prev.filter((u) => u._id !== userId));
   };
 
-  const handleStartConversation = () => {
-    if (selectedUsers.length === 0) return;
-
-    if (selectedUsers.length === 1) {
-      dmMutation.mutate({ otherUserId: selectedUsers[0].id });
-    } else {
-      groupMutation.mutate({
-        name: groupName.trim() || undefined,
-        memberIds: selectedUsers.map((u) => u.id),
-      });
+  const handleStartConversation = async () => {
+    if (selectedUsers.length === 0 || isPending) return;
+    setError(null);
+    setIsPending(true);
+    try {
+      if (selectedUsers.length === 1) {
+        const result = await getOrCreateDM({ otherUserId: selectedUsers[0]._id });
+        handleClose();
+        router.push(`/messages/${result._id}`);
+      } else {
+        const result = await createGroup({
+          name: groupName.trim() || undefined,
+          memberIds: selectedUsers.map((u) => u._id),
+        });
+        handleClose();
+        router.push(`/messages/${result._id}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start conversation");
+    } finally {
+      setIsPending(false);
     }
   };
 
-  const isPending = dmMutation.isPending || groupMutation.isPending;
-  const error = dmMutation.error || groupMutation.error;
-
   // Filter out already-selected users from results
-  const filteredResults = searchResults.data?.filter(
-    (user) => !selectedUsers.find((u) => u.id === user.id)
+  const filteredResults = searchResults?.filter(
+    (user) => !selectedUsers.find((u) => u._id === user._id),
   );
 
   const isGroup = selectedUsers.length >= 2;
@@ -120,14 +123,14 @@ export function NewConversation() {
             <div className="flex flex-wrap gap-1.5">
               {selectedUsers.map((user) => (
                 <Badge
-                  key={user.id}
+                  key={user._id}
                   variant="secondary"
                   className="gap-1 pr-1"
                 >
                   <span>{user.displayName || user.username}</span>
                   <button
                     type="button"
-                    onClick={() => removeUser(user.id)}
+                    onClick={() => removeUser(user._id)}
                     className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
                   >
                     <X className="h-3 w-3" />
@@ -146,7 +149,7 @@ export function NewConversation() {
               placeholder="Search users..."
               autoFocus
             />
-            {searchResults.isFetching && (
+            {isSearching && (
               <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
             )}
           </div>
@@ -154,7 +157,7 @@ export function NewConversation() {
           {/* Search results dropdown */}
           {debouncedQuery.length >= 1 && (
             <div className="rounded-md border">
-              {searchResults.isLoading ? (
+              {isSearching ? (
                 <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Searching...
@@ -164,7 +167,7 @@ export function NewConversation() {
                   <div className="p-1">
                     {filteredResults.map((user) => (
                       <button
-                        key={user.id}
+                        key={user._id}
                         type="button"
                         onClick={() => addUser(user)}
                         className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent transition-colors"
@@ -227,7 +230,7 @@ export function NewConversation() {
           </Button>
 
           {error && (
-            <p className="text-sm text-destructive">{error.message}</p>
+            <p className="text-sm text-destructive">{error}</p>
           )}
         </div>
       </DialogContent>

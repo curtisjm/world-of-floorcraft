@@ -4,10 +4,11 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@shared/ui/avatar";
 import { Badge } from "@shared/ui/badge";
 import { cn } from "@shared/lib/utils";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface ConversationItemProps {
   conversation: {
-    id: number;
+    _id: Id<"conversations">;
     type: string;
     name: string | null;
   };
@@ -18,8 +19,8 @@ interface ConversationItemProps {
   } | null;
   lastMessage: {
     body: string;
-    createdAt: Date;
-    senderId: string;
+    createdAt: number;
+    senderId: Id<"users">;
   } | null;
   unreadCount: number;
   isActive: boolean;
@@ -41,7 +42,7 @@ export function ConversationItem({
 
   return (
     <Link
-      href={`/messages/${conversation.id}`}
+      href={`/messages/${conversation._id}`}
       className={cn(
         "flex items-center gap-3 border border-transparent p-3 transition-colors hover:border-border hover:bg-secondary",
         isActive && "border-border bg-secondary"

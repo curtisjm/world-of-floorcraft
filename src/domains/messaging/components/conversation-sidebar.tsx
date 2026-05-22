@@ -1,19 +1,23 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
 import { ConversationItem } from "./conversation-item";
 import { NewConversation } from "./new-conversation";
 import { ScrollArea } from "@shared/ui/scroll-area";
 import { Skeleton } from "@shared/ui/skeleton";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 export function ConversationSidebar() {
   const params = useParams();
-  const activeId = params.conversationId ? Number(params.conversationId) : null;
+  const activeId =
+    typeof params.conversationId === "string"
+      ? (params.conversationId as Id<"conversations">)
+      : null;
 
-  const { data: conversations, isLoading } = trpc.conversation.list.useQuery(undefined, {
-    refetchInterval: 30_000,
-  });
+  const conversations = useQuery(api.messaging.listConversations, {});
+  const isLoading = conversations === undefined;
 
   const dms = conversations?.filter((c) => c.type !== "org_channel") ?? [];
   const channels = conversations?.filter((c) => c.type === "org_channel") ?? [];
@@ -44,12 +48,12 @@ export function ConversationSidebar() {
           <div className="p-2">
             {dms.map((c) => (
               <ConversationItem
-                key={c.id}
-                conversation={{ id: c.id, type: c.type, name: c.name }}
+                key={c._id}
+                conversation={{ _id: c._id, type: c.type, name: c.name }}
                 otherUser={c.otherUser}
                 lastMessage={c.lastMessage}
                 unreadCount={c.unreadCount}
-                isActive={activeId === c.id}
+                isActive={activeId === c._id}
               />
             ))}
           </div>
@@ -62,12 +66,12 @@ export function ConversationSidebar() {
             </p>
             {channels.map((c) => (
               <ConversationItem
-                key={c.id}
-                conversation={{ id: c.id, type: c.type, name: c.name }}
+                key={c._id}
+                conversation={{ _id: c._id, type: c.type, name: c.name }}
                 otherUser={null}
                 lastMessage={c.lastMessage}
                 unreadCount={c.unreadCount}
-                isActive={activeId === c.id}
+                isActive={activeId === c._id}
               />
             ))}
           </div>

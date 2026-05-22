@@ -20,13 +20,6 @@ vi.mock("@clerk/nextjs", () => ({
   ClerkProvider: ({ children }: { children: unknown }) => children,
 }));
 
-// Mock Ably server -- messaging routers publish to Ably on send
-vi.mock("@messaging/lib/ably-server", () => ({
-  publishToConversation: vi.fn().mockResolvedValue(undefined),
-  createAblyTokenRequest: vi.fn().mockResolvedValue({ token: "test-token" }),
-  getAblyServer: vi.fn(),
-}));
-
 // Mock Ably competition channels -- judge/scrutineer routers publish to Ably
 vi.mock("@competitions/lib/ably-comp", () => ({
   publishToJudging: vi.fn().mockResolvedValue(undefined),

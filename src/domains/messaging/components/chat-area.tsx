@@ -1,129 +1,125 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
-import { useAuth } from "@clerk/nextjs";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { ArrowLeft } from "lucide-react";
 import { MessageBubble } from "./message-bubble";
 import { MessageInput } from "./message-input";
 import { TypingIndicator } from "./typing-indicator";
-import {
-  useConversationMessages,
-  useTypingIndicator,
-} from "@messaging/lib/ably-client";
 import { ScrollArea } from "@shared/ui/scroll-area";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface ChatAreaProps {
-  conversationId: number;
+  conversationId: Id<"conversations">;
 }
 
-interface SenderInfo {
-  id: string;
-  username: string | null;
-  displayName: string | null;
-  avatarUrl: string | null;
-}
-
-interface FlatMessage {
-  id: number;
-  body: string;
-  createdAt: string;
-  conversationId: number;
-  senderId: string;
-  sender: SenderInfo | null;
-}
+const PRESENCE_HEARTBEAT_MS = 30_000;
+const TYPING_DEBOUNCE_MS = 2_000;
+const TYPING_REFRESH_MS = 2_000;
+const HISTORY_PAGE_SIZE = 50;
 
 export function ChatArea({ conversationId }: ChatAreaProps) {
-  const { userId } = useAuth();
+  const me = useQuery(api.users.me, {});
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [realtimeMessages, setRealtimeMessages] = useState<FlatMessage[]>([]);
 
-  const { data, isLoading, fetchNextPage, hasNextPage } =
-    trpc.message.history.useInfiniteQuery(
-      { conversationId, limit: 50 },
-      { getNextPageParam: (lastPage) => lastPage.nextCursor }
-    );
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.messaging.history,
+    { conversationId },
+    { initialNumItems: HISTORY_PAGE_SIZE },
+  );
 
-  // Mark as read when opening
-  const markReadMutation = trpc.conversation.markRead.useMutation();
+  const markRead = useMutation(api.messaging.markRead);
+  const heartbeatPresence = useMutation(api.messaging.heartbeatPresence);
+  const setTyping = useMutation(api.messaging.setTyping);
+
+  // Mark as read on open and refresh when conversation changes.
   useEffect(() => {
-    markReadMutation.mutate({ conversationId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
+    void markRead({ conversationId }).catch(() => {});
+  }, [conversationId, markRead]);
 
-  // Subscribe to real-time messages
-  useConversationMessages(conversationId, (msg) => {
-    const payload = msg.data as {
-      id: number;
-      body: string;
-      createdAt: string;
-      senderId: string;
-      sender?: SenderInfo | null;
+  // Heartbeat presence while viewing this conversation.
+  useEffect(() => {
+    let cancelled = false;
+    const beat = () => {
+      if (cancelled) return;
+      void heartbeatPresence({ conversationId }).catch(() => {});
     };
-    setRealtimeMessages((prev) => [
-      ...prev,
-      { ...payload, conversationId, sender: payload.sender ?? null },
-    ]);
+    beat();
+    const handle = setInterval(beat, PRESENCE_HEARTBEAT_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(handle);
+    };
+  }, [conversationId, heartbeatPresence]);
+
+  // Drive `now` for the typing query so stale heartbeats fall off without
+  // a Date.now() call inside the Convex query itself.
+  const [typingNow, setTypingNow] = useState(() => Date.now());
+  useEffect(() => {
+    const handle = setInterval(
+      () => setTypingNow(Date.now()),
+      TYPING_REFRESH_MS,
+    );
+    return () => clearInterval(handle);
+  }, []);
+
+  const typingUserIds = useQuery(api.messaging.activeTyping, {
+    conversationId,
+    now: typingNow,
   });
 
-  // Reset realtime messages when conversation changes
-  useEffect(() => {
-    setRealtimeMessages([]);
-  }, [conversationId]);
-
-  // Typing indicator
-  const { typingUsers, sendTyping } = useTypingIndicator(conversationId);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
 
   const handleTyping = useCallback(() => {
-    sendTyping(true);
+    const now = Date.now();
+    // Avoid hammering the mutation on every keystroke — once a second is plenty.
+    if (now - lastTypingSentRef.current > 1_000) {
+      lastTypingSentRef.current = now;
+      void setTyping({ conversationId, isTyping: true }).catch(() => {});
+    }
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => sendTyping(false), 2000);
-  }, [sendTyping]);
+    typingTimeoutRef.current = setTimeout(() => {
+      void setTyping({ conversationId, isTyping: false }).catch(() => {});
+    }, TYPING_DEBOUNCE_MS);
+  }, [conversationId, setTyping]);
 
   const handleStopTyping = useCallback(() => {
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = null;
-    sendTyping(false);
-  }, [sendTyping]);
+    void setTyping({ conversationId, isTyping: false }).catch(() => {});
+  }, [conversationId, setTyping]);
 
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      sendTyping(false);
+      void setTyping({ conversationId, isTyping: false }).catch(() => {});
     };
-  }, [sendTyping]);
+  }, [conversationId, setTyping]);
 
-  const allDbItems = data?.pages.flatMap((p) => p.items) ?? [];
+  // history returns newest-first; show chronological top→bottom.
+  const chronological = useMemo(() => [...results].reverse(), [results]);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [realtimeMessages.length, allDbItems.length]);
+  }, [chronological.length]);
 
-  // Merge db rows (Date createdAt) with realtime rows (string createdAt)
-  const dbMessages: FlatMessage[] = allDbItems.map((item) => ({
-    id: item.id,
-    body: item.body,
-    createdAt:
-      typeof item.createdAt === "string"
-        ? item.createdAt
-        : (item.createdAt as Date).toISOString(),
-    conversationId: item.conversationId,
-    senderId: item.senderId,
-    sender: item.sender ?? null,
-  }));
+  const userNames = useMemo(() => {
+    const map = new Map<Id<"users">, string>();
+    for (const m of chronological) {
+      if (!m.sender) continue;
+      map.set(
+        m.sender.id,
+        m.sender.displayName ?? m.sender.username ?? m.sender.id,
+      );
+    }
+    return map;
+  }, [chronological]);
 
-  const allMessages = [...dbMessages, ...realtimeMessages];
-
-  // Deduplicate by ID
-  const seen = new Set<number>();
-  const deduped = allMessages.filter((m) => {
-    if (seen.has(m.id)) return false;
-    seen.add(m.id);
-    return true;
-  });
+  const isLoading = status === "LoadingFirstPage";
+  const canLoadMore = status === "CanLoadMore";
 
   return (
     <div className="flex flex-col h-full">
@@ -138,9 +134,9 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         </Link>
       </div>
       <ScrollArea className="flex-1 p-4">
-        {hasNextPage && (
+        {canLoadMore && (
           <button
-            onClick={() => fetchNextPage()}
+            onClick={() => loadMore(HISTORY_PAGE_SIZE)}
             className="w-full text-center text-sm text-muted-foreground py-2 hover:underline"
           >
             Load older messages
@@ -148,17 +144,17 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
         )}
         {isLoading && <p className="text-muted-foreground text-sm">Loading...</p>}
         <div className="space-y-4">
-          {deduped.map((m) => (
+          {chronological.map((m) => (
             <MessageBubble
-              key={m.id}
+              key={m._id}
               message={{ body: m.body, createdAt: m.createdAt }}
               sender={{
                 id: m.senderId,
                 displayName: m.sender?.displayName ?? null,
-                username: m.sender?.username ?? m.senderId,
+                username: m.sender?.username ?? null,
                 avatarUrl: m.sender?.avatarUrl ?? null,
               }}
-              isOwnMessage={m.senderId === userId}
+              isOwnMessage={!!me && m.senderId === me._id}
             />
           ))}
           <div ref={scrollRef} />
@@ -166,18 +162,8 @@ export function ChatArea({ conversationId }: ChatAreaProps) {
       </ScrollArea>
 
       <TypingIndicator
-        typingUsers={typingUsers}
-        userNames={
-          new Map(
-            deduped
-              .filter((m) => m.sender)
-              .map((m) => [
-                m.senderId,
-                m.sender!.displayName ?? m.sender!.username ?? m.senderId,
-              ])
-          )
-        }
-        currentUserId={userId ?? ""}
+        typingUsers={typingUserIds ?? []}
+        userNames={userNames}
       />
 
       <MessageInput
