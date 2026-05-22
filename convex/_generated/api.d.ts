@@ -14,6 +14,9 @@ import type * as lib_money from "../lib/money.js";
 import type * as lib_pagination from "../lib/pagination.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_time from "../lib/time.js";
+import type * as syllabus_dances from "../syllabus/dances.js";
+import type * as syllabus_figures from "../syllabus/figures.js";
+import type * as syllabus_import from "../syllabus/import.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +31,9 @@ declare const fullApi: ApiFromModules<{
   "lib/pagination": typeof lib_pagination;
   "lib/permissions": typeof lib_permissions;
   "lib/time": typeof lib_time;
+  "syllabus/dances": typeof syllabus_dances;
+  "syllabus/figures": typeof syllabus_figures;
+  "syllabus/import": typeof syllabus_import;
 }>;
 
 /**

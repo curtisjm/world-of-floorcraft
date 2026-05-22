@@ -1,9 +1,10 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { and, eq, inArray, or } from "drizzle-orm";
+import { fetchQuery } from "convex/nextjs";
 import { Button } from "@shared/ui/button";
-import { getDb } from "@shared/db";
-import { dances, figureEdges, figures } from "@syllabus/schema";
+import { api } from "../../../../../../../convex/_generated/api";
 import { DanceGraph } from "@syllabus/components/graph/dance-graph";
 
 export default async function FigureGraphPage({
@@ -11,56 +12,46 @@ export default async function FigureGraphPage({
 }: {
   params: Promise<{ dance: string; id: string }>;
 }) {
-  const { dance: danceSlug, id: idStr } = await params;
-  const figureId = parseInt(idStr, 10);
-  if (isNaN(figureId)) notFound();
+  const { dance: danceSlug, id: figureId } = await params;
 
-  const db = getDb();
-
-  const [dance] = await db
-    .select()
-    .from(dances)
-    .where(eq(dances.name, danceSlug));
-
+  const dance = await fetchQuery(api.syllabus.dances.getByName, {
+    name: danceSlug,
+  });
   if (!dance) notFound();
 
-  const [figure] = await db
-    .select()
-    .from(figures)
-    .where(and(eq(figures.id, figureId), eq(figures.danceId, dance.id)));
+  const figure = await fetchQuery(api.syllabus.figures.getDetail, {
+    figureId,
+  });
+  if (!figure || figure.danceId !== dance.id) notFound();
 
-  if (!figure) notFound();
+  const { precedes, follows } = await fetchQuery(
+    api.syllabus.figures.neighbors,
+    { figureId },
+  );
 
-  // Get all edges involving this figure
-  const edges = await db
-    .select()
-    .from(figureEdges)
-    .where(
-      or(
-        eq(figureEdges.sourceFigureId, figureId),
-        eq(figureEdges.targetFigureId, figureId)
-      )
-    );
+  // The graph shows the centre figure plus every transition neighbour.
+  const centerFigure = {
+    id: figure.id,
+    name: figure.name,
+    variantName: figure.variantName,
+    level: figure.level,
+    figureNumber: figure.figureNumber,
+  };
+  const neighborFigures = [...precedes, ...follows]
+    .map((edge) => edge.figure)
+    .filter((f): f is NonNullable<typeof f> => f !== null);
+  const figuresById = new Map(
+    [centerFigure, ...neighborFigures].map((f) => [f.id, f]),
+  );
+  const graphFigures = [...figuresById.values()];
 
-  // Collect all neighbor IDs
-  const neighborIds = new Set<number>();
-  neighborIds.add(figureId);
-  for (const edge of edges) {
-    neighborIds.add(edge.sourceFigureId);
-    neighborIds.add(edge.targetFigureId);
-  }
-
-  // Fetch neighbor figures
-  const neighborFigures = await db
-    .select({
-      id: figures.id,
-      name: figures.name,
-      variantName: figures.variantName,
-      level: figures.level,
-      figureNumber: figures.figureNumber,
-    })
-    .from(figures)
-    .where(inArray(figures.id, [...neighborIds]));
+  const graphEdges = [...precedes, ...follows].map((edge) => ({
+    id: edge.id,
+    sourceFigureId: edge.sourceFigureId,
+    targetFigureId: edge.targetFigureId,
+    level: edge.level,
+    conditions: edge.conditions,
+  }));
 
   return (
     <div className="px-6 py-6">
@@ -73,12 +64,12 @@ export default async function FigureGraphPage({
               {" — Local Graph"}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              {neighborFigures.length} connected figures, {edges.length} transitions
+              {graphFigures.length} connected figures, {graphEdges.length} transitions
             </p>
           </div>
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <Link href={`/dances/${danceSlug}/figures/${figureId}`}>
+              <Link href={`/dances/${danceSlug}/figures/${figure.id}`}>
                 Back to Figure
               </Link>
             </Button>
@@ -90,9 +81,9 @@ export default async function FigureGraphPage({
 
         <DanceGraph
           danceSlug={danceSlug}
-          figures={neighborFigures}
-          edges={edges}
-          centerFigureId={figureId}
+          figures={graphFigures}
+          edges={graphEdges}
+          centerFigureId={figure.id}
         />
       </div>
     </div>

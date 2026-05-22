@@ -1,6 +1,8 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { and, eq, or } from "drizzle-orm";
+import { fetchQuery } from "convex/nextjs";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import {
@@ -10,8 +12,7 @@ import {
   CardTitle,
 } from "@shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
-import { getDb } from "@shared/db";
-import { dances, figures, figureEdges } from "@syllabus/schema";
+import { api } from "../../../../../../convex/_generated/api";
 
 const LEVEL_COLORS: Record<string, string> = {
   student_teacher: "border-bronze text-bronze",
@@ -149,66 +150,22 @@ export default async function FigureDetailPage({
 }: {
   params: Promise<{ dance: string; id: string }>;
 }) {
-  const { dance: danceSlug, id: idStr } = await params;
-  const figureId = parseInt(idStr, 10);
-  if (isNaN(figureId)) notFound();
+  const { dance: danceSlug, id: figureId } = await params;
 
-  const db = getDb();
-
-  const [dance] = await db
-    .select()
-    .from(dances)
-    .where(eq(dances.name, danceSlug));
-
+  const dance = await fetchQuery(api.syllabus.dances.getByName, {
+    name: danceSlug,
+  });
   if (!dance) notFound();
 
-  const [figure] = await db
-    .select()
-    .from(figures)
-    .where(and(eq(figures.id, figureId), eq(figures.danceId, dance.id)));
+  const figure = await fetchQuery(api.syllabus.figures.getDetail, {
+    figureId,
+  });
+  if (!figure || figure.danceId !== dance.id) notFound();
 
-  if (!figure) notFound();
-
-  // Get edges and resolve figure names
-  const edges = await db
-    .select()
-    .from(figureEdges)
-    .where(
-      or(
-        eq(figureEdges.sourceFigureId, figureId),
-        eq(figureEdges.targetFigureId, figureId)
-      )
-    );
-
-  // Collect all neighbor IDs
-  const neighborIds = new Set<number>();
-  for (const edge of edges) {
-    neighborIds.add(edge.sourceFigureId);
-    neighborIds.add(edge.targetFigureId);
-  }
-  neighborIds.delete(figureId);
-
-  // Fetch neighbor names
-  const neighborMap = new Map<number, { name: string; variantName: string | null; level: string }>();
-  if (neighborIds.size > 0) {
-    const neighbors = await db
-      .select({
-        id: figures.id,
-        name: figures.name,
-        variantName: figures.variantName,
-        level: figures.level,
-      })
-      .from(figures)
-      .where(
-        or(...[...neighborIds].map((nid) => eq(figures.id, nid)))
-      );
-    for (const n of neighbors) {
-      neighborMap.set(n.id, n);
-    }
-  }
-
-  const precedeEdges = edges.filter((e) => e.targetFigureId === figureId);
-  const followEdges = edges.filter((e) => e.sourceFigureId === figureId);
+  const { precedes, follows } = await fetchQuery(
+    api.syllabus.figures.neighbors,
+    { figureId },
+  );
 
   const leaderSteps = figure.leaderSteps as Step[] | null;
   const followerSteps = figure.followerSteps as Step[] | null;
@@ -218,7 +175,7 @@ export default async function FigureDetailPage({
       <section className="border-b border-border pb-14">
         <div className="atelier-section-head">
           <span className="font-mono text-xs lowercase text-muted-foreground">
-            fig.{figure.figureNumber ?? figure.id.toString().padStart(3, "0")}
+            fig.{figure.figureNumber ?? "—"}
           </span>
           <div className="flex min-w-0 flex-col gap-8">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
@@ -231,7 +188,7 @@ export default async function FigureDetailPage({
                     {LEVEL_LABELS[figure.level]}
                   </Badge>
                   <span className="font-mono text-xs lowercase text-muted-foreground">
-                    {dance?.displayName}
+                    {dance.displayName}
                     {figure.timing && ` · ${figure.timing}`}
                     {figure.beatValue && ` · beat ${figure.beatValue}`}
                   </span>
@@ -248,12 +205,12 @@ export default async function FigureDetailPage({
               </div>
               <div className="flex flex-wrap gap-2 lg:pt-8">
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/dances/${danceSlug}/figures/${figureId}/graph`}>
+                  <Link href={`/dances/${danceSlug}/figures/${figure.id}/graph`}>
                     Local graph
                   </Link>
                 </Button>
                 <Button asChild variant="ghost" size="sm">
-                  <Link href={`/dances/${danceSlug}`}>Back to {dance?.displayName}</Link>
+                  <Link href={`/dances/${danceSlug}`}>Back to {dance.displayName}</Link>
                 </Button>
               </div>
             </div>
@@ -320,7 +277,7 @@ export default async function FigureDetailPage({
         )}
 
         {/* Notes */}
-        {figure.notes && (figure.notes as string[]).length > 0 && (
+        {figure.notes && figure.notes.length > 0 && (
           <Card className="gap-0 py-0">
             <CardHeader className="border-b bg-secondary px-6 py-4">
               <CardTitle className="font-mono text-xs font-medium lowercase text-muted-foreground">
@@ -329,7 +286,7 @@ export default async function FigureDetailPage({
             </CardHeader>
             <CardContent className="px-6 py-6">
               <ul className="space-y-4 text-[0.95rem] leading-relaxed text-muted-foreground">
-                {(figure.notes as string[]).map((note, i) => (
+                {figure.notes.map((note, i) => (
                   <li key={i}>{note}</li>
                 ))}
               </ul>
@@ -342,14 +299,14 @@ export default async function FigureDetailPage({
           <Card className="gap-0 overflow-hidden py-0">
             <CardHeader className="border-b bg-secondary px-6 py-4">
               <CardTitle className="font-mono text-xs font-medium lowercase text-muted-foreground">
-                preceded by ({precedeEdges.length})
+                preceded by ({precedes.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="max-h-[36rem] overflow-y-auto px-0">
-              {precedeEdges.length > 0 ? (
+              {precedes.length > 0 ? (
                 <ul className="divide-y divide-border">
-                  {precedeEdges.map((edge) => {
-                    const neighbor = neighborMap.get(edge.sourceFigureId);
+                  {precedes.map((edge) => {
+                    const neighbor = edge.figure;
                     return (
                       <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                         <Link
@@ -357,7 +314,7 @@ export default async function FigureDetailPage({
                           className="flex min-h-11 min-w-0 flex-col justify-center text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
                           <span className="block truncate">
-                            {neighbor?.name ?? `Figure #${edge.sourceFigureId}`}
+                            {neighbor?.name ?? "Unknown figure"}
                           </span>
                           {neighbor?.variantName && (
                             <span className="mt-1 block truncate text-sm font-normal text-muted-foreground">
@@ -393,14 +350,14 @@ export default async function FigureDetailPage({
           <Card className="gap-0 overflow-hidden py-0">
             <CardHeader className="border-b bg-secondary px-6 py-4">
               <CardTitle className="font-mono text-xs font-medium lowercase text-muted-foreground">
-                followed by ({followEdges.length})
+                followed by ({follows.length})
               </CardTitle>
             </CardHeader>
             <CardContent className="max-h-[36rem] overflow-y-auto px-0">
-              {followEdges.length > 0 ? (
+              {follows.length > 0 ? (
                 <ul className="divide-y divide-border">
-                  {followEdges.map((edge) => {
-                    const neighbor = neighborMap.get(edge.targetFigureId);
+                  {follows.map((edge) => {
+                    const neighbor = edge.figure;
                     return (
                       <li key={edge.id} className="grid gap-3 px-6 py-4 text-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                         <Link
@@ -408,7 +365,7 @@ export default async function FigureDetailPage({
                           className="flex min-h-11 min-w-0 flex-col justify-center text-base font-medium leading-tight text-foreground transition-colors hover:text-muted-foreground"
                         >
                           <span className="block truncate">
-                            {neighbor?.name ?? `Figure #${edge.targetFigureId}`}
+                            {neighbor?.name ?? "Unknown figure"}
                           </span>
                           {neighbor?.variantName && (
                             <span className="mt-1 block truncate text-sm font-normal text-muted-foreground">

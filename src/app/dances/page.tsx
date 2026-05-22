@@ -10,9 +10,8 @@ import {
 } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
 import Link from "next/link";
-import { getDb } from "@shared/db";
-import { dances, figures } from "@syllabus/schema";
-import { count } from "drizzle-orm";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../convex/_generated/api";
 import { sortDancesForBrowse } from "@syllabus/components/dance/dance-order";
 
 const DANCE_DESCRIPTIONS: Record<string, string> = {
@@ -24,17 +23,8 @@ const DANCE_DESCRIPTIONS: Record<string, string> = {
 };
 
 export default async function DancesPage() {
-  const db = getDb();
-  const allDances = await db.select().from(dances);
-
-  // Get figure counts per dance
-  const figureCounts = await db
-    .select({ danceId: figures.danceId, count: count() })
-    .from(figures)
-    .groupBy(figures.danceId);
-
-  const countMap = new Map(figureCounts.map((r) => [r.danceId, r.count]));
-  const orderedDances = sortDancesForBrowse(allDances);
+  const dances = await fetchQuery(api.syllabus.dances.list, {});
+  const orderedDances = sortDancesForBrowse(dances);
 
   return (
     <div className="atelier-shell">
@@ -63,7 +53,7 @@ export default async function DancesPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="font-mono text-xs lowercase text-muted-foreground">
-                    {countMap.get(dance.id) ?? 0} figures
+                    {dance.figureCount} figures
                   </p>
                 </CardContent>
                 <CardFooter className="mt-auto border-t text-sm text-muted-foreground">

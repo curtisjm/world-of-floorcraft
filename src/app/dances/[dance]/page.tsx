@@ -1,9 +1,10 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { eq, asc } from "drizzle-orm";
+import { fetchQuery } from "convex/nextjs";
 import { Button } from "@shared/ui/button";
-import { getDb } from "@shared/db";
-import { dances, figures } from "@syllabus/schema";
+import { api } from "../../../../convex/_generated/api";
 import { FigureListFilters } from "@syllabus/components/dance/figure-list-filters";
 
 export default async function DancePage({
@@ -12,26 +13,15 @@ export default async function DancePage({
   params: Promise<{ dance: string }>;
 }) {
   const { dance: danceSlug } = await params;
-  const db = getDb();
 
-  const [dance] = await db
-    .select()
-    .from(dances)
-    .where(eq(dances.name, danceSlug));
-
+  const dance = await fetchQuery(api.syllabus.dances.getByName, {
+    name: danceSlug,
+  });
   if (!dance) notFound();
 
-  const danceFigures = await db
-    .select({
-      id: figures.id,
-      name: figures.name,
-      variantName: figures.variantName,
-      level: figures.level,
-      figureNumber: figures.figureNumber,
-    })
-    .from(figures)
-    .where(eq(figures.danceId, dance.id))
-    .orderBy(asc(figures.figureNumber), asc(figures.name));
+  const danceFigures = await fetchQuery(api.syllabus.figures.listByDance, {
+    danceId: dance.id,
+  });
 
   return (
     <div className="atelier-shell py-10 sm:py-14">

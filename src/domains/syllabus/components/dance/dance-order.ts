@@ -1,8 +1,11 @@
+/**
+ * Minimal shape `sortDancesForBrowse` needs. Kept to just the fields the
+ * sort reads so callers can pass any richer dance row — Drizzle (numeric
+ * id) or Convex (`Id<"dances">` string) — during the migration.
+ */
 export type DanceListItem = {
-  id: number;
   name: string;
   displayName: string;
-  timeSignature: string | null;
 };
 
 const DANCE_BROWSE_ORDER = [

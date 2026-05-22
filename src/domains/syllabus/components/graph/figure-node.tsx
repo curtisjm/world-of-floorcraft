@@ -14,7 +14,8 @@ export type FigureNodeData = {
   label: string;
   level: string;
   danceSlug: string;
-  figureId: number;
+  // Convex document id (`Id<"figures">`) used to build figure links.
+  figureId: string;
   isCenterNode?: boolean;
   linkToGraph?: boolean;
   handleDirection?: "horizontal" | "vertical";

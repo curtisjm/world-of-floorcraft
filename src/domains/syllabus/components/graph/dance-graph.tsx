@@ -49,7 +49,8 @@ const LEVEL_LEGEND = [
 ];
 
 export interface GraphFigure {
-  id: number;
+  // Convex document id (`Id<"figures">`), used as an opaque node key.
+  id: string;
   name: string;
   variantName: string | null;
   level: string;
@@ -57,9 +58,9 @@ export interface GraphFigure {
 }
 
 export interface GraphEdge {
-  id: number;
-  sourceFigureId: number;
-  targetFigureId: number;
+  id: string;
+  sourceFigureId: string;
+  targetFigureId: string;
   level: string;
   conditions: string | null;
 }
@@ -68,7 +69,7 @@ interface DanceGraphProps {
   danceSlug: string;
   figures: GraphFigure[];
   edges: GraphEdge[];
-  centerFigureId?: number;
+  centerFigureId?: string;
 }
 
 function makeNodeData(
@@ -92,7 +93,7 @@ function makeNodeData(
 function layoutLocal(
   figures: GraphFigure[],
   edges: GraphEdge[],
-  centerFigureId: number,
+  centerFigureId: string,
   danceSlug: string
 ): { nodes: Node<FigureNodeData>[]; edges: GraphEdge[] } {
   const centerFig = figures.find((f) => f.id === centerFigureId);

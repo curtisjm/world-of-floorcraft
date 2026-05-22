@@ -35,7 +35,7 @@ const LEVEL_LABELS: Record<string, string> = {
 };
 
 export interface FigureListItem {
-  id: number;
+  id: string;
   name: string;
   variantName: string | null;
   level: string;
