@@ -1,10 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
-import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 import { cn } from "@shared/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@shared/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -18,16 +18,11 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
 
 export default function DeckCaptainPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
-
-  // TODO Task 10/11: useCompLiveWithInvalidation still expects numeric competitionId
-  const { connectionStatus } = useCompLiveWithInvalidation(comp?._id as unknown as number | undefined);
 
   if (!comp) {
     return (
@@ -46,19 +41,6 @@ export default function DeckCaptainPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-base sm:text-lg font-semibold">Deck Captain</h2>
-        <span className={cn(
-          "text-xs flex items-center gap-1",
-          connectionStatus === "connected" && "text-status-sage",
-          connectionStatus === "disconnected" && "text-muted-foreground",
-          connectionStatus === "suspended" && "text-status-clay",
-          connectionStatus === "failed" && "text-status-wine",
-        )}>
-          {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-          {connectionStatus === "connected" && "Live"}
-          {connectionStatus === "disconnected" && "Connecting..."}
-          {connectionStatus === "suspended" && "Reconnecting..."}
-          {connectionStatus === "failed" && "Disconnected"}
-        </span>
       </div>
 
       <Tabs defaultValue="checkin">
@@ -74,11 +56,11 @@ export default function DeckCaptainPage() {
         </TabsList>
 
         <TabsContent value="checkin">
-          <CheckinTab competitionId={comp._id as unknown as number} />
+          <CheckinTab competitionId={comp._id} />
         </TabsContent>
 
         <TabsContent value="schedule">
-          <ScheduleTab competitionId={comp._id as unknown as number} />
+          <ScheduleTab competitionId={comp._id} />
         </TabsContent>
       </Tabs>
     </div>
@@ -87,40 +69,20 @@ export default function DeckCaptainPage() {
 
 // ── Check-in Tab ───────────────────────────────────────────────────
 
-function CheckinTab({ competitionId }: { competitionId: number }) {
-  const utils = trpc.useUtils();
-
-  const { data: checkinView, isLoading } =
-    trpc.deckCaptain.getCheckinView.useQuery(
-      { competitionId },
-      { refetchInterval: 5000 },
-    );
-
-  const checkin = trpc.deckCaptain.checkin.useMutation({
-    onSuccess: () => {
-      utils.deckCaptain.getCheckinView.invalidate({ competitionId });
-    },
-    onError: (err) => toast.error(err.message),
+function CheckinTab({ competitionId }: { competitionId: Id<"competitions"> }) {
+  const checkinView = useQuery(api.competitions.compDay.getCheckinView, {
+    competitionId,
   });
+  const isLoading = checkinView === undefined;
 
-  const scratch = trpc.deckCaptain.scratch.useMutation({
-    onSuccess: () => {
-      utils.deckCaptain.getCheckinView.invalidate({ competitionId });
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const checkinMutation = useMutation(api.competitions.compDay.checkinDeck);
+  const scratchMutation = useMutation(api.competitions.compDay.scratchDeck);
+  const unscratchMutation = useMutation(
+    api.competitions.compDay.unscratchDeck,
+  );
+  const [isMutating, setIsMutating] = useState(false);
 
-  const unscratch = trpc.deckCaptain.unscratch.useMutation({
-    onSuccess: () => {
-      utils.deckCaptain.getCheckinView.invalidate({ competitionId });
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const isMutating =
-    checkin.isPending || scratch.isPending || unscratch.isPending;
-
-  function handleTap(
+  async function handleTap(
     entry: NonNullable<typeof checkinView>["entries"][number],
   ) {
     if (isMutating) return;
@@ -128,12 +90,19 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
     const roundId = checkinView?.roundId;
     if (!roundId) return;
 
-    if (entry.status === null) {
-      checkin.mutate({ roundId, entryId: entry.entryId });
-    } else if (entry.status === "ready") {
-      scratch.mutate({ roundId, entryId: entry.entryId });
-    } else if (entry.status === "scratched") {
-      unscratch.mutate({ roundId, entryId: entry.entryId });
+    setIsMutating(true);
+    try {
+      if (entry.status === "not_checked_in") {
+        await checkinMutation({ roundId, entryId: entry.entryId });
+      } else if (entry.status === "ready") {
+        await scratchMutation({ roundId, entryId: entry.entryId });
+      } else if (entry.status === "scratched") {
+        await unscratchMutation({ roundId, entryId: entry.entryId });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Action failed");
+    } finally {
+      setIsMutating(false);
     }
   }
 
@@ -169,7 +138,7 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
     (e) => e.status === "scratched",
   ).length;
   const pendingCount = checkinView.entries.filter(
-    (e) => e.status === null,
+    (e) => e.status === "not_checked_in",
   ).length;
 
   return (
@@ -179,7 +148,7 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
         <div>
           <h3 className="text-base font-semibold">{checkinView.eventName}</h3>
           <p className="text-sm text-muted-foreground capitalize">
-            {checkinView.roundType.replace(/_/g, " ")}
+            {checkinView.roundType?.replace(/_/g, " ")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -220,7 +189,7 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
               "active:scale-[0.97] disabled:opacity-70",
               "select-none touch-manipulation",
               // Status-based styles
-              entry.status === null &&
+              entry.status === "not_checked_in" &&
                 "border-border bg-muted text-muted-foreground hover:border-foreground/20",
               entry.status === "ready" &&
                 "status-sage hover:border-sage",
@@ -291,9 +260,11 @@ function CheckinTab({ competitionId }: { competitionId: number }) {
 
 // ── Schedule Tab ───────────────────────────────────────────────────
 
-function ScheduleTab({ competitionId }: { competitionId: number }) {
-  const { data: scheduleView, isLoading } =
-    trpc.deckCaptain.getScheduleView.useQuery({ competitionId });
+function ScheduleTab({ competitionId }: { competitionId: Id<"competitions"> }) {
+  const scheduleView = useQuery(api.competitions.compDay.getScheduleView, {
+    competitionId,
+  });
+  const isLoading = scheduleView === undefined;
 
   if (isLoading) {
     return (
@@ -317,7 +288,7 @@ function ScheduleTab({ competitionId }: { competitionId: number }) {
   return (
     <div className="space-y-4 pt-4">
       {scheduleView.events.map((event) => (
-        <Card key={event.id}>
+        <Card key={event._id}>
           <CardHeader className="py-3 pb-2 px-3 sm:px-6">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-sm font-medium truncate">

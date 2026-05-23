@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -56,16 +56,19 @@ export default function CompetitionsPage() {
   const data = listResult ? { items: listResult.page } : undefined;
   const isLoading = !isPast && listResult === undefined;
 
-  const { data: pastData, isLoading: pastLoading } =
-    trpc.calendar.getPast.useQuery(
-      {
-        year,
-        style: style as (typeof STYLES)[number] | undefined,
-        limit: PAGE_SIZE,
-        offset,
-      },
-      { enabled: isPast },
-    );
+  const pastResult = useQuery(
+    api.competitions.calendar.getPast,
+    isPast
+      ? {
+          year,
+          style: style as (typeof STYLES)[number] | undefined,
+          limit: PAGE_SIZE,
+          offset,
+        }
+      : "skip",
+  );
+  const pastData = pastResult;
+  const pastLoading = isPast && pastResult === undefined;
 
   return (
     <div className="atelier-shell">
@@ -203,7 +206,7 @@ function PastTab({
   setStyle: (v: string | undefined) => void;
   offset: number;
   setOffset: (v: number) => void;
-  data: { competitions: Array<{ id: number; name: string; slug: string; organizationName: string | null; city: string | null; state: string | null; startDate: string | null; styles: string[] }>; total: number } | undefined;
+  data: { competitions: Array<{ id: Id<"competitions">; name: string; slug: string; organizationName: string | null; city: string | null | undefined; state: string | null | undefined; startDate: string | null | undefined; styles: string[] }>; total: number } | undefined;
   isLoading: boolean;
 }) {
   const competitions = data?.competitions ?? [];

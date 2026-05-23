@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
-import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 import { cn } from "@shared/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
@@ -40,9 +39,34 @@ import {
   ChevronDown,
   ChevronRight,
   Megaphone,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
+
+// ── Types ────────────────────────────────────────────────────────────
+
+type EmceeNote = {
+  _id: Id<"announcementNotes">;
+  competitionId: Id<"competitions">;
+  dayId: Id<"competitionDays">;
+  positionAfterEventId?: Id<"competitionEvents">;
+  type: "text" | "break";
+  content: string;
+  visibleOnProjector: boolean;
+  createdAt: number;
+  updatedAt: number;
+  createdBy: Id<"users">;
+};
+
+type EmceeEvent = {
+  _id: Id<"competitionEvents">;
+  name: string;
+  sessionId?: Id<"scheduleBlocks">;
+};
+
+type EmceeDay = {
+  _id: Id<"competitionDays">;
+  label?: string;
+  position: number;
+};
 
 // ── Main page ────────────────────────────────────────────────────────
 
@@ -50,19 +74,14 @@ export default function EmceePage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
-  // TODO Task 10/11: useCompLiveWithInvalidation still expects numeric competitionId
-  const { connectionStatus } = useCompLiveWithInvalidation(comp?._id as unknown as number | undefined);
-
-  const { data: emceeView, isLoading } = trpc.emcee.getEmceeView.useQuery(
-    // TODO Task 10/11: emcee router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp },
+  const emceeView = useQuery(
+    api.competitions.compDay.getEmceeView,
+    comp ? { competitionId: comp._id } : "skip",
   );
+  const isLoading = emceeView === undefined;
 
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
-  const [editingNote, setEditingNote] = useState<
-    (typeof notes)[number] | null
-  >(null);
+  const [editingNote, setEditingNote] = useState<EmceeNote | null>(null);
 
   if (!comp || isLoading) {
     return (
@@ -83,34 +102,18 @@ export default function EmceePage() {
     );
   }
 
-  const { days, blocks, events, currentEvent } = emceeView;
-  // notes may not appear in inferred tRPC type due to TS depth limits, but exists at runtime
-  const notes = (emceeView as Record<string, unknown>).notes as {
-    id: number;
-    competitionId: number;
-    dayId: number;
-    positionAfterEventId: number | null;
-    type: string;
-    content: string;
-    visibleOnProjector: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    createdBy: string;
-  }[] ?? [];
+  const { days, blocks, events, currentEvent, notes } = emceeView;
 
   // Group events by day via blocks (events have sessionId → block)
-  const blocksByDay = new Map<number, typeof blocks>();
+  const blocksByDay = new Map<Id<"competitionDays">, typeof blocks>();
   for (const block of blocks) {
     const arr = blocksByDay.get(block.dayId) ?? [];
     arr.push(block);
     blocksByDay.set(block.dayId, arr);
   }
 
-  type Event = (typeof events)[number];
-  type Note = (typeof notes)[number];
-
-  const eventsByBlock = new Map<number, Event[]>();
-  const unassignedEvents: Event[] = [];
+  const eventsByBlock = new Map<Id<"scheduleBlocks">, typeof events>();
+  const unassignedEvents: typeof events = [];
   for (const evt of events) {
     if (evt.sessionId) {
       const arr = eventsByBlock.get(evt.sessionId) ?? [];
@@ -121,13 +124,17 @@ export default function EmceePage() {
     }
   }
 
-  function getNotesAfterEvent(eventId: number | null, dayId: number) {
+  function getNotesAfterEvent(
+    eventId: Id<"competitionEvents"> | null,
+    dayId: Id<"competitionDays">,
+  ) {
     return notes.filter(
-      (n) => n.positionAfterEventId === eventId && n.dayId === dayId,
+      (n) =>
+        (n.positionAfterEventId ?? null) === eventId && n.dayId === dayId,
     );
   }
 
-  function handleEditNote(note: Note) {
+  function handleEditNote(note: EmceeNote) {
     setEditingNote(note);
     setNoteDialogOpen(true);
   }
@@ -145,19 +152,6 @@ export default function EmceePage() {
           <div className="flex items-center gap-3">
             <Mic className="h-6 w-6 text-primary shrink-0" />
             <h2 className="text-xl sm:text-2xl font-bold">Emcee</h2>
-            <span className={cn(
-              "text-xs flex items-center gap-1",
-              connectionStatus === "connected" && "text-status-sage",
-              connectionStatus === "disconnected" && "text-muted-foreground",
-              connectionStatus === "suspended" && "text-status-clay",
-              connectionStatus === "failed" && "text-status-wine",
-            )}>
-              {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-              {connectionStatus === "connected" && "Live"}
-              {connectionStatus === "disconnected" && "Connecting..."}
-              {connectionStatus === "suspended" && "Reconnecting..."}
-              {connectionStatus === "failed" && "Disconnected"}
-            </span>
           </div>
           {currentEvent && (
             <div className="flex flex-wrap items-center gap-2 text-base sm:text-lg">
@@ -188,15 +182,15 @@ export default function EmceePage() {
         </div>
       ) : (
         days.map((day) => {
-          const dayBlocks = blocksByDay.get(day.id) ?? [];
-          const dayEvents: Event[] = [];
+          const dayBlocks = blocksByDay.get(day._id) ?? [];
+          const dayEvents: typeof events = [];
           for (const block of dayBlocks) {
-            const blockEvts = eventsByBlock.get(block.id) ?? [];
+            const blockEvts = eventsByBlock.get(block._id) ?? [];
             dayEvents.push(...blockEvts);
           }
 
           return (
-            <Card key={day.id}>
+            <Card key={day._id}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-xl">
                   {day.label ?? `Day ${day.position + 1}`}
@@ -204,12 +198,11 @@ export default function EmceePage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {/* Notes at the start of the day */}
-                {getNotesAfterEvent(null, day.id).map((note) => (
+                {getNotesAfterEvent(null, day._id).map((note) => (
                   <NoteCard
-                    key={note.id}
+                    key={note._id}
                     note={note}
                     onEdit={handleEditNote}
-                    competitionId={comp._id as unknown as number}
                   />
                 ))}
 
@@ -220,17 +213,16 @@ export default function EmceePage() {
                 )}
 
                 {dayEvents.map((evt) => (
-                  <div key={evt.id}>
+                  <div key={evt._id}>
                     <EventRow
                       event={evt}
-                      isCurrent={currentEvent?.eventId === evt.id}
+                      isCurrent={currentEvent?.eventId === evt._id}
                     />
-                    {getNotesAfterEvent(evt.id, day.id).map((note) => (
+                    {getNotesAfterEvent(evt._id, day._id).map((note) => (
                       <NoteCard
-                        key={note.id}
+                        key={note._id}
                         note={note}
                         onEdit={handleEditNote}
-                        competitionId={comp._id as unknown as number}
                       />
                     ))}
                   </div>
@@ -251,10 +243,10 @@ export default function EmceePage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {unassignedEvents.map((evt) => (
-              <div key={evt.id}>
+              <div key={evt._id}>
                 <EventRow
                   event={evt}
-                  isCurrent={currentEvent?.eventId === evt.id}
+                  isCurrent={currentEvent?.eventId === evt._id}
                 />
               </div>
             ))}
@@ -266,7 +258,7 @@ export default function EmceePage() {
       <NoteDialog
         open={noteDialogOpen}
         onOpenChange={setNoteDialogOpen}
-        competitionId={comp._id as unknown as number}
+        competitionId={comp._id}
         days={days}
         events={events}
         editingNote={editingNote}
@@ -285,7 +277,7 @@ function EventRow({
   event,
   isCurrent,
 }: {
-  event: { id: number; name: string };
+  event: EmceeEvent;
   isCurrent: boolean;
 }) {
   const [showResults, setShowResults] = useState(false);
@@ -324,15 +316,19 @@ function EventRow({
         </Button>
       </div>
 
-      {showResults && <ResultsPanel eventId={event.id} />}
+      {showResults && <ResultsPanel eventId={event._id} />}
     </div>
   );
 }
 
 // ── Results panel ────────────────────────────────────────────────────
 
-function ResultsPanel({ eventId }: { eventId: number }) {
-  const { data, isLoading } = trpc.emcee.getEventResults.useQuery({ eventId });
+function ResultsPanel({ eventId }: { eventId: Id<"competitionEvents"> }) {
+  const data = useQuery(
+    api.competitions.compDay.getEventResultsForEmcee,
+    { eventId },
+  );
+  const isLoading = data === undefined;
 
   if (isLoading) {
     return (
@@ -363,7 +359,7 @@ function ResultsPanel({ eventId }: { eventId: number }) {
       </p>
       {data.results.map((r) => (
         <div
-          key={`${r.placement}-${r.coupleNumber}`}
+          key={`${r.placement}-${r.coupleNumber ?? "unk"}`}
           className={cn(
             "flex items-center gap-2 sm:gap-4 rounded-md px-3 sm:px-4 py-2 sm:py-3",
             r.placement <= 3
@@ -390,29 +386,27 @@ function ResultsPanel({ eventId }: { eventId: number }) {
 
 // ── Note card ────────────────────────────────────────────────────────
 
-function NoteCard<
-  T extends {
-    id: number;
-    content: string;
-    visibleOnProjector: boolean;
-  },
->({
+function NoteCard({
   note,
   onEdit,
-  competitionId,
 }: {
-  note: T;
-  onEdit: (note: T) => void;
-  competitionId: number;
+  note: EmceeNote;
+  onEdit: (note: EmceeNote) => void;
 }) {
-  const utils = trpc.useUtils();
-  const deleteNote = trpc.emcee.deleteNote.useMutation({
-    onSuccess: () => {
-      utils.emcee.getEmceeView.invalidate({ competitionId });
+  const deleteNoteMutation = useMutation(api.competitions.compDay.deleteNote);
+  const [pending, setPending] = useState(false);
+
+  async function handleDelete() {
+    setPending(true);
+    try {
+      await deleteNoteMutation({ noteId: note._id });
       toast.success("Announcement deleted");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete");
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <div className="my-2 ml-2 flex items-start gap-2 rounded-[2px] border border-clay/40 bg-clay/10 px-3 py-2 sm:ml-6 sm:gap-3 sm:px-4 sm:py-3">
@@ -446,8 +440,8 @@ function NoteCard<
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-destructive hover:text-destructive"
-          onClick={() => deleteNote.mutate({ noteId: note.id })}
-          disabled={deleteNote.isPending}
+          onClick={handleDelete}
+          disabled={pending}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -469,41 +463,35 @@ function NoteDialog({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  competitionId: number;
-  days: { id: number; label: string | null; position: number }[];
-  events: { id: number; name: string }[];
-  editingNote: {
-    id: number;
-    content: string;
-    dayId: number;
-    positionAfterEventId: number | null;
-    visibleOnProjector: boolean;
-  } | null;
+  competitionId: Id<"competitions">;
+  days: EmceeDay[];
+  events: EmceeEvent[];
+  editingNote: EmceeNote | null;
   onClose: () => void;
 }) {
-  const utils = trpc.useUtils();
+  const createNoteMutation = useMutation(api.competitions.compDay.createNote);
+  const updateNoteMutation = useMutation(api.competitions.compDay.updateNote);
 
   const [content, setContent] = useState("");
   const [dayId, setDayId] = useState<string>("");
   const [positionAfterEventId, setPositionAfterEventId] =
     useState<string>("start");
   const [visibleOnProjector, setVisibleOnProjector] = useState(true);
+  const [pending, setPending] = useState(false);
 
   // Reset form when dialog opens
   const handleOpenChange = (v: boolean) => {
     if (v) {
       if (editingNote) {
         setContent(editingNote.content);
-        setDayId(String(editingNote.dayId));
+        setDayId(editingNote.dayId);
         setPositionAfterEventId(
-          editingNote.positionAfterEventId != null
-            ? String(editingNote.positionAfterEventId)
-            : "start",
+          editingNote.positionAfterEventId ?? "start",
         );
         setVisibleOnProjector(editingNote.visibleOnProjector);
       } else {
         setContent("");
-        setDayId(days.length === 1 ? String(days[0]!.id) : "");
+        setDayId(days.length === 1 ? days[0]!._id : "");
         setPositionAfterEventId("start");
         setVisibleOnProjector(true);
       }
@@ -511,27 +499,7 @@ function NoteDialog({
     onOpenChange(v);
   };
 
-  const createNote = trpc.emcee.createNote.useMutation({
-    onSuccess: () => {
-      utils.emcee.getEmceeView.invalidate({ competitionId });
-      toast.success("Announcement created");
-      onClose();
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const updateNote = trpc.emcee.updateNote.useMutation({
-    onSuccess: () => {
-      utils.emcee.getEmceeView.invalidate({ competitionId });
-      toast.success("Announcement updated");
-      onClose();
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const isSaving = createNote.isPending || updateNote.isPending;
-
-  function handleSave() {
+  async function handleSave() {
     if (!content.trim()) {
       toast.error("Announcement content is required");
       return;
@@ -540,27 +508,38 @@ function NoteDialog({
     const afterEventId =
       positionAfterEventId === "start"
         ? null
-        : Number(positionAfterEventId);
+        : (positionAfterEventId as Id<"competitionEvents">);
 
-    if (editingNote) {
-      updateNote.mutate({
-        noteId: editingNote.id,
-        content: content.trim(),
-        visibleOnProjector,
-        positionAfterEventId: afterEventId,
-      });
-    } else {
-      if (!dayId) {
-        toast.error("Please select a day");
-        return;
+    setPending(true);
+    try {
+      if (editingNote) {
+        await updateNoteMutation({
+          noteId: editingNote._id,
+          content: content.trim(),
+          visibleOnProjector,
+          positionAfterEventId: afterEventId,
+        });
+        toast.success("Announcement updated");
+      } else {
+        if (!dayId) {
+          toast.error("Please select a day");
+          setPending(false);
+          return;
+        }
+        await createNoteMutation({
+          competitionId,
+          dayId: dayId as Id<"competitionDays">,
+          positionAfterEventId: afterEventId ?? undefined,
+          content: content.trim(),
+          visibleOnProjector,
+        });
+        toast.success("Announcement created");
       }
-      createNote.mutate({
-        competitionId,
-        dayId: Number(dayId),
-        positionAfterEventId: afterEventId,
-        content: content.trim(),
-        visibleOnProjector,
-      });
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setPending(false);
     }
   }
 
@@ -598,7 +577,7 @@ function NoteDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {days.map((d) => (
-                    <SelectItem key={d.id} value={String(d.id)}>
+                    <SelectItem key={d._id} value={d._id}>
                       {d.label ?? `Day ${d.position + 1}`}
                     </SelectItem>
                   ))}
@@ -619,7 +598,7 @@ function NoteDialog({
               <SelectContent>
                 <SelectItem value="start">At start of day</SelectItem>
                 {events.map((evt) => (
-                  <SelectItem key={evt.id} value={String(evt.id)}>
+                  <SelectItem key={evt._id} value={evt._id}>
                     After: {evt.name}
                   </SelectItem>
                 ))}
@@ -642,11 +621,11 @@ function NoteDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>
+          <Button variant="outline" onClick={onClose} disabled={pending}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving..." : editingNote ? "Update" : "Create"}
+          <Button onClick={handleSave} disabled={pending}>
+            {pending ? "Saving..." : editingNote ? "Update" : "Create"}
           </Button>
         </DialogFooter>
       </DialogContent>

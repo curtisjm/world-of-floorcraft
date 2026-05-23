@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -25,7 +25,6 @@ import {
   Send,
   Play,
   Square,
-  Unlock,
   History,
   Radio,
   Loader2,
@@ -44,7 +43,9 @@ export default function ScoringPage() {
     comp ? { competitionId: comp._id } : "skip",
   );
 
-  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
+  const [selectedRoundId, setSelectedRoundId] = useState<Id<"rounds"> | null>(
+    null,
+  );
 
   if (!comp) {
     return (
@@ -60,7 +61,7 @@ export default function ScoringPage() {
       <h2 className="text-lg font-semibold">Scoring & Results</h2>
 
       {/* Live scrutineer panel */}
-      <ScrutineerPanel competitionId={comp._id as unknown as number} />
+      <ScrutineerPanel competitionId={comp._id} />
 
       <Separator />
 
@@ -87,7 +88,6 @@ export default function ScoringPage() {
       {selectedRoundId && (
         <RoundDetailDialog
           roundId={selectedRoundId}
-          competitionId={comp._id as unknown as number}
           onClose={() => setSelectedRoundId(null)}
         />
       )}
@@ -97,35 +97,50 @@ export default function ScoringPage() {
 
 // ── Scrutineer Panel ────────────────────────────────────────────────
 
-function ScrutineerPanel({ competitionId }: { competitionId: number }) {
-  const utils = trpc.useUtils();
-  const { data: status, refetch } = trpc.scrutineer.getSubmissionStatus.useQuery(
-    { competitionId },
-    { refetchInterval: 3000 },
-  );
-  const { data: nextRound } = trpc.scrutineer.getNextRound.useQuery(
-    { competitionId },
-  );
-
-  const startRound = trpc.scrutineer.startRound.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Round started");
-    },
-    onError: (err) => toast.error(err.message),
+function ScrutineerPanel({
+  competitionId,
+}: {
+  competitionId: Id<"competitions">;
+}) {
+  const status = useQuery(api.competitions.scrutineer.getSubmissionStatus, {
+    competitionId,
+  });
+  const nextRound = useQuery(api.competitions.scrutineer.getNextRound, {
+    competitionId,
   });
 
-  const stopRound = trpc.scrutineer.stopRound.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Round stopped");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const startRoundMutation = useMutation(api.competitions.scrutineer.startRound);
+  const stopRoundMutation = useMutation(api.competitions.scrutineer.stopRound);
+  const [startPending, setStartPending] = useState(false);
+  const [stopPending, setStopPending] = useState(false);
 
   const allSubmitted = status?.submissions.length
     ? status.submissions.every((s) => s.status === "submitted")
     : false;
+
+  const handleStart = async () => {
+    setStartPending(true);
+    try {
+      await startRoundMutation({ competitionId });
+      toast.success("Round started");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to start round");
+    } finally {
+      setStartPending(false);
+    }
+  };
+
+  const handleStop = async () => {
+    setStopPending(true);
+    try {
+      await stopRoundMutation({ competitionId });
+      toast.success("Round stopped");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to stop round");
+    } finally {
+      setStopPending(false);
+    }
+  };
 
   return (
     <Card>
@@ -181,8 +196,8 @@ function ScrutineerPanel({ competitionId }: { competitionId: number }) {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => stopRound.mutate({ competitionId })}
-                disabled={stopRound.isPending}
+                onClick={handleStop}
+                disabled={stopPending}
               >
                 <Square className="size-4 mr-1" />
                 Stop Round
@@ -190,8 +205,8 @@ function ScrutineerPanel({ competitionId }: { competitionId: number }) {
               {allSubmitted && (
                 <Button
                   size="sm"
-                  onClick={() => startRound.mutate({ competitionId })}
-                  disabled={startRound.isPending}
+                  onClick={handleStart}
+                  disabled={startPending}
                 >
                   <SkipForward className="size-4 mr-1" />
                   Advance
@@ -212,10 +227,10 @@ function ScrutineerPanel({ competitionId }: { competitionId: number }) {
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => startRound.mutate({ competitionId })}
-                  disabled={startRound.isPending}
+                  onClick={handleStart}
+                  disabled={startPending}
                 >
-                  {startRound.isPending ? (
+                  {startPending ? (
                     <Loader2 className="size-4 mr-1 animate-spin" />
                   ) : (
                     <Play className="size-4 mr-1" />
@@ -242,10 +257,11 @@ function EventScoringCard({
   onSelectRound,
 }: {
   event: CompetitionEvent;
-  onSelectRound: (roundId: number) => void;
+  onSelectRound: (roundId: Id<"rounds">) => void;
 }) {
-  // TODO Task 10/11: round router still expects numeric eventId
-  const { data: rounds } = trpc.round.listByEvent.useQuery({ eventId: event._id as unknown as number });
+  const rounds = useQuery(api.competitions.rounds.listByEvent, {
+    eventId: event._id,
+  });
 
   return (
     <Card>
@@ -264,9 +280,9 @@ function EventScoringCard({
           <div className="space-y-1">
             {rounds.map((round) => (
               <div
-                key={round.id}
+                key={round._id}
                 className="flex items-center justify-between p-2 rounded-md border hover:bg-accent/30 cursor-pointer transition-colors"
-                onClick={() => onSelectRound(round.id)}
+                onClick={() => onSelectRound(round._id)}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-sm capitalize">
@@ -299,62 +315,100 @@ function EventScoringCard({
 
 function RoundDetailDialog({
   roundId,
-  competitionId,
   onClose,
 }: {
-  roundId: number;
-  competitionId: number;
+  roundId: Id<"rounds">;
   onClose: () => void;
 }) {
   const [showCorrections, setShowCorrections] = useState(false);
 
-  const { data: results, refetch: refetchResults } = trpc.scrutineer.getResults.useQuery({ roundId });
-  const { data: corrections } = trpc.scrutineer.getCorrectionHistory.useQuery(
-    { roundId },
-    { enabled: showCorrections },
+  const results = useQuery(api.competitions.scrutineer.getResults, { roundId });
+  const corrections = useQuery(
+    api.competitions.scrutineer.getCorrectionHistory,
+    showCorrections ? { roundId } : "skip",
   );
 
-  const computeCallback = trpc.scoring.computeCallbackResults.useMutation({
-    onSuccess: (result) => {
-      refetchResults();
-      toast.success(`${result.advanced} of ${result.couples} couples advanced`);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const computeCallbackMutation = useMutation(
+    api.competitions.scoring.computeCallbackResults,
+  );
+  const computeFinalMutation = useMutation(
+    api.competitions.scoring.computeFinalResults,
+  );
+  const reviewMutation = useMutation(api.competitions.scrutineer.reviewResults);
+  const publishMutation = useMutation(api.competitions.scrutineer.publishResults);
+  const recomputeMutation = useMutation(
+    api.competitions.scrutineer.recomputeResults,
+  );
 
-  const computeFinal = trpc.scoring.computeFinalResults.useMutation({
-    onSuccess: () => {
-      refetchResults();
-      toast.success("Final results computed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const reviewMutation = trpc.scrutineer.reviewResults.useMutation({
-    onSuccess: () => {
-      refetchResults();
-      toast.success("Results marked as reviewed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const publishMutation = trpc.scrutineer.publishResults.useMutation({
-    onSuccess: () => {
-      refetchResults();
-      toast.success("Results published!");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const recomputeMutation = trpc.scrutineer.recomputeResults.useMutation({
-    onSuccess: () => {
-      refetchResults();
-      toast.success("Results recomputed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const [computeCallbackPending, setComputeCallbackPending] = useState(false);
+  const [computeFinalPending, setComputeFinalPending] = useState(false);
+  const [reviewPending, setReviewPending] = useState(false);
+  const [publishPending, setPublishPending] = useState(false);
+  const [recomputePending, setRecomputePending] = useState(false);
 
   const resultStatus = results?.meta?.status;
+
+  const handleComputeCallback = async () => {
+    setComputeCallbackPending(true);
+    try {
+      const result = await computeCallbackMutation({ roundId });
+      toast.success(`${result.advanced} of ${result.couples} couples advanced`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to compute callbacks",
+      );
+    } finally {
+      setComputeCallbackPending(false);
+    }
+  };
+
+  const handleComputeFinal = async () => {
+    setComputeFinalPending(true);
+    try {
+      await computeFinalMutation({ roundId });
+      toast.success("Final results computed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to compute final");
+    } finally {
+      setComputeFinalPending(false);
+    }
+  };
+
+  const handleReview = async () => {
+    setReviewPending(true);
+    try {
+      await reviewMutation({ roundId });
+      toast.success("Results marked as reviewed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to review results");
+    } finally {
+      setReviewPending(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    setPublishPending(true);
+    try {
+      await publishMutation({ roundId });
+      toast.success("Results published!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to publish");
+    } finally {
+      setPublishPending(false);
+    }
+  };
+
+  const handleRecompute = async () => {
+    setRecomputePending(true);
+    try {
+      await recomputeMutation({ roundId });
+      toast.success("Results recomputed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to recompute");
+    } finally {
+      setRecomputePending(false);
+    }
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -386,8 +440,8 @@ function RoundDetailDialog({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => computeCallback.mutate({ roundId })}
-            disabled={computeCallback.isPending}
+            onClick={handleComputeCallback}
+            disabled={computeCallbackPending}
           >
             <Calculator className="size-4 mr-1" />
             Compute Callbacks
@@ -395,8 +449,8 @@ function RoundDetailDialog({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => computeFinal.mutate({ roundId })}
-            disabled={computeFinal.isPending}
+            onClick={handleComputeFinal}
+            disabled={computeFinalPending}
           >
             <Calculator className="size-4 mr-1" />
             Compute Final
@@ -404,28 +458,20 @@ function RoundDetailDialog({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => recomputeMutation.mutate({ roundId })}
-            disabled={recomputeMutation.isPending}
+            onClick={handleRecompute}
+            disabled={recomputePending}
           >
             <Calculator className="size-4 mr-1" />
             Recompute
           </Button>
           {resultStatus === "computed" && (
-            <Button
-              size="sm"
-              onClick={() => reviewMutation.mutate({ roundId })}
-              disabled={reviewMutation.isPending}
-            >
+            <Button size="sm" onClick={handleReview} disabled={reviewPending}>
               <CheckCircle2 className="size-4 mr-1" />
               Review
             </Button>
           )}
           {resultStatus === "reviewed" && (
-            <Button
-              size="sm"
-              onClick={() => publishMutation.mutate({ roundId })}
-              disabled={publishMutation.isPending}
-            >
+            <Button size="sm" onClick={handlePublish} disabled={publishPending}>
               <Send className="size-4 mr-1" />
               Publish
             </Button>
@@ -438,12 +484,12 @@ function RoundDetailDialog({
             <h3 className="text-sm font-medium">Callback Results</h3>
             {results.callbacks.map((r) => (
               <div
-                key={r.entryId}
+                key={r._id}
                 className={`flex items-center justify-between text-sm p-2 rounded-md ${
                   r.advanced ? "status-sage" : "bg-muted/30"
                 }`}
               >
-                <span>Entry #{r.entryId}</span>
+                <span>Entry {r.entryId}</span>
                 <div className="flex items-center gap-2">
                   <span>{r.totalMarks} marks</span>
                   {r.advanced && <Badge className="text-xs">Advanced</Badge>}
@@ -461,13 +507,13 @@ function RoundDetailDialog({
               .filter((r) => !r.danceName) // Overall results
               .map((r) => (
                 <div
-                  key={r.entryId}
+                  key={r._id}
                   className={`flex items-center justify-between text-sm p-2 rounded-md ${
                     r.placement <= 3 ? "placement-gold" : "bg-muted/30"
                   }`}
                 >
                   <span className="font-medium">#{r.placement}</span>
-                  <span>Entry #{r.entryId}</span>
+                  <span>Entry {r.entryId}</span>
                   {r.tiebreakRule && (
                     <Badge variant="outline" className="text-xs">
                       {r.tiebreakRule}
@@ -482,10 +528,10 @@ function RoundDetailDialog({
                 <h4 className="text-xs font-medium text-muted-foreground">Per-Dance Breakdown</h4>
                 {results.results
                   .filter((r) => r.danceName)
-                  .map((r, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs p-1.5 rounded bg-muted/20">
+                  .map((r) => (
+                    <div key={r._id} className="flex items-center justify-between text-xs p-1.5 rounded bg-muted/20">
                       <span>{r.danceName}</span>
-                      <span>Entry #{r.entryId}: {r.placement}</span>
+                      <span>Entry {r.entryId}: {r.placement}</span>
                     </div>
                   ))}
               </>
@@ -507,9 +553,9 @@ function RoundDetailDialog({
                   </tr>
                 </thead>
                 <tbody>
-                  {results.tabulation.map((row, i) => (
-                    <tr key={i} className="border-b">
-                      <td className="p-1">#{row.entryId}</td>
+                  {results.tabulation.map((row) => (
+                    <tr key={row._id} className="border-b">
+                      <td className="p-1">{row.entryId}</td>
                       <td className="p-1 text-muted-foreground">{row.danceName ?? "Overall"}</td>
                       <td className="p-1 font-mono">
                         {JSON.stringify(row.tableData).slice(0, 80)}
@@ -539,13 +585,13 @@ function RoundDetailDialog({
               <p className="text-sm text-muted-foreground">No corrections recorded</p>
             ) : (
               corrections.map((c) => (
-                <div key={c.id} className="text-xs p-2 rounded bg-muted/30 space-y-0.5">
+                <div key={c._id} className="text-xs p-2 rounded bg-muted/30 space-y-0.5">
                   <div className="flex justify-between">
                     <span className="font-medium">{c.judgeName}</span>
                     <Badge variant="outline" className="text-xs">{c.source}</Badge>
                   </div>
                   <p>
-                    Entry #{c.entryId}
+                    Entry {c.entryId}
                     {c.danceName && ` (${c.danceName})`}: {c.oldValue} → {c.newValue}
                   </p>
                   {c.reason && <p className="text-muted-foreground">{c.reason}</p>}

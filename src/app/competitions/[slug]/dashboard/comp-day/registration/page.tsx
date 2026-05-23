@@ -2,10 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
-import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 import { cn } from "@shared/lib/utils";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
@@ -44,95 +43,139 @@ import {
   XCircle,
   Users,
   FileText,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
+
+type RegRow = {
+  id: Id<"competitionRegistrations">;
+  displayName: string | undefined;
+  competitorNumber: number | undefined;
+  balance: number; // cents
+  checkedIn: boolean;
+  entryCount: number;
+};
 
 export default function RegistrationTablePage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
-  // TODO Task 10/11: useCompLiveWithInvalidation still expects numeric competitionId
-  const { connectionStatus } = useCompLiveWithInvalidation(comp?._id as unknown as number | undefined);
-
-  const utils = trpc.useUtils();
-
-  const { data: orgGroups, isLoading } =
-    trpc.registrationTable.getRegistrationTable.useQuery(
-      // TODO Task 10/11: registrationTable router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp },
-    );
-
-  const { data: pendingAddDrops } =
-    trpc.registrationTable.getPendingAddDrops.useQuery(
-      // TODO Task 10/11: registrationTable router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp },
-    );
+  const orgGroups = useQuery(
+    api.competitions.compDay.getRegistrationTable,
+    comp ? { competitionId: comp._id } : "skip",
+  );
+  const pendingAddDrops = useQuery(
+    api.competitions.compDay.getPendingAddDrops,
+    comp ? { competitionId: comp._id } : "skip",
+  );
+  const isLoading = orgGroups === undefined;
 
   // State
   const [search, setSearch] = useState("");
   const [addDropOpen, setAddDropOpen] = useState(false);
-  const [paymentReg, setPaymentReg] = useState<{ id: number; displayName: string | null; competitorNumber: number | null } | null>(null);
+  const [paymentReg, setPaymentReg] = useState<RegRow | null>(null);
   const [payAmount, setPayAmount] = useState("");
   const [payMethod, setPayMethod] = useState<"cash" | "check" | "other">(
     "cash",
   );
   const [payNote, setPayNote] = useState("");
-  const [detailRegId, setDetailRegId] = useState<number | null>(null);
+  const [detailRegId, setDetailRegId] =
+    useState<Id<"competitionRegistrations"> | null>(null);
 
   // Detail query
-  const { data: regDetail, isLoading: detailLoading } =
-    trpc.registrationTable.getRegistrationDetail.useQuery(
-      { registrationId: detailRegId ?? 0 },
-      { enabled: !!detailRegId },
-    );
+  const regDetail = useQuery(
+    api.competitions.compDay.getRegistrationDetail,
+    detailRegId ? { registrationId: detailRegId } : "skip",
+  );
+  const detailLoading = detailRegId !== null && regDetail === undefined;
 
   // Mutations
-  const checkin = trpc.registrationTable.checkinRegistration.useMutation({
-    onSuccess: () => {
-      utils.registrationTable.getRegistrationTable.invalidate();
+  const checkinMutation = useMutation(
+    api.competitions.compDay.checkinRegistration,
+  );
+  const undoCheckinMutation = useMutation(
+    api.competitions.compDay.undoCheckin,
+  );
+  const recordPaymentMutation = useMutation(
+    api.competitions.compDay.recordOfflinePayment,
+  );
+  const approveAddDropMutation = useMutation(
+    api.competitions.compDay.approveAddDrop,
+  );
+  const rejectAddDropMutation = useMutation(
+    api.competitions.compDay.rejectAddDrop,
+  );
+
+  const [actionPending, setActionPending] = useState(false);
+
+  async function handleCheckin(registrationId: Id<"competitionRegistrations">) {
+    setActionPending(true);
+    try {
+      await checkinMutation({ registrationId });
       toast.success("Checked in");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Check-in failed");
+    } finally {
+      setActionPending(false);
+    }
+  }
 
-  const undoCheckin = trpc.registrationTable.undoCheckin.useMutation({
-    onSuccess: () => {
-      utils.registrationTable.getRegistrationTable.invalidate();
+  async function handleUndoCheckin(
+    registrationId: Id<"competitionRegistrations">,
+  ) {
+    setActionPending(true);
+    try {
+      await undoCheckinMutation({ registrationId });
       toast.success("Check-in undone");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Undo failed");
+    } finally {
+      setActionPending(false);
+    }
+  }
 
-  const recordPayment = trpc.registrationTable.recordPayment.useMutation({
-    onSuccess: () => {
-      utils.registrationTable.getRegistrationTable.invalidate();
+  async function handleRecordPayment() {
+    if (!paymentReg) return;
+    setActionPending(true);
+    try {
+      await recordPaymentMutation({
+        registrationId: paymentReg.id,
+        amount: payAmount,
+        method: payMethod,
+        note: payNote || undefined,
+      });
       toast.success("Payment recorded");
       setPaymentReg(null);
       setPayAmount("");
       setPayNote("");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Payment failed");
+    } finally {
+      setActionPending(false);
+    }
+  }
 
-  const approveAddDrop = trpc.registrationTable.approveAddDrop.useMutation({
-    onSuccess: () => {
-      utils.registrationTable.getPendingAddDrops.invalidate();
-      utils.registrationTable.getRegistrationTable.invalidate();
+  async function handleApprove(requestId: Id<"addDropRequests">) {
+    setActionPending(true);
+    try {
+      await approveAddDropMutation({ requestId });
       toast.success("Request approved");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Approval failed");
+    } finally {
+      setActionPending(false);
+    }
+  }
 
-  const rejectAddDrop = trpc.registrationTable.rejectAddDrop.useMutation({
-    onSuccess: () => {
-      utils.registrationTable.getPendingAddDrops.invalidate();
+  async function handleReject(requestId: Id<"addDropRequests">) {
+    setActionPending(true);
+    try {
+      await rejectAddDropMutation({ requestId });
       toast.success("Request rejected");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Rejection failed");
+    } finally {
+      setActionPending(false);
+    }
+  }
 
   // Computed stats
   const stats = useMemo(() => {
@@ -144,8 +187,7 @@ export default function RegistrationTablePage() {
       for (const reg of group.registrations) {
         total++;
         if (reg.checkedIn) checkedIn++;
-        const balance = parseFloat(reg.balance);
-        if (balance > 0) outstanding += balance;
+        if (reg.balance > 0) outstanding += reg.balance;
       }
     }
     return { total, checkedIn, outstanding };
@@ -196,19 +238,6 @@ export default function RegistrationTablePage() {
           <h2 className="text-lg sm:text-xl font-semibold tracking-tight">
             Registration
           </h2>
-          <span className={cn(
-            "text-xs flex items-center gap-1",
-            connectionStatus === "connected" && "text-status-sage",
-            connectionStatus === "disconnected" && "text-muted-foreground",
-            connectionStatus === "suspended" && "text-status-clay",
-            connectionStatus === "failed" && "text-status-wine",
-          )}>
-            {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-            {connectionStatus === "connected" && "Live"}
-            {connectionStatus === "disconnected" && "Connecting..."}
-            {connectionStatus === "suspended" && "Reconnecting..."}
-            {connectionStatus === "failed" && "Disconnected"}
-          </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="gap-1.5 px-3 py-1">
@@ -228,7 +257,7 @@ export default function RegistrationTablePage() {
               className="status-clay gap-1.5 px-3 py-1"
             >
               <DollarSign className="size-3.5" />
-              Outstanding: ${stats.outstanding.toFixed(2)}
+              Outstanding: ${(stats.outstanding / 100).toFixed(2)}
             </Badge>
           )}
         </div>
@@ -296,8 +325,8 @@ export default function RegistrationTablePage() {
                   </TableHeader>
                   <TableBody>
                     {group.registrations.map((reg) => {
-                      const balance = parseFloat(reg.balance);
-                      const isPaid = balance <= 0;
+                      const balanceDollars = reg.balance / 100;
+                      const isPaid = balanceDollars <= 0;
                       return (
                         <TableRow key={reg.id}>
                           <TableCell className="pl-4">
@@ -305,22 +334,16 @@ export default function RegistrationTablePage() {
                               checked={reg.checkedIn}
                               onCheckedChange={(checked) => {
                                 if (checked) {
-                                  checkin.mutate({
-                                    registrationId: reg.id,
-                                  });
+                                  handleCheckin(reg.id);
                                 } else {
-                                  undoCheckin.mutate({
-                                    registrationId: reg.id,
-                                  });
+                                  handleUndoCheckin(reg.id);
                                 }
                               }}
-                              disabled={
-                                checkin.isPending || undoCheckin.isPending
-                              }
+                              disabled={actionPending}
                             />
                           </TableCell>
                           <TableCell className="font-mono text-sm text-muted-foreground">
-                            {reg.competitorNumber ?? "\u2014"}
+                            {reg.competitorNumber ?? "—"}
                           </TableCell>
                           <TableCell>
                             <button
@@ -340,7 +363,7 @@ export default function RegistrationTablePage() {
                               </span>
                             ) : (
                               <span className="text-sm font-medium text-status-clay">
-                                ${balance.toFixed(2)} owed
+                                ${balanceDollars.toFixed(2)} owed
                               </span>
                             )}
                           </TableCell>
@@ -352,7 +375,9 @@ export default function RegistrationTablePage() {
                               onClick={() => {
                                 setPaymentReg(reg);
                                 setPayAmount(
-                                  balance > 0 ? balance.toFixed(2) : "",
+                                  balanceDollars > 0
+                                    ? balanceDollars.toFixed(2)
+                                    : "",
                                 );
                                 setPayMethod("cash");
                                 setPayNote("");
@@ -371,8 +396,8 @@ export default function RegistrationTablePage() {
               {/* Mobile card view */}
               <CardContent className="sm:hidden px-3 pb-3 pt-0 space-y-2">
                 {group.registrations.map((reg) => {
-                  const balance = parseFloat(reg.balance);
-                  const isPaid = balance <= 0;
+                  const balanceDollars = reg.balance / 100;
+                  const isPaid = balanceDollars <= 0;
                   return (
                     <div
                       key={reg.id}
@@ -385,12 +410,12 @@ export default function RegistrationTablePage() {
                         checked={reg.checkedIn}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            checkin.mutate({ registrationId: reg.id });
+                            handleCheckin(reg.id);
                           } else {
-                            undoCheckin.mutate({ registrationId: reg.id });
+                            handleUndoCheckin(reg.id);
                           }
                         }}
-                        disabled={checkin.isPending || undoCheckin.isPending}
+                        disabled={actionPending}
                         className="shrink-0"
                       />
                       <div className="flex-1 min-w-0" onClick={() => setDetailRegId(reg.id)}>
@@ -406,14 +431,14 @@ export default function RegistrationTablePage() {
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                           <span>{reg.entryCount} entries</span>
-                          <span>&middot;</span>
+                          <span>·</span>
                           {isPaid ? (
                             <span className="font-medium text-status-sage">
                               Paid
                             </span>
                           ) : (
                             <span className="font-medium text-status-clay">
-                              ${balance.toFixed(2)} owed
+                              ${balanceDollars.toFixed(2)} owed
                             </span>
                           )}
                         </div>
@@ -425,7 +450,9 @@ export default function RegistrationTablePage() {
                         onClick={() => {
                           setPaymentReg(reg);
                           setPayAmount(
-                            balance > 0 ? balance.toFixed(2) : "",
+                            balanceDollars > 0
+                              ? balanceDollars.toFixed(2)
+                              : "",
                           );
                           setPayMethod("cash");
                           setPayNote("");
@@ -512,19 +539,10 @@ export default function RegistrationTablePage() {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                if (paymentReg) {
-                  recordPayment.mutate({
-                    registrationId: paymentReg.id,
-                    amount: payAmount,
-                    method: payMethod,
-                    note: payNote || undefined,
-                  });
-                }
-              }}
-              disabled={recordPayment.isPending || !payAmount}
+              onClick={handleRecordPayment}
+              disabled={actionPending || !payAmount}
             >
-              {recordPayment.isPending ? "Recording..." : "Record Payment"}
+              {actionPending ? "Recording..." : "Record Payment"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -559,7 +577,7 @@ export default function RegistrationTablePage() {
                     {regDetail.registration.competitorNumber
                       ? `#${regDetail.registration.competitorNumber}`
                       : "No number assigned"}
-                    {" \u00b7 "}
+                    {" · "}
                     {regDetail.registration.checkedIn
                       ? "Checked in"
                       : "Not checked in"}
@@ -578,7 +596,7 @@ export default function RegistrationTablePage() {
                   <div className="space-y-1">
                     {regDetail.entries.map((entry) => (
                       <div
-                        key={entry.id}
+                        key={entry._id}
                         className="flex items-center justify-between text-sm rounded-md border px-3 py-1.5"
                       >
                         <span>
@@ -606,11 +624,13 @@ export default function RegistrationTablePage() {
                   <div className="space-y-1">
                     {regDetail.payments.map((p) => (
                       <div
-                        key={p.id}
+                        key={p._id}
                         className="flex items-center justify-between text-sm rounded-md border px-3 py-1.5"
                       >
                         <span className="capitalize">{p.method}</span>
-                        <span className="font-mono">${p.amount}</span>
+                        <span className="font-mono">
+                          ${(p.amount / 100).toFixed(2)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -624,7 +644,7 @@ export default function RegistrationTablePage() {
                   <div className="space-y-1">
                     {regDetail.addDropRequests.map((r) => (
                       <div
-                        key={r.id}
+                        key={r._id}
                         className="flex items-center justify-between text-sm rounded-md border px-3 py-1.5"
                       >
                         <span className="capitalize">
@@ -651,16 +671,14 @@ export default function RegistrationTablePage() {
               {/* Balance summary */}
               <div className="flex items-center justify-between pt-2 border-t text-sm">
                 <span>
-                  Owed: ${regDetail.registration.amountOwed}
+                  Owed: ${(regDetail.registration.amountOwed / 100).toFixed(2)}
                 </span>
                 <span>
                   Paid: $
-                  {regDetail.payments
-                    .reduce(
-                      (sum, p) => sum + parseFloat(p.amount),
-                      0,
-                    )
-                    .toFixed(2)}
+                  {(
+                    regDetail.payments.reduce((sum, p) => sum + p.amount, 0) /
+                    100
+                  ).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -692,7 +710,7 @@ export default function RegistrationTablePage() {
                   <div className="space-y-2">
                     {pendingAddDrops.safe.map((req) => (
                       <div
-                        key={req.id}
+                        key={req._id}
                         className="flex flex-col gap-2 rounded-md border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="text-sm">
@@ -706,10 +724,8 @@ export default function RegistrationTablePage() {
                             size="sm"
                             variant="default"
                             className="h-7 text-xs"
-                            onClick={() =>
-                              approveAddDrop.mutate({ requestId: req.id })
-                            }
-                            disabled={approveAddDrop.isPending}
+                            onClick={() => handleApprove(req._id)}
+                            disabled={actionPending}
                           >
                             Approve
                           </Button>
@@ -717,10 +733,8 @@ export default function RegistrationTablePage() {
                             size="sm"
                             variant="ghost"
                             className="h-7 text-xs text-destructive"
-                            onClick={() =>
-                              rejectAddDrop.mutate({ requestId: req.id })
-                            }
-                            disabled={rejectAddDrop.isPending}
+                            onClick={() => handleReject(req._id)}
+                            disabled={actionPending}
                           >
                             Reject
                           </Button>
@@ -741,7 +755,7 @@ export default function RegistrationTablePage() {
                   <div className="space-y-2">
                     {pendingAddDrops.needsReview.map((req) => (
                       <div
-                        key={req.id}
+                        key={req._id}
                         className="status-clay flex flex-col gap-2 rounded-md border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="text-sm">
@@ -758,10 +772,8 @@ export default function RegistrationTablePage() {
                             size="sm"
                             variant="default"
                             className="h-7 text-xs"
-                            onClick={() =>
-                              approveAddDrop.mutate({ requestId: req.id })
-                            }
-                            disabled={approveAddDrop.isPending}
+                            onClick={() => handleApprove(req._id)}
+                            disabled={actionPending}
                           >
                             Approve
                           </Button>
@@ -769,10 +781,8 @@ export default function RegistrationTablePage() {
                             size="sm"
                             variant="ghost"
                             className="h-7 text-xs text-destructive"
-                            onClick={() =>
-                              rejectAddDrop.mutate({ requestId: req.id })
-                            }
-                            disabled={rejectAddDrop.isPending}
+                            onClick={() => handleReject(req._id)}
+                            disabled={actionPending}
                           >
                             Reject
                           </Button>

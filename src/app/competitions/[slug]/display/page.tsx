@@ -3,9 +3,8 @@
 import { useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../convex/_generated/api";
-import { useCompLive } from "@competitions/lib/ably-comp-client";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Megaphone } from "lucide-react";
 
@@ -13,29 +12,22 @@ import { Megaphone } from "lucide-react";
 // Full-screen, dark-themed, read-only schedule display for venue projection.
 // No authentication required — all data comes from public liveView procedures.
 
+type AnnouncementNote = {
+  _id: Id<"announcementNotes">;
+  dayId: Id<"competitionDays">;
+  positionAfterEventId: Id<"competitionEvents"> | null | undefined;
+  content: string;
+  visibleOnProjector: boolean;
+};
+
 export default function ProjectorDisplayPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const competitionId = comp?._id;
 
-  const { data: schedule } = trpc.liveView.getSchedule.useQuery(
-    // TODO Task 10/11: liveView router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp },
-  );
-
-  const utils = trpc.useUtils();
-  const invalidateAll = () => utils.liveView.getSchedule.invalidate();
-  const { isConnected } = useCompLive(
-    schedule?.competition.id,
-    {
-      "schedule:updated": invalidateAll,
-      "event:completed": invalidateAll,
-      "announcement:created": invalidateAll,
-      "announcement:updated": invalidateAll,
-      "announcement:deleted": invalidateAll,
-      "results:published": invalidateAll,
-    },
-    { onReconnect: invalidateAll },
+  const schedule = useQuery(
+    api.competitions.liveView.getSchedule,
+    competitionId ? { competitionId } : "skip",
   );
 
   const activeRef = useRef<HTMLDivElement>(null);
@@ -57,20 +49,12 @@ export default function ProjectorDisplayPage() {
 
   const { days, blocks, events } = schedule;
 
-  // Access notes with TS workaround for inference depth limits
-  const notes =
-    ((schedule as Record<string, unknown>).notes as {
-      id: number;
-      dayId: number;
-      positionAfterEventId: number | null;
-      content: string;
-      visibleOnProjector: boolean;
-    }[]) ?? [];
+  const notes = (schedule.notes ?? []) as AnnouncementNote[];
 
   const projectorNotes = notes.filter((n) => n.visibleOnProjector);
 
   // Group blocks by day
-  const blocksByDay = new Map<number, typeof blocks>();
+  const blocksByDay = new Map<Id<"competitionDays">, typeof blocks>();
   for (const block of blocks) {
     const arr = blocksByDay.get(block.dayId) ?? [];
     arr.push(block);
@@ -79,7 +63,7 @@ export default function ProjectorDisplayPage() {
 
   // Group events by block (sessionId)
   type Event = (typeof events)[number];
-  const eventsByBlock = new Map<number, Event[]>();
+  const eventsByBlock = new Map<Id<"scheduleBlocks">, Event[]>();
   for (const evt of events) {
     if (evt.sessionId) {
       const arr = eventsByBlock.get(evt.sessionId) ?? [];
@@ -88,19 +72,18 @@ export default function ProjectorDisplayPage() {
     }
   }
 
-  function getNotesAfterEvent(eventId: number | null, dayId: number) {
+  function getNotesAfterEvent(
+    eventId: Id<"competitionEvents"> | null,
+    dayId: Id<"competitionDays">,
+  ) {
     return projectorNotes.filter(
-      (n) => n.positionAfterEventId === eventId && n.dayId === dayId,
+      (n) =>
+        (n.positionAfterEventId ?? null) === eventId && n.dayId === dayId,
     );
   }
 
   return (
     <div className="relative min-h-screen bg-[#0a0a0a] px-8 py-10 text-[#fafafa]">
-      {/* Connection status indicator */}
-      <div className="absolute top-4 right-4">
-        <span className={`inline-block size-3 rounded-full ${isConnected ? "bg-sage" : "animate-pulse bg-wine"}`} />
-      </div>
-
       {/* Competition name */}
       <h1 className="text-4xl font-bold text-center mb-10 tracking-tight">
         {schedule.competition.name}
@@ -109,15 +92,15 @@ export default function ProjectorDisplayPage() {
       {/* Schedule by day */}
       <div className="max-w-4xl mx-auto space-y-10">
         {days.map((day) => {
-          const dayBlocks = blocksByDay.get(day.id) ?? [];
+          const dayBlocks = blocksByDay.get(day._id) ?? [];
           const dayEvents: Event[] = [];
           for (const block of dayBlocks) {
-            const blockEvts = eventsByBlock.get(block.id) ?? [];
+            const blockEvts = eventsByBlock.get(block._id) ?? [];
             dayEvents.push(...blockEvts);
           }
 
           return (
-            <div key={day.id}>
+            <div key={day._id}>
               {days.length > 1 && (
                 <h2 className="mb-4 border-b border-[#262626] pb-2 text-2xl font-semibold text-[#d4d4d4]">
                   {day.label ?? `Day ${day.position + 1}`}
@@ -125,8 +108,8 @@ export default function ProjectorDisplayPage() {
               )}
 
               {/* Notes at start of day */}
-              {getNotesAfterEvent(null, day.id).map((note) => (
-                <AnnouncementBanner key={note.id} content={note.content} />
+              {getNotesAfterEvent(null, day._id).map((note) => (
+                <AnnouncementBanner key={note._id} content={note.content} />
               ))}
 
               {dayEvents.length === 0 && (
@@ -184,9 +167,9 @@ export default function ProjectorDisplayPage() {
                       </div>
 
                       {/* Notes after this event */}
-                      {getNotesAfterEvent(evt.id, day.id).map((note) => (
+                      {getNotesAfterEvent(evt.id, day._id).map((note) => (
                         <AnnouncementBanner
-                          key={note.id}
+                          key={note._id}
                           content={note.content}
                         />
                       ))}

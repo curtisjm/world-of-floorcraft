@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../convex/_generated/api";
-import { useCompLive } from "@competitions/lib/ably-comp-client";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Card, CardContent } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
@@ -20,85 +19,60 @@ import {
   Megaphone,
   Star,
   Users,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────
 
 type ScheduleEvent = {
-  id: number;
+  id: Id<"competitionEvents">;
   name: string;
-  sessionId: number | null;
-  position: number | null;
+  sessionId: Id<"scheduleBlocks"> | null | undefined;
+  position: number | null | undefined;
   status: "upcoming" | "in_progress" | "completed";
   coupleNumbers: number[];
   entryCount: number;
 };
 
 type AnnouncementNote = {
-  id: number;
-  dayId: number;
-  positionAfterEventId: number | null;
+  _id: Id<"announcementNotes">;
+  dayId: Id<"competitionDays">;
+  positionAfterEventId: Id<"competitionEvents"> | null | undefined;
   content: string;
   visibleOnProjector: boolean;
 };
-
-type Day = { id: number; position: number; label: string | null; date: string | null };
 
 // ── Page ──────────────────────────────────────────────────────────
 
 export default function CompetitorLiveViewPage() {
   const { slug } = useParams<{ slug: string }>();
   const [showMyEvents, setShowMyEvents] = useState(true);
-  const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set());
+  const [expandedEvents, setExpandedEvents] = useState<
+    Set<Id<"competitionEvents">>
+  >(new Set());
 
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
-  const utils = trpc.useUtils();
+  const competitionId = comp?._id;
 
-  const invalidateAll = () => {
-    utils.liveView.getSchedule.invalidate();
-    utils.liveView.getPublishedResults.invalidate();
-  };
-
-  const { isConnected, connectionStatus } = useCompLive(
-    // TODO Task 10/11: useCompLive still expects numeric competitionId
-    comp?._id as unknown as number | undefined,
-    {
-      "schedule:updated": () => utils.liveView.getSchedule.invalidate(),
-      "event:completed": () => utils.liveView.getSchedule.invalidate(),
-      "announcement:created": () => utils.liveView.getSchedule.invalidate(),
-      "announcement:updated": () => utils.liveView.getSchedule.invalidate(),
-      "announcement:deleted": () => utils.liveView.getSchedule.invalidate(),
-      "results:published": invalidateAll,
-    },
-    { onReconnect: invalidateAll },
+  const schedule = useQuery(
+    api.competitions.liveView.getSchedule,
+    competitionId ? { competitionId } : "skip",
   );
+  const scheduleLoading = schedule === undefined;
 
-  const { data: schedule, isLoading: scheduleLoading } =
-    trpc.liveView.getSchedule.useQuery(
-      // TODO Task 10/11: liveView router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp, refetchInterval: 30_000 },
-    );
-
-  const { data: myEventsData } = trpc.liveView.getMyEvents.useQuery(
-    // TODO Task 10/11: liveView router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp },
+  const myEventsData = useQuery(
+    api.competitions.liveView.getMyEvents,
+    competitionId ? { competitionId } : "skip",
   );
 
   const myEventIds = new Set(myEventsData?.myEventIds ?? []);
   const hasMyEvents = myEventIds.size > 0;
 
-  const notes = (
-    (schedule as Record<string, unknown>)?.notes as AnnouncementNote[] ?? []
-  );
+  const notes: AnnouncementNote[] = (schedule?.notes ?? []) as AnnouncementNote[];
 
-  const days: Day[] = schedule?.days ?? [];
-  const events: ScheduleEvent[] = schedule?.events ?? [];
+  const days = schedule?.days ?? [];
+  const events: ScheduleEvent[] = (schedule?.events ?? []) as ScheduleEvent[];
 
-  function toggleExpand(eventId: number) {
+  function toggleExpand(eventId: Id<"competitionEvents">) {
     setExpandedEvents((prev) => {
       const next = new Set(prev);
       if (next.has(eventId)) next.delete(eventId);
@@ -109,20 +83,22 @@ export default function CompetitorLiveViewPage() {
 
   // Group events by day (using sessionId -> block -> day mapping, or fallback to first day)
   const blocks = schedule?.blocks ?? [];
-  const blockDayMap = new Map(blocks.map((b) => [b.id, b.dayId]));
+  const blockDayMap = new Map(blocks.map((b) => [b._id, b.dayId]));
 
   // Build day -> events mapping
   // Events have sessionId which corresponds to block id
-  function getDayForEvent(event: ScheduleEvent): number | null {
+  function getDayForEvent(
+    event: ScheduleEvent,
+  ): Id<"competitionDays"> | null {
     if (event.sessionId != null) {
       return blockDayMap.get(event.sessionId) ?? null;
     }
-    return days[0]?.id ?? null;
+    return days[0]?._id ?? null;
   }
 
-  const dayEventsMap = new Map<number, ScheduleEvent[]>();
+  const dayEventsMap = new Map<Id<"competitionDays">, ScheduleEvent[]>();
   for (const day of days) {
-    dayEventsMap.set(day.id, []);
+    dayEventsMap.set(day._id, []);
   }
   for (const event of events) {
     const dayId = getDayForEvent(event);
@@ -133,9 +109,12 @@ export default function CompetitorLiveViewPage() {
   }
 
   // Notes indexed by positionAfterEventId
-  const notesAfterEvent = new Map<number | null, AnnouncementNote[]>();
+  const notesAfterEvent = new Map<
+    Id<"competitionEvents"> | null,
+    AnnouncementNote[]
+  >();
   for (const note of notes) {
-    const key = note.positionAfterEventId;
+    const key = note.positionAfterEventId ?? null;
     if (!notesAfterEvent.has(key)) notesAfterEvent.set(key, []);
     notesAfterEvent.get(key)!.push(note);
   }
@@ -161,19 +140,6 @@ export default function CompetitorLiveViewPage() {
           <p className="text-sm text-muted-foreground flex items-center gap-1.5">
             <Radio className="size-4" />
             Live Schedule
-          </p>
-          <p className={cn(
-            "text-xs flex items-center gap-1",
-            connectionStatus === "connected" && "text-status-sage",
-            connectionStatus === "disconnected" && "text-muted-foreground",
-            connectionStatus === "suspended" && "text-status-clay",
-            connectionStatus === "failed" && "text-status-wine",
-          )}>
-            {isConnected ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-            {connectionStatus === "connected" && "Live"}
-            {connectionStatus === "disconnected" && "Connecting..."}
-            {connectionStatus === "suspended" && "Reconnecting..."}
-            {connectionStatus === "failed" && "Disconnected"}
           </p>
         </div>
       </div>
@@ -201,11 +167,11 @@ export default function CompetitorLiveViewPage() {
         </Card>
       ) : (
         days.map((day) => {
-          const dayEvents = dayEventsMap.get(day.id) ?? [];
+          const dayEvents = dayEventsMap.get(day._id) ?? [];
           const visibleEvents = dayEvents.filter(shouldShowEvent);
           // Also gather notes for this day that are before any event (positionAfterEventId === null and dayId matches)
           const dayNotesBefore = (notesAfterEvent.get(null) ?? []).filter(
-            (n) => n.dayId === day.id,
+            (n) => n.dayId === day._id,
           );
 
           if (
@@ -218,7 +184,7 @@ export default function CompetitorLiveViewPage() {
           }
 
           return (
-            <div key={day.id} className="space-y-3">
+            <div key={day._id} className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 {day.label}
                 {day.date && (
@@ -234,7 +200,7 @@ export default function CompetitorLiveViewPage() {
 
               {/* Notes before first event */}
               {dayNotesBefore.map((note) => (
-                <NoteCard key={note.id} note={note} />
+                <NoteCard key={note._id} note={note} />
               ))}
 
               {visibleEvents.map((event) => {
@@ -242,9 +208,9 @@ export default function CompetitorLiveViewPage() {
                 const isExpanded = expandedEvents.has(event.id);
 
                 // Notes after this event
-                const eventNotes = (notesAfterEvent.get(event.id) ?? []).filter(
-                  (n) => n.dayId === day.id,
-                );
+                const eventNotes = (
+                  notesAfterEvent.get(event.id) ?? []
+                ).filter((n) => n.dayId === day._id);
 
                 return (
                   <div key={event.id} className="space-y-3">
@@ -255,7 +221,7 @@ export default function CompetitorLiveViewPage() {
                       onToggle={() => toggleExpand(event.id)}
                     />
                     {eventNotes.map((note) => (
-                      <NoteCard key={note.id} note={note} />
+                      <NoteCard key={note._id} note={note} />
                     ))}
                   </div>
                 );
@@ -384,9 +350,11 @@ function StatusBadge({ status }: { status: "upcoming" | "in_progress" | "complet
 
 // ── Results Section ───────────────────────────────────────────────
 
-function ResultsSection({ eventId }: { eventId: number }) {
-  const { data: results, isLoading } =
-    trpc.liveView.getPublishedResults.useQuery({ eventId });
+function ResultsSection({ eventId }: { eventId: Id<"competitionEvents"> }) {
+  const results = useQuery(api.competitions.liveView.getPublishedResults, {
+    eventId,
+  });
+  const isLoading = results === undefined;
 
   if (isLoading) {
     return (

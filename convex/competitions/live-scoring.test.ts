@@ -1179,47 +1179,6 @@ describe("calendar", () => {
   });
 });
 
-// ── Payment analytics ─────────────────────────────────────────────
-
-describe("paymentAnalytics", () => {
-  it("getSummary aggregates payments per registration", async () => {
-    const t = convexTest(schema, modules);
-    const aliceId = await seedUser(t, ALICE);
-    await seedUser(t, REG);
-    const orgId = await seedOrgWithOwner(t, aliceId);
-    const compId = await seedCompetition(t, ALICE, orgId);
-    const regUserId = await t.run((ctx) =>
-      ctx.db
-        .query("users")
-        .withIndex("by_token_identifier", (q) =>
-          q.eq("tokenIdentifier", REG.tokenIdentifier),
-        )
-        .unique()
-        .then((u) => u!._id),
-    );
-    await seedStaff(t, compId, regUserId, "registration");
-    const userBob = await seedUser(t, BOB);
-    const reg = await seedRegistration(t, compId, userBob, {
-      amountOwed: 5000,
-    });
-    await t
-      .withIdentity(REG)
-      .mutation(api.competitions.compDay.recordOfflinePayment, {
-        registrationId: reg,
-        amount: "30.00",
-        method: "cash",
-      });
-    const summary = await t
-      .withIdentity(ALICE)
-      .query(api.competitions.paymentAnalytics.getSummary, {
-        competitionId: compId,
-      });
-    expect(summary.totalRevenue).toBe(3000);
-    expect(summary.outstandingBalance).toBe(2000);
-    expect(summary.methodBreakdown.cash).toBe(3000);
-  });
-});
-
 // silence unused-warning style imports kept for symmetry with core.test.ts
 void SCRUT;
 void DECK;

@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { Card, CardContent } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
 import { Calendar } from "lucide-react";
 
 export function PastCompetitionsTab({ userId }: { userId: string }) {
-  const { data: history, isLoading } =
-    trpc.results.getCompetitorHistory.useQuery({ userId });
+  const history = useQuery(api.competitions.results.getCompetitorHistory, {
+    userId: userId as Id<"users">,
+  });
+  const isLoading = history === undefined;
 
   if (isLoading) {
     return (

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 
 type CompetitionEvent = FunctionReturnType<
   typeof api.competitions.events.listByCompetition
@@ -26,15 +26,14 @@ export default function RoundsPage() {
     comp ? { competitionId: comp._id } : "skip",
   );
 
-  const generateAll = trpc.round.generateForCompetition.useMutation({
-    onSuccess: (result) => {
-      // event list is now a Convex query; will refresh reactively
-      toast.success(`Generated ${result.totalRounds} rounds across ${result.events} events`);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const generateAllMutation = useMutation(
+    api.competitions.rounds.generateForCompetition,
+  );
+  const [generateAllPending, setGenerateAllPending] = useState(false);
 
-  const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
+  const [expandedEvent, setExpandedEvent] = useState<Id<"competitionEvents"> | null>(
+    null,
+  );
 
   if (!comp) {
     return (
@@ -45,17 +44,27 @@ export default function RoundsPage() {
     );
   }
 
+  const handleGenerateAll = async () => {
+    setGenerateAllPending(true);
+    try {
+      const result = await generateAllMutation({ competitionId: comp._id });
+      toast.success(
+        `Generated ${result.totalRounds} rounds across ${result.events} events`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to generate rounds");
+    } finally {
+      setGenerateAllPending(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Rounds</h2>
-        <Button
-          // TODO Task 10/11: round router still expects numeric competitionId
-          onClick={() => generateAll.mutate({ competitionId: comp._id as unknown as number })}
-          disabled={generateAll.isPending}
-        >
+        <Button onClick={handleGenerateAll} disabled={generateAllPending}>
           <Wand2 className="size-4 mr-2" />
-          {generateAll.isPending ? "Generating..." : "Generate All Rounds"}
+          {generateAllPending ? "Generating..." : "Generate All Rounds"}
         </Button>
       </div>
 
@@ -69,12 +78,10 @@ export default function RoundsPage() {
             <EventRoundsCard
               key={event._id}
               event={event}
-              expanded={expandedEvent === (event._id as unknown as number)}
+              expanded={expandedEvent === event._id}
               onToggle={() =>
                 setExpandedEvent(
-                  expandedEvent === (event._id as unknown as number)
-                    ? null
-                    : (event._id as unknown as number),
+                  expandedEvent === event._id ? null : event._id,
                 )
               }
             />
@@ -94,42 +101,78 @@ function EventRoundsCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  // TODO Task 10/11: round router still expects numeric eventId
-  const eventIdNum = event._id as unknown as number;
-  const { data: rounds } = trpc.round.listByEvent.useQuery(
-    { eventId: eventIdNum },
-    { enabled: expanded },
+  const rounds = useQuery(
+    api.competitions.rounds.listByEvent,
+    expanded ? { eventId: event._id } : "skip",
   );
 
-  const generateForEvent = trpc.round.generateForEvent.useMutation({
-    onSuccess: (result) => {
-      toast.success(`Generated ${result.rounds} rounds with ${result.heats} heats`);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const generateForEventMutation = useMutation(
+    api.competitions.rounds.generateForEvent,
+  );
+  const updateRoundMutation = useMutation(api.competitions.rounds.update);
+  const approveHeatsMutation = useMutation(api.competitions.rounds.approveHeats);
+  const reassignHeatsMutation = useMutation(api.competitions.rounds.reassignHeats);
 
-  const utils = trpc.useUtils();
+  const [generatePending, setGeneratePending] = useState(false);
+  const [updatePending, setUpdatePending] = useState(false);
+  const [approvePending, setApprovePending] = useState(false);
+  const [reassignPending, setReassignPending] = useState(false);
 
-  const updateRound = trpc.round.update.useMutation({
-    onSuccess: () => toast.success("Round updated"),
-    onError: (err) => toast.error(err.message),
-  });
+  const handleGenerate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setGeneratePending(true);
+    try {
+      const result = await generateForEventMutation({ eventId: event._id });
+      toast.success(
+        `Generated ${result.rounds} rounds with ${result.heats} heats`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to generate rounds");
+    } finally {
+      setGeneratePending(false);
+    }
+  };
 
-  const approveHeats = trpc.round.approveHeats.useMutation({
-    onSuccess: () => {
-      utils.round.listByEvent.invalidate({ eventId: eventIdNum });
+  const handleUpdate = async (
+    roundId: Id<"rounds">,
+    status: "in_progress" | "completed",
+  ) => {
+    setUpdatePending(true);
+    try {
+      await updateRoundMutation({ roundId, status });
+      toast.success("Round updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update round");
+    } finally {
+      setUpdatePending(false);
+    }
+  };
+
+  const handleApproveHeats = async (roundId: Id<"rounds">) => {
+    setApprovePending(true);
+    try {
+      await approveHeatsMutation({ roundId });
       toast.success("Heats approved");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to approve heats");
+    } finally {
+      setApprovePending(false);
+    }
+  };
 
-  const reassignHeats = trpc.round.reassignHeats.useMutation({
-    onSuccess: (result) => {
-      utils.round.listByEvent.invalidate({ eventId: eventIdNum });
-      toast.success(`Reassigned ${result.entries} entries across ${result.heats} heats`);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const handleReassignHeats = async (roundId: Id<"rounds">) => {
+    setReassignPending(true);
+    try {
+      const result = await reassignHeatsMutation({ roundId });
+      toast.success(
+        `Reassigned ${result.entries} entries across ${result.heats} heats`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reassign heats");
+    } finally {
+      setReassignPending(false);
+    }
+  };
 
   return (
     <Card>
@@ -163,11 +206,8 @@ function EventRoundsCard({
               <span className="text-sm text-muted-foreground">No rounds generated</span>
               <Button
                 size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  generateForEvent.mutate({ eventId: eventIdNum });
-                }}
-                disabled={generateForEvent.isPending}
+                onClick={handleGenerate}
+                disabled={generatePending}
               >
                 Generate
               </Button>
@@ -175,7 +215,7 @@ function EventRoundsCard({
           ) : (
             <div className="space-y-2">
               {rounds.map((round) => (
-                <div key={round.id} className="p-3 rounded-md border space-y-2">
+                <div key={round._id} className="p-3 rounded-md border space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium capitalize">
@@ -220,7 +260,7 @@ function EventRoundsCard({
                   {round.heats?.length > 0 && (
                     <div className="space-y-1">
                       {round.heats.map((heat, i) => (
-                        <div key={heat.id} className="flex items-center justify-between text-xs p-1.5 rounded bg-muted/30">
+                        <div key={heat._id} className="flex items-center justify-between text-xs p-1.5 rounded bg-muted/30">
                           <span>Heat {i + 1}</span>
                           <span className="text-muted-foreground">
                             {heat.entries?.length ?? 0} entries
@@ -235,20 +275,16 @@ function EventRoundsCard({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            reassignHeats.mutate({ roundId: round.id })
-                          }
-                          disabled={reassignHeats.isPending}
+                          onClick={() => handleReassignHeats(round._id)}
+                          disabled={reassignPending}
                         >
                           <ArrowRightLeft className="size-3 mr-1" />
                           Reassign Heats
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() =>
-                            approveHeats.mutate({ roundId: round.id })
-                          }
-                          disabled={approveHeats.isPending}
+                          onClick={() => handleApproveHeats(round._id)}
+                          disabled={approvePending}
                         >
                           <CheckCircle2 className="size-3 mr-1" />
                           Approve Heats
@@ -259,12 +295,8 @@ function EventRoundsCard({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          updateRound.mutate({
-                            roundId: round.id,
-                            status: "in_progress",
-                          })
-                        }
+                        onClick={() => handleUpdate(round._id, "in_progress")}
+                        disabled={updatePending}
                       >
                         Start
                       </Button>
@@ -273,12 +305,8 @@ function EventRoundsCard({
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          updateRound.mutate({
-                            roundId: round.id,
-                            status: "completed",
-                          })
-                        }
+                        onClick={() => handleUpdate(round._id, "completed")}
+                        disabled={updatePending}
                       >
                         Complete
                       </Button>

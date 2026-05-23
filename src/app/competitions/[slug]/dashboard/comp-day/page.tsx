@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../convex/_generated/api";
-import { useCompLiveWithInvalidation } from "@competitions/lib/ably-comp-client";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
@@ -20,20 +19,18 @@ import {
   ChevronDown,
   ChevronRight,
   Circle,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
 import { cn } from "@shared/lib/utils";
 
 // ── Helpers ────────────────────────────────────────────────────────
 
 type EventSummary = {
-  id: number;
+  id: Id<"competitionEvents">;
   name: string;
-  sessionId: number | null;
-  position: number | null;
+  sessionId: Id<"scheduleBlocks"> | undefined;
+  position: number | undefined;
   entryCount: number;
-  rounds: { id: number; roundType: string; status: string }[];
+  rounds: { id: Id<"rounds">; roundType: string; status: string }[];
 };
 
 function deriveEventStatus(rounds: { status: string }[]) {
@@ -55,7 +52,7 @@ function statusBadgeVariant(status: string) {
   }
 }
 
-function formatTime(date: Date | string) {
+function formatTime(date: Date | string | number) {
   return new Date(date).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -68,15 +65,11 @@ export default function CompDayDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
-  // TODO Task 10/11: useCompLiveWithInvalidation still expects numeric competitionId
-  const { connectionStatus } = useCompLiveWithInvalidation(comp?._id as unknown as number | undefined);
-
-  const { data: dashboard, isLoading } =
-    trpc.scrutineerDashboard.getDashboard.useQuery(
-      // TODO Task 10/11: scrutineerDashboard router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp, refetchInterval: 10_000 },
-    );
+  const dashboard = useQuery(
+    api.competitions.scrutineer.getDashboard,
+    comp ? { competitionId: comp._id } : "skip",
+  );
+  const isLoading = dashboard === undefined;
 
   if (!comp || isLoading) {
     return <DashboardSkeleton />;
@@ -101,19 +94,6 @@ export default function CompDayDashboardPage() {
           <Activity className="size-5" />
           Comp Day Dashboard
         </h2>
-        <p className={cn(
-          "text-xs flex items-center gap-1",
-          connectionStatus === "connected" && "text-sage",
-          connectionStatus === "disconnected" && "text-muted-foreground",
-          connectionStatus === "suspended" && "text-clay",
-          connectionStatus === "failed" && "text-wine",
-        )}>
-          {connectionStatus === "connected" ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-          {connectionStatus === "connected" && "Live"}
-          {connectionStatus === "disconnected" && "Connecting..."}
-          {connectionStatus === "suspended" && "Reconnecting..."}
-          {connectionStatus === "failed" && "Disconnected"}
-        </p>
       </div>
 
       {/* Active Round */}
@@ -191,12 +171,16 @@ function ActiveRoundCard({
   submissions,
 }: {
   activeRound: {
-    roundId: number;
+    roundId: Id<"rounds">;
     eventName: string;
-    roundType: string | undefined;
-    startedAt: Date;
+    roundType?: string;
+    startedAt: number;
   } | null;
-  submissions: { judgeId: number; status: string; submittedAt: Date | null }[];
+  submissions: {
+    judgeId: Id<"judges">;
+    status: string;
+    submittedAt: number | null;
+  }[];
 }) {
   if (!activeRound) {
     return (
@@ -230,7 +214,7 @@ function ActiveRoundCard({
           <span className="capitalize">
             {activeRound.roundType?.replace(/_/g, " ") ?? "Round"}
           </span>
-          {" \u00b7 Started "}
+          {" · Started "}
           {formatTime(activeRound.startedAt)}
         </p>
       </CardHeader>
@@ -251,7 +235,7 @@ function ActiveRoundCard({
                 ) : (
                   <Circle className="size-4 text-muted-foreground shrink-0" />
                 )}
-                <span className="truncate">J{sub.judgeId}</span>
+                <span className="truncate">J{sub.judgeId.slice(-4)}</span>
               </div>
             );
           })}
@@ -357,22 +341,31 @@ function EventDetails({
   eventId,
   eventRounds,
 }: {
-  eventId: number;
-  eventRounds: { id: number; roundType: string; status: string }[];
+  eventId: Id<"competitionEvents">;
+  eventRounds: { id: Id<"rounds">; roundType: string; status: string }[];
 }) {
-  const utils = trpc.useUtils();
+  const progress = useQuery(
+    api.competitions.scrutineer.getEventProgress,
+    { eventId },
+  );
+  const isLoading = progress === undefined;
 
-  const { data: progress, isLoading } =
-    trpc.scrutineerDashboard.getEventProgress.useQuery({ eventId });
+  const markCompleteMutation = useMutation(
+    api.competitions.scrutineer.markEventComplete,
+  );
+  const [markPending, setMarkPending] = useState(false);
 
-  const markComplete = trpc.scrutineerDashboard.markEventComplete.useMutation({
-    onSuccess: () => {
+  async function handleMarkComplete() {
+    setMarkPending(true);
+    try {
+      await markCompleteMutation({ eventId });
       toast.success("Event marked as complete");
-      utils.scrutineerDashboard.getDashboard.invalidate();
-      utils.scrutineerDashboard.getEventProgress.invalidate({ eventId });
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to mark complete");
+    } finally {
+      setMarkPending(false);
+    }
+  }
 
   const allPublished =
     progress?.rounds.length &&
@@ -431,11 +424,11 @@ function EventDetails({
             <Button
               size="sm"
               className="mt-2"
-              onClick={() => markComplete.mutate({ eventId })}
-              disabled={markComplete.isPending}
+              onClick={handleMarkComplete}
+              disabled={markPending}
             >
               <CheckCircle2 className="size-4 mr-1" />
-              {markComplete.isPending ? "Marking..." : "Mark Complete"}
+              {markPending ? "Marking..." : "Mark Complete"}
             </Button>
           )}
         </div>

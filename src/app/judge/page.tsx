@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery, useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
+import type { FunctionReturnType } from "convex/server";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Input } from "@shared/ui/input";
@@ -19,62 +23,74 @@ import {
 
 // ── Types ───────────────────────────────────────────────────────────
 
-interface ActiveRound {
-  roundId: number;
-  eventName: string;
-  eventStyle?: string | null;
-  roundType: string;
-  callbacksRequested: number | null;
-  dances: string[];
-  couples: Array<{
-    entryId: number;
-    competitorNumber: number | null;
-    heatNumber: number | null;
-  }>;
-  submissionStatus: string;
-  isFinal: boolean;
+type ActiveRound = NonNullable<
+  FunctionReturnType<typeof api.competitions.judgeSession.getActiveRound>
+>;
+
+function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof ConvexError) {
+    const data = err.data as { message?: string } | string | undefined;
+    if (typeof data === "string") return data;
+    if (data && typeof data === "object" && typeof data.message === "string") {
+      return data.message;
+    }
+  }
+  if (err instanceof Error) return err.message;
+  return fallback;
 }
 
 // ── Main Page ───────────────────────────────────────────────────────
 
 export default function JudgePage() {
   const [authed, setAuthed] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const [judgeName, setJudgeName] = useState("");
   const [compName, setCompName] = useState("");
 
-  // Restore display-only data from sessionStorage (token is in httpOnly cookie)
+  // Restore session from sessionStorage (Convex auth uses bearer token, not cookies)
   useEffect(() => {
+    const storedToken = sessionStorage.getItem("judge_token");
     const name = sessionStorage.getItem("judge_name");
     const comp = sessionStorage.getItem("judge_comp");
-    if (name && comp) {
+    if (storedToken && name && comp) {
       setAuthed(true);
+      setToken(storedToken);
       setJudgeName(name);
       setCompName(comp);
     }
   }, []);
 
-  function handleAuth(result: { judgeName: string; competitionName: string }) {
+  function handleAuth(result: {
+    token: string;
+    judgeName: string;
+    competitionName: string;
+  }) {
     setAuthed(true);
+    setToken(result.token);
     setJudgeName(result.judgeName);
     setCompName(result.competitionName);
+    sessionStorage.setItem("judge_token", result.token);
     sessionStorage.setItem("judge_name", result.judgeName);
     sessionStorage.setItem("judge_comp", result.competitionName);
   }
 
   function handleLogout() {
     setAuthed(false);
+    setToken(null);
     setJudgeName("");
     setCompName("");
+    sessionStorage.removeItem("judge_token");
     sessionStorage.removeItem("judge_name");
     sessionStorage.removeItem("judge_comp");
   }
 
-  if (!authed) {
+  if (!authed || !token) {
     return <AuthScreen onAuth={handleAuth} />;
   }
 
   return (
     <JudgeView
+      token={token}
       judgeName={judgeName}
       compName={compName}
       onLogout={handleLogout}
@@ -87,34 +103,37 @@ export default function JudgePage() {
 function AuthScreen({
   onAuth,
 }: {
-  onAuth: (result: { judgeName: string; competitionName: string }) => void;
+  onAuth: (result: {
+    token: string;
+    judgeName: string;
+    competitionName: string;
+  }) => void;
 }) {
   const [compCode, setCompCode] = useState("");
   const [password, setPassword] = useState("");
   const [judgeId, setJudgeId] = useState("");
   const [isPending, setIsPending] = useState(false);
 
+  const authenticateMutation = useMutation(
+    api.competitions.judgeSession.authenticate,
+  );
+
   const handleSubmit = async () => {
     setIsPending(true);
     try {
-      const res = await fetch("/api/judge/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          compCode,
-          masterPassword: password,
-          judgeId: parseInt(judgeId),
-        }),
+      const data = await authenticateMutation({
+        compCode,
+        masterPassword: password,
+        judgeId: judgeId as Id<"judges">,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Authentication failed");
-        return;
-      }
       toast.success(`Welcome, ${data.judgeName}`);
-      onAuth({ judgeName: data.judgeName, competitionName: data.competitionName });
-    } catch {
-      toast.error("Authentication failed");
+      onAuth({
+        token: data.token,
+        judgeName: data.judgeName,
+        competitionName: data.competitionName,
+      });
+    } catch (err) {
+      toast.error(errorMessage(err, "Authentication failed"));
     } finally {
       setIsPending(false);
     }
@@ -152,14 +171,14 @@ function AuthScreen({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="judgeId">Judge Number</Label>
+            <Label htmlFor="judgeId">Judge ID</Label>
             <Input
               id="judgeId"
-              type="number"
+              type="text"
               placeholder="Your assigned judge ID"
               value={judgeId}
               onChange={(e) => setJudgeId(e.target.value)}
-              className="text-center text-lg"
+              className="text-center text-lg font-mono"
             />
           </div>
           <Button
@@ -184,23 +203,28 @@ function AuthScreen({
 // ── Judge View (authenticated) ──────────────────────────────────────
 
 function JudgeView({
+  token,
   judgeName,
   compName,
   onLogout,
 }: {
+  token: string;
   judgeName: string;
   compName: string;
   onLogout: () => void;
 }) {
-  // Token is in httpOnly cookie — tRPC reads it from context automatically
-  const { data: activeRound, isLoading, refetch } = trpc.judgeSession.getActiveRound.useQuery(
-    {},
-    { refetchInterval: 5000 },
+  // Convex queries are automatically reactive — no polling needed.
+  const activeRound = useQuery(
+    api.competitions.judgeSession.getActiveRound,
+    { token },
   );
+  const isLoading = activeRound === undefined;
+
+  const logoutMutation = useMutation(api.competitions.judgeSession.logout);
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/judge/logout", { method: "POST" });
+      await logoutMutation({ token });
     } catch {
       // Best-effort
     }
@@ -234,11 +258,11 @@ function JudgeView({
             <Skeleton className="h-64 w-full" />
           </div>
         ) : !activeRound ? (
-          <WaitingScreen onRefresh={refetch} />
+          <WaitingScreen />
         ) : activeRound.isFinal ? (
-          <FinalMarkingPage round={activeRound} />
+          <FinalMarkingPage token={token} round={activeRound} />
         ) : (
-          <CallbackMarkingPage round={activeRound} />
+          <CallbackMarkingPage token={token} round={activeRound} />
         )}
       </div>
     </div>
@@ -247,7 +271,7 @@ function JudgeView({
 
 // ── Waiting Screen ──────────────────────────────────────────────────
 
-function WaitingScreen({ onRefresh }: { onRefresh: () => void }) {
+function WaitingScreen() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
       <Loader2 className="size-12 text-muted-foreground animate-spin" />
@@ -255,9 +279,6 @@ function WaitingScreen({ onRefresh }: { onRefresh: () => void }) {
       <p className="text-muted-foreground">
         The scrutineer will start the next round shortly.
       </p>
-      <Button variant="outline" onClick={onRefresh}>
-        Refresh
-      </Button>
     </div>
   );
 }
@@ -265,23 +286,32 @@ function WaitingScreen({ onRefresh }: { onRefresh: () => void }) {
 // ── Callback Marking Page ───────────────────────────────────────────
 
 function CallbackMarkingPage({
+  token,
   round,
 }: {
+  token: string;
   round: ActiveRound;
 }) {
-  const [marks, setMarks] = useState<Record<number, "marked" | "maybe" | "unmarked">>({});
-  const [submitted, setSubmitted] = useState(round.submissionStatus === "submitted");
+  const [marks, setMarks] = useState<
+    Record<string, "marked" | "maybe" | "unmarked">
+  >({});
+  const [submitted, setSubmitted] = useState(
+    round.submissionStatus === "submitted",
+  );
   const [editing, setEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load existing marks if re-entering
-  const { data: existingSubmission } = trpc.judgeSession.getMySubmission.useQuery(
-    { roundId: round.roundId },
-    { enabled: round.submissionStatus === "submitted" },
+  const existingSubmission = useQuery(
+    api.competitions.judgeSession.getMySubmission,
+    round.submissionStatus === "submitted"
+      ? { token, roundId: round.roundId }
+      : "skip",
   );
 
   useEffect(() => {
-    if (existingSubmission?.type === "callback") {
-      const restored: Record<number, "marked" | "maybe" | "unmarked"> = {};
+    if (existingSubmission && existingSubmission.type === "callback") {
+      const restored: Record<string, "marked" | "maybe" | "unmarked"> = {};
       for (const m of existingSubmission.marks) {
         restored[m.entryId] = m.marked ? "marked" : "unmarked";
       }
@@ -292,7 +322,7 @@ function CallbackMarkingPage({
   // Initialize marks for all couples
   useEffect(() => {
     if (Object.keys(marks).length === 0) {
-      const initial: Record<number, "marked" | "maybe" | "unmarked"> = {};
+      const initial: Record<string, "marked" | "maybe" | "unmarked"> = {};
       for (const couple of round.couples) {
         initial[couple.entryId] = "unmarked";
       }
@@ -300,7 +330,7 @@ function CallbackMarkingPage({
     }
   }, [round.couples, marks]);
 
-  const toggleMark = (entryId: number) => {
+  const toggleMark = (entryId: Id<"entries">) => {
     if (submitted && !editing) return;
     setMarks((prev) => {
       const current = prev[entryId] ?? "unmarked";
@@ -312,16 +342,11 @@ function CallbackMarkingPage({
 
   const markedCount = Object.values(marks).filter((v) => v === "marked").length;
 
-  const submitMutation = trpc.judgeSession.submitCallbackMarks.useMutation({
-    onSuccess: () => {
-      toast.success("Marks submitted");
-      setSubmitted(true);
-      setEditing(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const submitCallbackMarks = useMutation(
+    api.competitions.judgeSession.submitCallbackMarks,
+  );
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation: warn if count doesn't match
     if (round.callbacksRequested && markedCount !== round.callbacksRequested) {
       const confirmed = window.confirm(
@@ -330,13 +355,24 @@ function CallbackMarkingPage({
       if (!confirmed) return;
     }
 
-    submitMutation.mutate({
-      roundId: round.roundId,
-      marks: round.couples.map((c) => ({
-        entryId: c.entryId,
-        marked: marks[c.entryId] === "marked",
-      })),
-    });
+    setIsSubmitting(true);
+    try {
+      await submitCallbackMarks({
+        token,
+        roundId: round.roundId,
+        marks: round.couples.map((c) => ({
+          entryId: c.entryId,
+          marked: marks[c.entryId] === "marked",
+        })),
+      });
+      toast.success("Marks submitted");
+      setSubmitted(true);
+      setEditing(false);
+    } catch (err) {
+      toast.error(errorMessage(err, "Submit failed"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Group by heat
@@ -417,10 +453,10 @@ function CallbackMarkingPage({
           <Button
             className="flex-1"
             size="lg"
-            disabled={submitMutation.isPending}
+            disabled={isSubmitting}
             onClick={handleSubmit}
           >
-            {submitMutation.isPending ? (
+            {isSubmitting ? (
               <Loader2 className="size-4 mr-2 animate-spin" />
             ) : (
               <Send className="size-4 mr-2" />
@@ -436,28 +472,37 @@ function CallbackMarkingPage({
 // ── Final Marking Page ──────────────────────────────────────────────
 
 function FinalMarkingPage({
+  token,
   round,
 }: {
+  token: string;
   round: ActiveRound;
 }) {
   // Rankings: danceName -> entryId -> placement
-  const [rankings, setRankings] = useState<Record<string, Record<number, number>>>({});
+  const [rankings, setRankings] = useState<
+    Record<string, Record<string, number>>
+  >({});
   const [activeDance, setActiveDance] = useState(round.dances[0] ?? "");
-  const [submitted, setSubmitted] = useState(round.submissionStatus === "submitted");
+  const [submitted, setSubmitted] = useState(
+    round.submissionStatus === "submitted",
+  );
   const [editing, setEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const couples = round.couples;
   const dances = round.dances;
 
   // Load existing marks
-  const { data: existingSubmission } = trpc.judgeSession.getMySubmission.useQuery(
-    { roundId: round.roundId },
-    { enabled: round.submissionStatus === "submitted" },
+  const existingSubmission = useQuery(
+    api.competitions.judgeSession.getMySubmission,
+    round.submissionStatus === "submitted"
+      ? { token, roundId: round.roundId }
+      : "skip",
   );
 
   useEffect(() => {
-    if (existingSubmission?.type === "final") {
-      const restored: Record<string, Record<number, number>> = {};
+    if (existingSubmission && existingSubmission.type === "final") {
+      const restored: Record<string, Record<string, number>> = {};
       for (const m of existingSubmission.marks) {
         if (!restored[m.danceName]) restored[m.danceName] = {};
         restored[m.danceName][m.entryId] = m.placement;
@@ -469,7 +514,7 @@ function FinalMarkingPage({
   // Initialize rankings
   useEffect(() => {
     if (Object.keys(rankings).length === 0 && dances.length > 0) {
-      const initial: Record<string, Record<number, number>> = {};
+      const initial: Record<string, Record<string, number>> = {};
       for (const dance of dances) {
         initial[dance] = {};
       }
@@ -481,7 +526,7 @@ function FinalMarkingPage({
   const nextPlacement = Object.keys(currentRanking).length + 1;
   const allPlaced = Object.keys(currentRanking).length === couples.length;
 
-  const placeCouple = (entryId: number) => {
+  const placeCouple = (entryId: Id<"entries">) => {
     if (submitted && !editing) return;
     if (currentRanking[entryId]) return; // already placed
 
@@ -494,7 +539,7 @@ function FinalMarkingPage({
     }));
   };
 
-  const unplaceCouple = (entryId: number) => {
+  const unplaceCouple = (entryId: Id<"entries">) => {
     if (submitted && !editing) return;
     setRankings((prev) => {
       const dance = { ...prev[activeDance] };
@@ -505,7 +550,7 @@ function FinalMarkingPage({
       // Re-sequence placements above the removed one
       for (const [eid, p] of Object.entries(dance)) {
         if (p > removedPlacement) {
-          dance[parseInt(eid)] = p - 1;
+          dance[eid] = p - 1;
         }
       }
       return { ...prev, [activeDance]: dance };
@@ -516,34 +561,43 @@ function FinalMarkingPage({
     (d) => Object.keys(rankings[d] ?? {}).length === couples.length,
   );
 
-  const submitMutation = trpc.judgeSession.submitFinalMarks.useMutation({
-    onSuccess: () => {
-      toast.success("Marks submitted");
-      setSubmitted(true);
-      setEditing(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const submitFinalMarks = useMutation(
+    api.competitions.judgeSession.submitFinalMarks,
+  );
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!allDancesComplete) {
       toast.error("Please rank all couples for all dances");
       return;
     }
 
-    const marks: Array<{ entryId: number; danceName: string; placement: number }> = [];
+    const marks: Array<{
+      entryId: Id<"entries">;
+      danceName: string;
+      placement: number;
+    }> = [];
     for (const dance of dances) {
       const danceRanking = rankings[dance] ?? {};
       for (const [entryId, placement] of Object.entries(danceRanking)) {
         marks.push({
-          entryId: parseInt(entryId),
+          entryId: entryId as Id<"entries">,
           danceName: dance,
           placement,
         });
       }
     }
 
-    submitMutation.mutate({ roundId: round.roundId, marks });
+    setIsSubmitting(true);
+    try {
+      await submitFinalMarks({ token, roundId: round.roundId, marks });
+      toast.success("Marks submitted");
+      setSubmitted(true);
+      setEditing(false);
+    } catch (err) {
+      toast.error(errorMessage(err, "Submit failed"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -586,11 +640,11 @@ function FinalMarkingPage({
         {Object.entries(currentRanking)
           .sort(([, a], [, b]) => a - b)
           .map(([entryId, placement]) => {
-            const couple = couples.find((c) => c.entryId === parseInt(entryId));
+            const couple = couples.find((c) => c.entryId === entryId);
             return (
               <div
                 key={entryId}
-                onClick={() => unplaceCouple(parseInt(entryId))}
+                onClick={() => unplaceCouple(entryId as Id<"entries">)}
                 className="flex items-center gap-3 p-3 rounded-lg border bg-accent/30 cursor-pointer hover:bg-accent/50"
               >
                 <span className="text-lg font-bold w-8 text-center">{placement}</span>
@@ -645,10 +699,10 @@ function FinalMarkingPage({
           <Button
             className="flex-1"
             size="lg"
-            disabled={!allDancesComplete || submitMutation.isPending}
+            disabled={!allDancesComplete || isSubmitting}
             onClick={handleSubmit}
           >
-            {submitMutation.isPending ? (
+            {isSubmitting ? (
               <Loader2 className="size-4 mr-2 animate-spin" />
             ) : (
               <Send className="size-4 mr-2" />

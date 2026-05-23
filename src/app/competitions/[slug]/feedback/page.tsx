@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Label } from "@shared/ui/label";
@@ -19,19 +19,17 @@ export default function FeedbackPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
 
-  const { data: form, isLoading: formLoading } =
-    trpc.feedback.getForm.useQuery(
-      // TODO Task 10/11: feedback router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp },
-    );
+  const form = useQuery(
+    api.competitions.feedback.getForm,
+    comp ? { competitionId: comp._id } : "skip",
+  );
+  const formLoading = comp !== undefined && form === undefined;
 
-  const { data: myResponse, isLoading: responseLoading } =
-    trpc.feedback.getMyResponse.useQuery(
-      // TODO Task 10/11: feedback router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp },
-    );
+  const myResponse = useQuery(
+    api.competitions.feedback.getMyResponse,
+    comp ? { competitionId: comp._id } : "skip",
+  );
+  const responseLoading = comp !== undefined && myResponse === undefined;
 
   if (!comp || formLoading || responseLoading) {
     return <FeedbackSkeleton slug={slug} />;
@@ -81,7 +79,7 @@ export default function FeedbackPage() {
         <p className="text-sm text-muted-foreground">{comp.name}</p>
       </div>
 
-      <FeedbackForm formId={form.id} questions={form.questions} competitionId={comp._id as unknown as number} />
+      <FeedbackForm formId={form._id} questions={form.questions} />
     </div>
   );
 }
@@ -89,10 +87,10 @@ export default function FeedbackPage() {
 // ── Feedback Form ─────────────────────────────────────────────
 
 type Question = {
-  id: number;
+  _id: Id<"feedbackQuestions">;
   questionType: "text" | "rating" | "multiple_choice" | "yes_no";
   label: string;
-  options: string[] | null;
+  options?: string[];
   required: boolean;
   position: number;
 };
@@ -100,45 +98,49 @@ type Question = {
 function FeedbackForm({
   formId,
   questions,
-  competitionId,
 }: {
-  formId: number;
+  formId: Id<"feedbackForms">;
   questions: Question[];
-  competitionId: number;
 }) {
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const utils = trpc.useUtils();
+  const [answers, setAnswers] = useState<
+    Record<Id<"feedbackQuestions">, string>
+  >({} as Record<Id<"feedbackQuestions">, string>);
+  const [submitting, setSubmitting] = useState(false);
+  const submitResponse = useMutation(api.competitions.feedback.submitResponse);
 
-  const submit = trpc.feedback.submitResponse.useMutation({
-    onSuccess: () => {
-      toast.success("Feedback submitted!");
-      utils.feedback.getMyResponse.invalidate({ competitionId });
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const setAnswer = (questionId: number, value: string) => {
+  const setAnswer = (questionId: Id<"feedbackQuestions">, value: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
   const sorted = [...questions].sort((a, b) => a.position - b.position);
 
   const requiredMissing = sorted.some(
-    (q) => q.required && !answers[q.id]?.trim(),
+    (q) => q.required && !answers[q._id]?.trim(),
   );
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const answerList = Object.entries(answers)
       .filter(([, v]) => v.trim())
-      .map(([qId, value]) => ({ questionId: parseInt(qId, 10), value }));
+      .map(([qId, value]) => ({
+        questionId: qId as Id<"feedbackQuestions">,
+        value,
+      }));
 
-    submit.mutate({ formId, answers: answerList });
+    setSubmitting(true);
+    try {
+      await submitResponse({ formId, answers: answerList });
+      toast.success("Feedback submitted!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6">
       {sorted.map((q) => (
-        <Card key={q.id}>
+        <Card key={q._id}>
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium">
               {q.label}
@@ -148,8 +150,8 @@ function FeedbackForm({
           <CardContent>
             <QuestionInput
               question={q}
-              value={answers[q.id] ?? ""}
-              onChange={(v) => setAnswer(q.id, v)}
+              value={answers[q._id] ?? ""}
+              onChange={(v) => setAnswer(q._id, v)}
             />
           </CardContent>
         </Card>
@@ -157,11 +159,11 @@ function FeedbackForm({
 
       <Button
         onClick={handleSubmit}
-        disabled={requiredMissing || submit.isPending}
+        disabled={requiredMissing || submitting}
         className="w-full"
         size="lg"
       >
-        {submit.isPending ? "Submitting..." : "Submit Feedback"}
+        {submitting ? "Submitting..." : "Submit Feedback"}
       </Button>
     </div>
   );
@@ -197,12 +199,12 @@ function QuestionInput({
         <RadioGroup value={value} onValueChange={onChange}>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <RadioGroupItem value="true" id={`${question.id}-yes`} />
-              <Label htmlFor={`${question.id}-yes`}>Yes</Label>
+              <RadioGroupItem value="true" id={`${question._id}-yes`} />
+              <Label htmlFor={`${question._id}-yes`}>Yes</Label>
             </div>
             <div className="flex items-center gap-2">
-              <RadioGroupItem value="false" id={`${question.id}-no`} />
-              <Label htmlFor={`${question.id}-no`}>No</Label>
+              <RadioGroupItem value="false" id={`${question._id}-no`} />
+              <Label htmlFor={`${question._id}-no`}>No</Label>
             </div>
           </div>
         </RadioGroup>
@@ -214,8 +216,8 @@ function QuestionInput({
           <div className="space-y-2">
             {(question.options ?? []).map((opt) => (
               <div key={opt} className="flex items-center gap-2">
-                <RadioGroupItem value={opt} id={`${question.id}-${opt}`} />
-                <Label htmlFor={`${question.id}-${opt}`}>{opt}</Label>
+                <RadioGroupItem value={opt} id={`${question._id}-${opt}`} />
+                <Label htmlFor={`${question._id}-${opt}`}>{opt}</Label>
               </div>
             ))}
           </div>

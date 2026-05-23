@@ -9,15 +9,30 @@
  */
 
 import type * as competitions_addDrop from "../competitions/addDrop.js";
+import type * as competitions_calendar from "../competitions/calendar.js";
+import type * as competitions_compDay from "../competitions/compDay.js";
 import type * as competitions_core from "../competitions/core.js";
 import type * as competitions_defaultEvents from "../competitions/defaultEvents.js";
 import type * as competitions_entries from "../competitions/entries.js";
 import type * as competitions_events from "../competitions/events.js";
+import type * as competitions_feedback from "../competitions/feedback.js";
+import type * as competitions_judgeSession from "../competitions/judgeSession.js";
 import type * as competitions_judges from "../competitions/judges.js";
+import type * as competitions_lib_judgeAuth from "../competitions/lib/judgeAuth.js";
+import type * as competitions_lib_scoring_engine from "../competitions/lib/scoring/engine.js";
+import type * as competitions_lib_scoring_index from "../competitions/lib/scoring/index.js";
+import type * as competitions_lib_scoring_types from "../competitions/lib/scoring/types.js";
+import type * as competitions_liveView from "../competitions/liveView.js";
 import type * as competitions_numbers from "../competitions/numbers.js";
+import type * as competitions_orgCompetition from "../competitions/orgCompetition.js";
 import type * as competitions_payments from "../competitions/payments.js";
+import type * as competitions_recordRemoval from "../competitions/recordRemoval.js";
 import type * as competitions_registration from "../competitions/registration.js";
+import type * as competitions_results from "../competitions/results.js";
+import type * as competitions_rounds from "../competitions/rounds.js";
 import type * as competitions_schedule from "../competitions/schedule.js";
+import type * as competitions_scoring from "../competitions/scoring.js";
+import type * as competitions_scrutineer from "../competitions/scrutineer.js";
 import type * as competitions_staff from "../competitions/staff.js";
 import type * as competitions_stripeActions from "../competitions/stripeActions.js";
 import type * as competitions_tba from "../competitions/tba.js";
@@ -53,15 +68,30 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "competitions/addDrop": typeof competitions_addDrop;
+  "competitions/calendar": typeof competitions_calendar;
+  "competitions/compDay": typeof competitions_compDay;
   "competitions/core": typeof competitions_core;
   "competitions/defaultEvents": typeof competitions_defaultEvents;
   "competitions/entries": typeof competitions_entries;
   "competitions/events": typeof competitions_events;
+  "competitions/feedback": typeof competitions_feedback;
+  "competitions/judgeSession": typeof competitions_judgeSession;
   "competitions/judges": typeof competitions_judges;
+  "competitions/lib/judgeAuth": typeof competitions_lib_judgeAuth;
+  "competitions/lib/scoring/engine": typeof competitions_lib_scoring_engine;
+  "competitions/lib/scoring/index": typeof competitions_lib_scoring_index;
+  "competitions/lib/scoring/types": typeof competitions_lib_scoring_types;
+  "competitions/liveView": typeof competitions_liveView;
   "competitions/numbers": typeof competitions_numbers;
+  "competitions/orgCompetition": typeof competitions_orgCompetition;
   "competitions/payments": typeof competitions_payments;
+  "competitions/recordRemoval": typeof competitions_recordRemoval;
   "competitions/registration": typeof competitions_registration;
+  "competitions/results": typeof competitions_results;
+  "competitions/rounds": typeof competitions_rounds;
   "competitions/schedule": typeof competitions_schedule;
+  "competitions/scoring": typeof competitions_scoring;
+  "competitions/scrutineer": typeof competitions_scrutineer;
   "competitions/staff": typeof competitions_staff;
   "competitions/stripeActions": typeof competitions_stripeActions;
   "competitions/tba": typeof competitions_tba;

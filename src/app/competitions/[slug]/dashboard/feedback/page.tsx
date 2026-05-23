@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -23,33 +23,42 @@ import { toast } from "sonner";
 export default function FeedbackDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
-  const utils = trpc.useUtils();
 
-  const { data: form, isLoading: formLoading } =
-    trpc.feedback.getForm.useQuery(
-      // TODO Task 10/11: feedback router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp },
-    );
+  const form = useQuery(
+    api.competitions.feedback.getForm,
+    comp ? { competitionId: comp._id } : "skip",
+  );
+  const formLoading = comp !== undefined && form === undefined;
 
-  const { data: analytics, isLoading: analyticsLoading } =
-    trpc.feedback.getAnalytics.useQuery(
-      // TODO Task 10/11: feedback router still expects numeric competitionId
-      { competitionId: (comp?._id as unknown as number) ?? 0 },
-      { enabled: !!comp },
-    );
+  const analytics = useQuery(
+    api.competitions.feedback.getAnalytics,
+    comp ? { competitionId: comp._id } : "skip",
+  );
+  const analyticsLoading = comp !== undefined && analytics === undefined;
 
-  const createForm = trpc.feedback.createForm.useMutation({
-    onSuccess: () => {
-      toast.success("Feedback form created");
-      utils.feedback.getForm.invalidate();
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const createForm = useMutation(api.competitions.feedback.createForm);
+  const [creating, setCreating] = useState(false);
 
   if (!comp || formLoading) {
     return <FeedbackSkeleton />;
   }
+
+  const handleCreateForm = async (useTemplate: boolean) => {
+    if (!comp) return;
+    setCreating(true);
+    try {
+      await createForm({
+        competitionId: comp._id,
+        useTemplate,
+        ...(useTemplate ? {} : { title: "Competition Feedback" }),
+      });
+      toast.success("Feedback form created");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create form");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   // No form yet — show creation prompt
   if (!form) {
@@ -68,29 +77,16 @@ export default function FeedbackDashboardPage() {
             </div>
             <div className="flex justify-center gap-3">
               <Button
-                onClick={() =>
-                  createForm.mutate({
-                    // TODO Task 10/11: feedback router still expects numeric competitionId
-                    competitionId: comp._id as unknown as number,
-                    useTemplate: true,
-                  })
-                }
-                disabled={createForm.isPending}
+                onClick={() => handleCreateForm(true)}
+                disabled={creating}
               >
                 <ClipboardList className="size-4 mr-2" />
                 Use Default Template
               </Button>
               <Button
                 variant="outline"
-                onClick={() =>
-                  createForm.mutate({
-                    // TODO Task 10/11: feedback router still expects numeric competitionId
-                    competitionId: comp._id as unknown as number,
-                    useTemplate: false,
-                    title: "Competition Feedback",
-                  })
-                }
-                disabled={createForm.isPending}
+                onClick={() => handleCreateForm(false)}
+                disabled={creating}
               >
                 Start from Scratch
               </Button>
@@ -158,7 +154,7 @@ export default function FeedbackDashboardPage() {
 
 type QuestionData =
   | {
-      questionId: number;
+      questionId: Id<"feedbackQuestions">;
       label: string;
       type: "rating";
       average: number | null;
@@ -166,7 +162,7 @@ type QuestionData =
       count: number;
     }
   | {
-      questionId: number;
+      questionId: Id<"feedbackQuestions">;
       label: string;
       type: "yes_no";
       yesCount: number;
@@ -175,14 +171,14 @@ type QuestionData =
       count: number;
     }
   | {
-      questionId: number;
+      questionId: Id<"feedbackQuestions">;
       label: string;
       type: "multiple_choice";
       optionCounts: Record<string, number>;
       count: number;
     }
   | {
-      questionId: number;
+      questionId: Id<"feedbackQuestions">;
       label: string;
       type: "text";
       answers: string[];

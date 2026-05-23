@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -22,12 +24,12 @@ export default function EventResultsPage() {
     slug: string;
     eventId: string;
   }>();
-  const eventId = parseInt(eventIdParam, 10);
+  const eventId = eventIdParam as Id<"competitionEvents">;
 
-  const { data: results, isLoading } = trpc.results.getEventResults.useQuery(
-    { eventId },
-    { enabled: !isNaN(eventId) },
-  );
+  const results = useQuery(api.competitions.results.getEventResults, {
+    eventId,
+  });
+  const isLoading = results === undefined;
 
   if (isLoading) {
     return <EventResultsSkeleton slug={slug} />;
@@ -109,8 +111,8 @@ export default function EventResultsPage() {
 
 type SummaryEntry = {
   placement: number;
-  placementValue: string | null;
-  tiebreakRule: string | null;
+  placementValue: number | null | undefined;
+  tiebreakRule: string | null | undefined;
   coupleNumber: number | null;
   leaderName: string | null;
   followerName: string | null;
@@ -212,14 +214,18 @@ function MarksView({
   judges,
   dances,
 }: {
-  tabulation: { entryId: number; danceName: string | null; tableData: unknown }[];
-  judges: { id: number; initials: string; name: string }[];
+  tabulation: {
+    entryId: Id<"entries">;
+    danceName: string | null | undefined;
+    tableData: unknown;
+  }[];
+  judges: { id: Id<"judges">; initials: string; name: string }[];
   dances: string[];
 }) {
   // Group tabulation by dance
   const byDance = new Map<string | null, typeof tabulation>();
   for (const row of tabulation) {
-    const key = row.danceName;
+    const key = row.danceName ?? null;
     if (!byDance.has(key)) byDance.set(key, []);
     byDance.get(key)!.push(row);
   }
@@ -272,7 +278,11 @@ function MarksView({
                 </TableHeader>
                 <TableBody>
                   {rows.map((row) => {
-                    const data = row.tableData as { coupleNumber?: number; marks?: Record<string, unknown>; placement?: number } | null;
+                    const data = row.tableData as {
+                      coupleNumber?: number;
+                      marks?: Record<string, unknown>;
+                      placement?: number;
+                    } | null;
 
                     return (
                       <TableRow key={row.entryId}>

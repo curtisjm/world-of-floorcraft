@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -14,12 +14,13 @@ import { Trophy, ChevronRight } from "lucide-react";
 export default function CompetitionResultsPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const competitionId = comp?._id;
 
-  const { data: results, isLoading } = trpc.results.getByCompetition.useQuery(
-    // TODO Task 10/11: results router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp },
+  const results = useQuery(
+    api.competitions.results.getByCompetition,
+    competitionId ? { competitionId } : "skip",
   );
+  const isLoading = results === undefined;
 
   if (!comp || isLoading) {
     return <ResultsSkeleton />;
@@ -40,15 +41,18 @@ export default function CompetitionResultsPage() {
   }
 
   // Group events by session/block for display
-  const eventsBySession = new Map<number | null, typeof results.events>();
+  const eventsBySession = new Map<
+    Id<"scheduleBlocks"> | null,
+    typeof results.events
+  >();
   for (const event of results.events) {
-    const key = event.sessionId;
+    const key = event.sessionId ?? null;
     if (!eventsBySession.has(key)) eventsBySession.set(key, []);
     eventsBySession.get(key)!.push(event);
   }
 
   // Map session IDs to block labels
-  const blockMap = new Map(results.blocks.map((b) => [b.id, b]));
+  const blockMap = new Map(results.blocks.map((b) => [b._id, b]));
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
