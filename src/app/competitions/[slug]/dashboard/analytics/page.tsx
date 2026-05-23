@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -53,7 +54,7 @@ export default function AnalyticsDashboardPage() {
 
         <TabsContent value="financials">
           {comp ? (
-            <FinancialAnalytics competitionId={comp._id as unknown as number} />
+            <FinancialAnalytics competitionId={comp._id} />
           ) : (
             <AnalyticsSkeleton />
           )}
@@ -170,18 +171,19 @@ function EntryAnalytics({ competitionId }: { competitionId: number }) {
 function FinancialAnalytics({
   competitionId,
 }: {
-  competitionId: number;
+  competitionId: Id<"competitions">;
 }) {
-  const { data: summary, isLoading: summaryLoading } =
-    trpc.paymentAnalytics.getSummary.useQuery({ competitionId });
+  const summary = useQuery(api.competitions.payments.getAnalyticsSummary, {
+    competitionId,
+  });
+  const outstanding = useQuery(api.competitions.payments.getOutstanding, {
+    competitionId,
+  });
+  const paymentLog = useQuery(api.competitions.payments.getPaymentLog, {
+    competitionId,
+  });
 
-  const { data: outstanding } =
-    trpc.paymentAnalytics.getOutstanding.useQuery({ competitionId });
-
-  const { data: paymentLog } =
-    trpc.paymentAnalytics.getPaymentLog.useQuery({ competitionId });
-
-  if (summaryLoading) return <AnalyticsSkeleton />;
+  if (summary === undefined) return <AnalyticsSkeleton />;
   if (!summary) return null;
 
   const collectionRate =

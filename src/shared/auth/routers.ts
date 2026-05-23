@@ -23,7 +23,6 @@ import { staffRouter } from "@competitions/routers/staff";
 import { judgeRouter } from "@competitions/routers/judge";
 import { registrationRouter } from "@competitions/routers/registration";
 import { entryRouter } from "@competitions/routers/entry";
-import { paymentRouter } from "@competitions/routers/payment";
 import { numberRouter } from "@competitions/routers/number";
 import { tbaRouter } from "@competitions/routers/tba";
 import { teamMatchRouter } from "@competitions/routers/team-match";
@@ -45,7 +44,6 @@ import { feedbackRouter } from "@competitions/routers/feedback";
 import { calendarRouter } from "@competitions/routers/calendar";
 import { recordRemovalRouter } from "@competitions/routers/record-removal";
 import { orgCompetitionRouter } from "@competitions/routers/org-competition";
-import { paymentAnalyticsRouter } from "@competitions/routers/payment-analytics";
 
 export const appRouter = router({
   dance: danceRouter,
@@ -72,7 +70,6 @@ export const appRouter = router({
   judge: judgeRouter,
   registration: registrationRouter,
   entry: entryRouter,
-  payment: paymentRouter,
   number: numberRouter,
   tba: tbaRouter,
   teamMatch: teamMatchRouter,
@@ -94,7 +91,6 @@ export const appRouter = router({
   calendar: calendarRouter,
   recordRemoval: recordRemovalRouter,
   orgCompetition: orgCompetitionRouter,
-  paymentAnalytics: paymentAnalyticsRouter,
 });
 
 export type AppRouter = typeof appRouter;

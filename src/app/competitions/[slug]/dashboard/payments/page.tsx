@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useAction, useQuery } from "convex/react";
 import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
@@ -14,24 +14,21 @@ import { DollarSign, CreditCard, Banknote, CheckCircle2, AlertCircle } from "luc
 export default function PaymentsPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
-  const { data: summary, isLoading } = trpc.payment.summaryByCompetition.useQuery(
-    // TODO Task 10/11: payment router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp },
+  const summary = useQuery(
+    api.competitions.payments.summaryByCompetition,
+    comp ? { competitionId: comp._id } : "skip",
   );
-  const { data: stripeConfig } = trpc.payment.isStripeConfigured.useQuery();
-  const { data: connectStatus } = trpc.payment.getConnectStatus.useQuery(
-    // TODO Task 10/11: payment router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp && stripeConfig?.configured === true },
+  const connectStatus = useQuery(
+    api.competitions.payments.getConnectStatusRecord,
+    comp ? { competitionId: comp._id } : "skip",
   );
 
-  const createConnect = trpc.payment.createConnectAccount.useMutation({
-    onSuccess: (result) => {
-      window.location.href = result.url;
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const createConnectAction = useAction(
+    api.competitions.stripeActions.createConnectAccount,
+  );
+  const [connecting, setConnecting] = useState(false);
+
+  const isLoading = comp === undefined || summary === undefined;
 
   if (isLoading || !comp) {
     return (
@@ -45,6 +42,26 @@ export default function PaymentsPage() {
       </div>
     );
   }
+
+  const handleConnect = async () => {
+    setConnecting(true);
+    try {
+      const result = await createConnectAction({
+        competitionId: comp._id,
+        refreshUrl: `${window.location.origin}/competitions/${slug}/dashboard/payments`,
+        returnUrl: `${window.location.origin}/competitions/${slug}/dashboard/payments`,
+      });
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        toast.error("Stripe returned an empty onboarding URL");
+        setConnecting(false);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to start Stripe onboarding");
+      setConnecting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -125,17 +142,14 @@ export default function PaymentsPage() {
           <CardTitle className="text-base">Online Payments (Stripe)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {stripeConfig?.configured === false ? (
-            <div className="flex items-center gap-2">
-              <AlertCircle className="size-5 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Online payments not available</span>
-            </div>
-          ) : connectStatus?.connected ? (
+          {connectStatus?.connected ? (
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-5 text-sage" />
               <span className="text-sm">
                 Stripe connected
-                {connectStatus.chargesEnabled ? " — charges enabled" : " — pending verification"}
+                {connectStatus.onboardingComplete
+                  ? " — charges enabled"
+                  : " — pending verification"}
               </span>
             </div>
           ) : (
@@ -144,18 +158,8 @@ export default function PaymentsPage() {
                 <AlertCircle className="size-5 text-clay" />
                 <span className="text-sm">Not connected to Stripe</span>
               </div>
-              <Button
-                onClick={() => {
-                  createConnect.mutate({
-                    // TODO Task 10/11: payment router still expects numeric competitionId
-                    competitionId: comp._id as unknown as number,
-                    refreshUrl: `${window.location.origin}/competitions/${slug}/dashboard/payments`,
-                    returnUrl: `${window.location.origin}/competitions/${slug}/dashboard/payments`,
-                  });
-                }}
-                disabled={createConnect.isPending}
-              >
-                {createConnect.isPending ? "Connecting..." : "Connect Stripe"}
+              <Button onClick={handleConnect} disabled={connecting}>
+                {connecting ? "Connecting..." : "Connect Stripe"}
               </Button>
             </>
           )}

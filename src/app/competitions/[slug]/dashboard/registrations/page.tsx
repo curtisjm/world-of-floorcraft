@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../convex/_generated/dataModel";
-import { trpc } from "@shared/lib/trpc";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
@@ -56,14 +55,8 @@ export default function RegistrationsPage() {
 
   const toggleCheckedInMutation = useMutation(api.competitions.registration.toggleCheckedIn);
   const cancelRegistrationMutation = useMutation(api.competitions.registration.cancel);
-
-  const recordManual = trpc.payment.recordManual.useMutation({
-    onSuccess: () => {
-      toast.success("Payment recorded");
-      setPaymentReg(null);
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const recordManualMutation = useMutation(api.competitions.payments.recordManual);
+  const [recordingPayment, setRecordingPayment] = useState(false);
 
   const [paymentReg, setPaymentReg] = useState<RegistrationListItem | null>(null);
   const [payAmount, setPayAmount] = useState("");
@@ -239,19 +232,27 @@ export default function RegistrationsPage() {
           )}
           <DialogFooter>
             <Button
-              onClick={() => {
-                if (paymentReg) {
-                  recordManual.mutate({
-                    registrationId: paymentReg._id as unknown as number,
+              onClick={async () => {
+                if (!paymentReg) return;
+                setRecordingPayment(true);
+                try {
+                  await recordManualMutation({
+                    registrationId: paymentReg._id,
                     amount: payAmount,
                     method: payMethod as "cash" | "check" | "other",
                     note: payNote || undefined,
                   });
+                  toast.success("Payment recorded");
+                  setPaymentReg(null);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Failed");
+                } finally {
+                  setRecordingPayment(false);
                 }
               }}
-              disabled={recordManual.isPending || !payAmount}
+              disabled={recordingPayment || !payAmount}
             >
-              {recordManual.isPending ? "Recording..." : "Record Payment"}
+              {recordingPayment ? "Recording..." : "Record Payment"}
             </Button>
           </DialogFooter>
         </DialogContent>
