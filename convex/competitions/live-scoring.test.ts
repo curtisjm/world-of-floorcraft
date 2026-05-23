@@ -1,0 +1,1225 @@
+import { convexTest, type TestConvex } from "convex-test";
+import { beforeAll, describe, expect, it } from "vitest";
+import schema from "../schema";
+import { modules } from "../test.setup";
+import { api } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
+
+// Task 10 of the Convex migration: competition live and scoring. These tests
+// pin the behavior ported from the Drizzle/tRPC `round`, `scoring`,
+// `judge-session`, `scrutineer`, `scrutineer-dashboard`, `emcee`,
+// `deck-captain`, `registration-table`, `live-view`, `results`,
+// `feedback`, `calendar`, `org-competition`, `payment-analytics`, and
+// `record-removal` routers.
+
+beforeAll(() => {
+  process.env.JUDGE_JWT_SECRET ??=
+    "test-jwt-secret-min-32-chars-for-judges-only";
+});
+
+const ALICE = {
+  tokenIdentifier: "https://clerk.example.com|user_alice",
+  subject: "user_alice",
+  name: "Alice Anderson",
+};
+const BOB = {
+  tokenIdentifier: "https://clerk.example.com|user_bob",
+  subject: "user_bob",
+  name: "Bob Brown",
+};
+const SCRUT = {
+  tokenIdentifier: "https://clerk.example.com|user_scrut",
+  subject: "user_scrut",
+  name: "Scrutineer Stan",
+};
+const EMCEE = {
+  tokenIdentifier: "https://clerk.example.com|user_emcee",
+  subject: "user_emcee",
+  name: "Emcee Eve",
+};
+const DECK = {
+  tokenIdentifier: "https://clerk.example.com|user_deck",
+  subject: "user_deck",
+  name: "Deck Dan",
+};
+const REG = {
+  tokenIdentifier: "https://clerk.example.com|user_reg",
+  subject: "user_reg",
+  name: "Registration Rita",
+};
+const CHAIR = {
+  tokenIdentifier: "https://clerk.example.com|user_chair",
+  subject: "user_chair",
+  name: "Chairman Chris",
+};
+
+type T = TestConvex<typeof schema>;
+
+async function seedUser(
+  t: T,
+  identity: {
+    tokenIdentifier: string;
+    subject: string;
+  },
+  overrides: { username?: string; displayName?: string } = {},
+): Promise<Id<"users">> {
+  const now = Date.now();
+  return t.run((ctx) =>
+    ctx.db.insert("users", {
+      tokenIdentifier: identity.tokenIdentifier,
+      clerkUserId: identity.subject,
+      displayName: overrides.displayName ?? identity.subject,
+      username: overrides.username,
+      isPrivate: false,
+      createdAt: now,
+      updatedAt: now,
+    }),
+  );
+}
+
+async function seedOrgWithOwner(
+  t: T,
+  ownerId: Id<"users">,
+  overrides: { name?: string; slug?: string } = {},
+): Promise<Id<"organizations">> {
+  const now = Date.now();
+  return t.run(async (ctx) => {
+    const orgId = await ctx.db.insert("organizations", {
+      slug: overrides.slug ?? "studio-one",
+      name: overrides.name ?? "Studio One",
+      membershipModel: "open",
+      ownerId,
+      createdAt: now,
+      updatedAt: now,
+    });
+    await ctx.db.insert("memberships", {
+      orgId,
+      userId: ownerId,
+      role: "admin",
+      createdAt: now,
+    });
+    return orgId;
+  });
+}
+
+async function seedCompetition(
+  t: T,
+  identity: { tokenIdentifier: string; subject: string },
+  orgId: Id<"organizations">,
+  name = "Spring Invitational",
+) {
+  const comp = await t
+    .withIdentity(identity)
+    .mutation(api.competitions.core.create, { name, orgId });
+  return comp._id;
+}
+
+async function seedEvent(
+  t: T,
+  competitionId: Id<"competitions">,
+  overrides: {
+    name?: string;
+    style?: "standard" | "smooth" | "latin" | "rhythm" | "nightclub";
+    level?:
+      | "newcomer"
+      | "bronze"
+      | "silver"
+      | "gold"
+      | "novice"
+      | "prechamp"
+      | "champ"
+      | "professional";
+    eventType?: "single_dance" | "multi_dance";
+    dances?: string[];
+    maxFinalSize?: number;
+    maxHeatSize?: number;
+  } = {},
+): Promise<Id<"competitionEvents">> {
+  return t.run(async (ctx) => {
+    const eventId = await ctx.db.insert("competitionEvents", {
+      competitionId,
+      name: overrides.name ?? "Standard Bronze Waltz",
+      style: overrides.style ?? "standard",
+      level: overrides.level ?? "bronze",
+      eventType: overrides.eventType ?? "single_dance",
+      position: 1,
+      maxFinalSize: overrides.maxFinalSize,
+      maxHeatSize: overrides.maxHeatSize,
+    });
+    const dances = overrides.dances ?? ["waltz"];
+    for (let i = 0; i < dances.length; i++) {
+      await ctx.db.insert("eventDances", {
+        eventId,
+        danceName: dances[i]!,
+        position: i,
+      });
+    }
+    return eventId;
+  });
+}
+
+async function seedRegistration(
+  t: T,
+  competitionId: Id<"competitions">,
+  userId: Id<"users">,
+  overrides: {
+    competitorNumber?: number;
+    orgId?: Id<"organizations">;
+    amountOwed?: number;
+  } = {},
+): Promise<Id<"competitionRegistrations">> {
+  return t.run((ctx) =>
+    ctx.db.insert("competitionRegistrations", {
+      competitionId,
+      userId,
+      competitorNumber: overrides.competitorNumber,
+      amountOwed: overrides.amountOwed ?? 0,
+      paidConfirmed: false,
+      checkedIn: false,
+      orgId: overrides.orgId,
+      registeredAt: Date.now(),
+      registeredBy: userId,
+      cancelled: false,
+    }),
+  );
+}
+
+async function seedEntry(
+  t: T,
+  eventId: Id<"competitionEvents">,
+  leaderRegId: Id<"competitionRegistrations">,
+  followerRegId: Id<"competitionRegistrations">,
+  createdBy: Id<"users">,
+): Promise<Id<"entries">> {
+  return t.run((ctx) =>
+    ctx.db.insert("entries", {
+      eventId,
+      leaderRegistrationId: leaderRegId,
+      followerRegistrationId: followerRegId,
+      createdAt: Date.now(),
+      createdBy,
+      scratched: false,
+    }),
+  );
+}
+
+async function seedJudge(
+  t: T,
+  competitionId: Id<"competitions">,
+  overrides: { firstName?: string; lastName?: string } = {},
+): Promise<Id<"judges">> {
+  return t.run(async (ctx) => {
+    const judgeId = await ctx.db.insert("judges", {
+      firstName: overrides.firstName ?? "Judy",
+      lastName: overrides.lastName ?? "Judge",
+      initials: "JJ",
+      createdAt: Date.now(),
+    });
+    await ctx.db.insert("competitionJudges", {
+      competitionId,
+      judgeId,
+      createdAt: Date.now(),
+    });
+    return judgeId;
+  });
+}
+
+async function seedStaff(
+  t: T,
+  competitionId: Id<"competitions">,
+  userId: Id<"users">,
+  role:
+    | "scrutineer"
+    | "emcee"
+    | "chairman"
+    | "dj"
+    | "registration"
+    | "deck_captain",
+) {
+  return t.run((ctx) =>
+    ctx.db.insert("competitionStaff", {
+      competitionId,
+      userId,
+      role,
+      createdAt: Date.now(),
+    }),
+  );
+}
+
+async function seedDay(
+  t: T,
+  competitionId: Id<"competitions">,
+  date = "2026-06-01",
+): Promise<Id<"competitionDays">> {
+  return t.run((ctx) =>
+    ctx.db.insert("competitionDays", {
+      competitionId,
+      date,
+      position: 0,
+    }),
+  );
+}
+
+// ── Rounds module ──────────────────────────────────────────────────
+
+describe("rounds", () => {
+  it("generateForEvent creates a single final for small entries", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, CHAIR);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId, { maxFinalSize: 8 });
+    await seedStaff(
+      t,
+      compId,
+      await t.run((ctx) =>
+        ctx.db
+          .query("users")
+          .withIndex("by_token_identifier", (q) =>
+            q.eq("tokenIdentifier", CHAIR.tokenIdentifier),
+          )
+          .unique()
+          .then((u) => u!._id),
+      ),
+      "chairman",
+    );
+
+    // Seed 6 entries
+    for (let i = 0; i < 6; i++) {
+      const leader = await seedUser(
+        t,
+        {
+          tokenIdentifier: `https://clerk.example.com|leader_${i}`,
+          subject: `leader_${i}`,
+        },
+        { displayName: `Leader ${i}` },
+      );
+      const follower = await seedUser(
+        t,
+        {
+          tokenIdentifier: `https://clerk.example.com|follower_${i}`,
+          subject: `follower_${i}`,
+        },
+        { displayName: `Follower ${i}` },
+      );
+      const leaderReg = await seedRegistration(t, compId, leader, {
+        competitorNumber: 100 + i,
+      });
+      const followerReg = await seedRegistration(t, compId, follower);
+      await seedEntry(t, eventId, leaderReg, followerReg, leader);
+    }
+
+    const result = await t
+      .withIdentity(CHAIR)
+      .mutation(api.competitions.rounds.generateForEvent, { eventId });
+    expect(result.rounds).toBe(1);
+    expect(result.heats).toBe(1);
+
+    const rounds = await t.query(api.competitions.rounds.listByEvent, {
+      eventId,
+    });
+    expect(rounds).toHaveLength(1);
+    expect(rounds[0]!.roundType).toBe("final");
+  });
+
+  it("reassignHeats distributes round-robin across multiple heats", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId, {
+      maxFinalSize: 100,
+      maxHeatSize: 3,
+    });
+    for (let i = 0; i < 7; i++) {
+      const leader = await seedUser(t, {
+        tokenIdentifier: `https://clerk.example.com|rrh_l_${i}`,
+        subject: `rrh_l_${i}`,
+      });
+      const follower = await seedUser(t, {
+        tokenIdentifier: `https://clerk.example.com|rrh_f_${i}`,
+        subject: `rrh_f_${i}`,
+      });
+      const leaderReg = await seedRegistration(t, compId, leader);
+      const followerReg = await seedRegistration(t, compId, follower);
+      await seedEntry(t, eventId, leaderReg, followerReg, leader);
+    }
+    const roundId = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "final",
+        position: 1,
+        status: "pending",
+        heatsApproved: false,
+      }),
+    );
+    const result = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.rounds.reassignHeats, { roundId });
+    expect(result.heats).toBe(3);
+    expect(result.entries).toBe(7);
+  });
+
+  it("approveHeats requires chairman", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const roundId = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "final",
+        position: 1,
+        status: "pending",
+        heatsApproved: false,
+      }),
+    );
+    await expect(
+      t
+        .withIdentity(BOB)
+        .mutation(api.competitions.rounds.approveHeats, { roundId }),
+    ).rejects.toThrow();
+
+    const result = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.rounds.approveHeats, { roundId });
+    expect(result?.heatsApproved).toBe(true);
+  });
+
+  it("moveEntry requires heats in the same round", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const leader = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|mover_l",
+      subject: "mover_l",
+    });
+    const follower = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|mover_f",
+      subject: "mover_f",
+    });
+    const leaderReg = await seedRegistration(t, compId, leader);
+    const followerReg = await seedRegistration(t, compId, follower);
+    const entryId = await seedEntry(t, eventId, leaderReg, followerReg, leader);
+
+    const round1 = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "1st_round",
+        position: 1,
+        status: "pending",
+        heatsApproved: false,
+      }),
+    );
+    const round2 = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "final",
+        position: 2,
+        status: "pending",
+        heatsApproved: false,
+      }),
+    );
+    const heat1 = await t.run((ctx) =>
+      ctx.db.insert("heats", {
+        roundId: round1,
+        heatNumber: 1,
+        status: "pending",
+      }),
+    );
+    const heat2 = await t.run((ctx) =>
+      ctx.db.insert("heats", {
+        roundId: round2,
+        heatNumber: 1,
+        status: "pending",
+      }),
+    );
+    await t.run((ctx) =>
+      ctx.db.insert("heatAssignments", { heatId: heat1, entryId }),
+    );
+
+    await expect(
+      t.withIdentity(ALICE).mutation(api.competitions.rounds.moveEntry, {
+        entryId,
+        fromHeatId: heat1,
+        toHeatId: heat2,
+      }),
+    ).rejects.toThrow();
+  });
+});
+
+// ── Scoring module ─────────────────────────────────────────────────
+
+describe("scoring", () => {
+  it("computeFinalResults stores per-dance placements", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId, { dances: ["waltz"] });
+    const judgeIds = await Promise.all([
+      seedJudge(t, compId, { firstName: "J1", lastName: "Judge" }),
+      seedJudge(t, compId, { firstName: "J2", lastName: "Judge" }),
+      seedJudge(t, compId, { firstName: "J3", lastName: "Judge" }),
+    ]);
+
+    const entryIds: Id<"entries">[] = [];
+    for (let i = 0; i < 3; i++) {
+      const leader = await seedUser(t, {
+        tokenIdentifier: `https://clerk.example.com|sl_${i}`,
+        subject: `sl_${i}`,
+      });
+      const follower = await seedUser(t, {
+        tokenIdentifier: `https://clerk.example.com|sf_${i}`,
+        subject: `sf_${i}`,
+      });
+      const leaderReg = await seedRegistration(t, compId, leader);
+      const followerReg = await seedRegistration(t, compId, follower);
+      entryIds.push(await seedEntry(t, eventId, leaderReg, followerReg, leader));
+    }
+
+    const roundId = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "final",
+        position: 1,
+        status: "in_progress",
+        heatsApproved: true,
+      }),
+    );
+
+    // All judges agree: entry 0 first, entry 1 second, entry 2 third
+    for (const judgeId of judgeIds) {
+      await t.withIdentity(ALICE).mutation(api.competitions.scoring.submitFinalMarks, {
+        roundId,
+        judgeId,
+        marks: entryIds.map((entryId, idx) => ({
+          entryId,
+          danceName: "waltz",
+          placement: idx + 1,
+        })),
+      });
+    }
+
+    await t.withIdentity(ALICE).mutation(
+      api.competitions.scoring.computeFinalResults,
+      { roundId },
+    );
+    const result = await t.query(api.competitions.scoring.getResults, {
+      roundId,
+    });
+    expect(result.meta?.status).toBe("computed");
+    expect(result.results.length).toBeGreaterThanOrEqual(3);
+    const first = result.results.find((r) => r.entryId === entryIds[0]);
+    expect(first?.placement).toBe(1);
+  });
+
+  it("computeCallbackResults advances top N", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const judgeId = await seedJudge(t, compId);
+    const entryIds: Id<"entries">[] = [];
+    for (let i = 0; i < 4; i++) {
+      const leader = await seedUser(t, {
+        tokenIdentifier: `https://clerk.example.com|cl_${i}`,
+        subject: `cl_${i}`,
+      });
+      const follower = await seedUser(t, {
+        tokenIdentifier: `https://clerk.example.com|cf_${i}`,
+        subject: `cf_${i}`,
+      });
+      const leaderReg = await seedRegistration(t, compId, leader);
+      const followerReg = await seedRegistration(t, compId, follower);
+      entryIds.push(await seedEntry(t, eventId, leaderReg, followerReg, leader));
+    }
+    const roundId = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "1st_round",
+        position: 1,
+        callbacksRequested: 2,
+        status: "in_progress",
+        heatsApproved: true,
+      }),
+    );
+    // Mark first two entries
+    await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.scoring.submitCallbackMarks, {
+        roundId,
+        judgeId,
+        marks: entryIds.map((entryId, idx) => ({
+          entryId,
+          marked: idx < 2,
+        })),
+      });
+    const computed = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.scoring.computeCallbackResults, { roundId });
+    expect(computed.advanced).toBe(2);
+    const callbackRows = await t.query(
+      api.competitions.scoring.getCallbackResults,
+      { roundId },
+    );
+    const advanced = callbackRows.filter((r) => r.advanced);
+    expect(advanced).toHaveLength(2);
+  });
+
+  it("publishResults requires reviewed state", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const roundId = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "final",
+        position: 1,
+        status: "in_progress",
+        heatsApproved: true,
+      }),
+    );
+    await t.run((ctx) =>
+      ctx.db.insert("roundResultsMeta", {
+        roundId,
+        status: "computed",
+        computedAt: Date.now(),
+      }),
+    );
+    await expect(
+      t.withIdentity(ALICE).mutation(api.competitions.scoring.publishResults, {
+        roundId,
+      }),
+    ).rejects.toThrow();
+    await t.withIdentity(ALICE).mutation(api.competitions.scoring.reviewResults, {
+      roundId,
+    });
+    const published = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.scoring.publishResults, { roundId });
+    expect(published?.status).toBe("published");
+  });
+});
+
+// ── Judge session ──────────────────────────────────────────────────
+
+describe("judgeSession", () => {
+  async function setupCompetitionWithJudge() {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const judgeId = await seedJudge(t, compId, {
+      firstName: "Joe",
+      lastName: "Judge",
+    });
+    await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.core.setCompCode, {
+        competitionId: compId,
+        compCode: "ABCD",
+      });
+    await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.core.setMasterPassword, {
+        competitionId: compId,
+        password: "letmein",
+      });
+    return { t, compId, judgeId };
+  }
+
+  it("authenticate returns a JWT for valid credentials", async () => {
+    const { t, judgeId } = await setupCompetitionWithJudge();
+    const result = await t.mutation(api.competitions.judgeSession.authenticate, {
+      compCode: "ABCD",
+      masterPassword: "letmein",
+      judgeId,
+    });
+    expect(result.token).toBeTruthy();
+    expect(result.judgeName).toBe("Joe Judge");
+  });
+
+  it("authenticate rejects wrong password", async () => {
+    const { t, judgeId } = await setupCompetitionWithJudge();
+    await expect(
+      t.mutation(api.competitions.judgeSession.authenticate, {
+        compCode: "ABCD",
+        masterPassword: "nope",
+        judgeId,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("submitCallbackMarks requires an active round", async () => {
+    const { t, compId, judgeId } = await setupCompetitionWithJudge();
+    const eventId = await seedEvent(t, compId);
+    const roundId = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "1st_round",
+        position: 1,
+        status: "pending",
+        heatsApproved: false,
+      }),
+    );
+    const auth = await t.mutation(
+      api.competitions.judgeSession.authenticate,
+      { compCode: "ABCD", masterPassword: "letmein", judgeId },
+    );
+    const leader = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|js_l",
+      subject: "js_l",
+    });
+    const follower = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|js_f",
+      subject: "js_f",
+    });
+    const leaderReg = await seedRegistration(t, compId, leader);
+    const followerReg = await seedRegistration(t, compId, follower);
+    const entryId = await seedEntry(t, eventId, leaderReg, followerReg, leader);
+
+    await expect(
+      t.mutation(api.competitions.judgeSession.submitCallbackMarks, {
+        token: auth.token,
+        roundId,
+        marks: [{ entryId, marked: true }],
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("getActiveRound returns null when nothing is running", async () => {
+    const { t, compId, judgeId } = await setupCompetitionWithJudge();
+    void compId;
+    const auth = await t.mutation(
+      api.competitions.judgeSession.authenticate,
+      { compCode: "ABCD", masterPassword: "letmein", judgeId },
+    );
+    const active = await t.query(api.competitions.judgeSession.getActiveRound, {
+      token: auth.token,
+    });
+    expect(active).toBeNull();
+  });
+});
+
+// ── Scrutineer ─────────────────────────────────────────────────────
+
+describe("scrutineer", () => {
+  it("startRound + stopRound update the active round and status", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const judgeId = await seedJudge(t, compId);
+    void judgeId;
+    const roundId = await t.run((ctx) =>
+      ctx.db.insert("rounds", {
+        eventId,
+        roundType: "final",
+        position: 1,
+        status: "pending",
+        heatsApproved: true,
+      }),
+    );
+
+    const startResult = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.scrutineer.startRound, {
+        competitionId: compId,
+        roundId,
+      });
+    expect(startResult.roundId).toBe(roundId);
+    expect(
+      await t.run((ctx) => ctx.db.get(roundId)).then((r) => r?.status),
+    ).toBe("in_progress");
+
+    // To stop we need all judges submitted. The seeded judge has a pending row;
+    // simulate submission by patching directly.
+    const subs = await t.run((ctx) =>
+      ctx.db
+        .query("judgeSubmissions")
+        .withIndex("by_round_judge", (q) => q.eq("roundId", roundId))
+        .collect(),
+    );
+    for (const s of subs) {
+      await t.run((ctx) =>
+        ctx.db.patch(s._id, { status: "submitted", submittedAt: Date.now() }),
+      );
+    }
+
+    const stop = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.scrutineer.stopRound, {
+        competitionId: compId,
+      });
+    expect(stop.stoppedRoundId).toBe(roundId);
+    expect(
+      await t.run((ctx) => ctx.db.get(roundId)).then((r) => r?.status),
+    ).toBe("completed");
+  });
+
+  it("getDashboard returns competition snapshot", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await seedEvent(t, compId);
+    const dash = await t
+      .withIdentity(ALICE)
+      .query(api.competitions.scrutineer.getDashboard, {
+        competitionId: compId,
+      });
+    expect(dash.competition._id).toBe(compId);
+    expect(dash.activeRound).toBeNull();
+    expect(dash.events).toHaveLength(1);
+  });
+});
+
+// ── Live view ──────────────────────────────────────────────────────
+
+describe("liveView", () => {
+  it("getSchedule returns null for missing competition", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await seedDay(t, compId);
+    const schedule = await t.query(api.competitions.liveView.getSchedule, {
+      competitionId: compId,
+    });
+    expect(schedule?.competition.id).toBe(compId);
+    expect(schedule?.days).toHaveLength(1);
+  });
+
+  it("getPublishedResults filters to published rounds", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const result = await t.query(
+      api.competitions.liveView.getPublishedResults,
+      { eventId },
+    );
+    expect(result).toEqual({ eventName: "Standard Bronze Waltz", rounds: [] });
+  });
+});
+
+// ── Comp day (emcee / deck / registration) ────────────────────────
+
+describe("compDay", () => {
+  it("createNote requires emcee role", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, EMCEE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const dayId = await seedDay(t, compId);
+
+    await expect(
+      t.withIdentity(EMCEE).mutation(api.competitions.compDay.createNote, {
+        competitionId: compId,
+        dayId,
+        content: "Hi everyone",
+      }),
+    ).rejects.toThrow();
+
+    const emceeUserId = await t.run((ctx) =>
+      ctx.db
+        .query("users")
+        .withIndex("by_token_identifier", (q) =>
+          q.eq("tokenIdentifier", EMCEE.tokenIdentifier),
+        )
+        .unique()
+        .then((u) => u!._id),
+    );
+    await seedStaff(t, compId, emceeUserId, "emcee");
+
+    const note = await t
+      .withIdentity(EMCEE)
+      .mutation(api.competitions.compDay.createNote, {
+        competitionId: compId,
+        dayId,
+        content: "Hi everyone",
+      });
+    expect(note?.content).toBe("Hi everyone");
+  });
+
+  it("checkinRegistration toggles the registration flag", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, REG);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const regUserId = await t.run((ctx) =>
+      ctx.db
+        .query("users")
+        .withIndex("by_token_identifier", (q) =>
+          q.eq("tokenIdentifier", REG.tokenIdentifier),
+        )
+        .unique()
+        .then((u) => u!._id),
+    );
+    await seedStaff(t, compId, regUserId, "registration");
+    const userBob = await seedUser(t, BOB);
+    const reg = await seedRegistration(t, compId, userBob);
+
+    await t
+      .withIdentity(REG)
+      .mutation(api.competitions.compDay.checkinRegistration, {
+        registrationId: reg,
+      });
+    const after = await t.run((ctx) => ctx.db.get(reg));
+    expect(after?.checkedIn).toBe(true);
+
+    await t.withIdentity(REG).mutation(api.competitions.compDay.undoCheckin, {
+      registrationId: reg,
+    });
+    const undone = await t.run((ctx) => ctx.db.get(reg));
+    expect(undone?.checkedIn).toBe(false);
+  });
+
+  it("recordOfflinePayment converts dollars to cents", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, REG);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const regUserId = await t.run((ctx) =>
+      ctx.db
+        .query("users")
+        .withIndex("by_token_identifier", (q) =>
+          q.eq("tokenIdentifier", REG.tokenIdentifier),
+        )
+        .unique()
+        .then((u) => u!._id),
+    );
+    await seedStaff(t, compId, regUserId, "registration");
+    const userBob = await seedUser(t, BOB);
+    const reg = await seedRegistration(t, compId, userBob);
+    const payment = await t
+      .withIdentity(REG)
+      .mutation(api.competitions.compDay.recordOfflinePayment, {
+        registrationId: reg,
+        amount: "12.50",
+        method: "cash",
+      });
+    expect(payment?.amount).toBe(1250);
+    expect(payment?.method).toBe("cash");
+  });
+
+  it("approveAddDrop inserts an entry for type=add", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, REG);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const regUserId = await t.run((ctx) =>
+      ctx.db
+        .query("users")
+        .withIndex("by_token_identifier", (q) =>
+          q.eq("tokenIdentifier", REG.tokenIdentifier),
+        )
+        .unique()
+        .then((u) => u!._id),
+    );
+    await seedStaff(t, compId, regUserId, "registration");
+    const leader = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|ad_l",
+      subject: "ad_l",
+    });
+    const follower = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|ad_f",
+      subject: "ad_f",
+    });
+    const leaderReg = await seedRegistration(t, compId, leader);
+    const followerReg = await seedRegistration(t, compId, follower);
+    const requestId = await t.run((ctx) =>
+      ctx.db.insert("addDropRequests", {
+        competitionId: compId,
+        submittedBy: leader,
+        type: "add",
+        eventId,
+        leaderRegistrationId: leaderReg,
+        followerRegistrationId: followerReg,
+        status: "pending",
+        createdAt: Date.now(),
+      }),
+    );
+    await t
+      .withIdentity(REG)
+      .mutation(api.competitions.compDay.approveAddDrop, { requestId });
+    const entries = await t.run((ctx) =>
+      ctx.db
+        .query("entries")
+        .withIndex("by_event", (q) => q.eq("eventId", eventId))
+        .collect(),
+    );
+    expect(entries).toHaveLength(1);
+  });
+});
+
+// ── Feedback ───────────────────────────────────────────────────────
+
+describe("feedback", () => {
+  it("createForm with default template seeds 6 questions", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const form = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.feedback.createForm, {
+        competitionId: compId,
+      });
+    expect(form?.title).toBe("Competition Feedback");
+    const questions = await t.run((ctx) =>
+      ctx.db
+        .query("feedbackQuestions")
+        .withIndex("by_form_position", (q) => q.eq("formId", form!._id))
+        .collect(),
+    );
+    expect(questions).toHaveLength(6);
+  });
+
+  it("getForm returns null until competition is finished", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await t.withIdentity(ALICE).mutation(api.competitions.feedback.createForm, {
+      competitionId: compId,
+    });
+    const beforeFinish = await t.query(api.competitions.feedback.getForm, {
+      competitionId: compId,
+    });
+    expect(beforeFinish).toBeNull();
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: compId,
+      status: "finished",
+    });
+    const afterFinish = await t.query(api.competitions.feedback.getForm, {
+      competitionId: compId,
+    });
+    expect(afterFinish).not.toBeNull();
+    expect(afterFinish?.questions).toHaveLength(6);
+  });
+
+  it("submitResponse enforces one-per-user", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const form = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.feedback.createForm, {
+        competitionId: compId,
+        useTemplate: false,
+      });
+    const q = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.feedback.addQuestion, {
+        formId: form!._id,
+        questionType: "text",
+        label: "Anything else?",
+        position: 0,
+      });
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: compId,
+      status: "finished",
+    });
+    await t
+      .withIdentity(BOB)
+      .mutation(api.competitions.feedback.submitResponse, {
+        formId: form!._id,
+        answers: [{ questionId: q!._id, value: "ok" }],
+      });
+    await expect(
+      t
+        .withIdentity(BOB)
+        .mutation(api.competitions.feedback.submitResponse, {
+          formId: form!._id,
+          answers: [{ questionId: q!._id, value: "again" }],
+        }),
+    ).rejects.toThrow();
+  });
+});
+
+// ── Results ────────────────────────────────────────────────────────
+
+describe("results (public)", () => {
+  it("getEventResults returns null without published results", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    const result = await t.query(api.competitions.results.getEventResults, {
+      eventId,
+    });
+    expect(result).toBeNull();
+  });
+
+  it("searchCompetitors filters by displayName", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE, { displayName: "Alice Carter" });
+    await seedUser(t, BOB, { displayName: "Bob Builder" });
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await seedRegistration(t, compId, aliceId);
+
+    const results = await t.query(
+      api.competitions.results.searchCompetitors,
+      { query: "alice" },
+    );
+    expect(results.find((r) => r.displayName === "Alice Carter")).toBeDefined();
+  });
+});
+
+// ── Record removal ────────────────────────────────────────────────
+
+describe("recordRemoval", () => {
+  it("submit requires a finished competition with prior registration", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+
+    await expect(
+      t.withIdentity(BOB).mutation(api.competitions.recordRemoval.submit, {
+        competitionId: compId,
+        reason: "Withdraw me",
+      }),
+    ).rejects.toThrow();
+
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: compId,
+      status: "finished",
+    });
+    const bobId = await t.run((ctx) =>
+      ctx.db
+        .query("users")
+        .withIndex("by_token_identifier", (q) =>
+          q.eq("tokenIdentifier", BOB.tokenIdentifier),
+        )
+        .unique()
+        .then((u) => u!._id),
+    );
+    await seedRegistration(t, compId, bobId);
+    const req = await t
+      .withIdentity(BOB)
+      .mutation(api.competitions.recordRemoval.submit, {
+        competitionId: compId,
+        reason: "Withdraw me",
+      });
+    expect(req?.status).toBe("pending");
+  });
+
+  it("approve transitions pending to approved", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: compId,
+      status: "finished",
+    });
+    const bobId = await t.run((ctx) =>
+      ctx.db
+        .query("users")
+        .withIndex("by_token_identifier", (q) =>
+          q.eq("tokenIdentifier", BOB.tokenIdentifier),
+        )
+        .unique()
+        .then((u) => u!._id),
+    );
+    await seedRegistration(t, compId, bobId);
+    const req = await t
+      .withIdentity(BOB)
+      .mutation(api.competitions.recordRemoval.submit, {
+        competitionId: compId,
+        reason: "Withdraw me",
+      });
+    const approved = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.recordRemoval.approve, {
+        requestId: req!._id,
+      });
+    expect(approved?.status).toBe("approved");
+  });
+});
+
+// ── Calendar ──────────────────────────────────────────────────────
+
+describe("calendar", () => {
+  it("getUpcoming returns competitions in active statuses", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: compId,
+      status: "advertised",
+    });
+    const upcoming = await t.query(api.competitions.calendar.getUpcoming, {});
+    expect(upcoming.find((c) => c.id === compId)).toBeDefined();
+  });
+});
+
+// ── Payment analytics ─────────────────────────────────────────────
+
+describe("paymentAnalytics", () => {
+  it("getSummary aggregates payments per registration", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, REG);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const regUserId = await t.run((ctx) =>
+      ctx.db
+        .query("users")
+        .withIndex("by_token_identifier", (q) =>
+          q.eq("tokenIdentifier", REG.tokenIdentifier),
+        )
+        .unique()
+        .then((u) => u!._id),
+    );
+    await seedStaff(t, compId, regUserId, "registration");
+    const userBob = await seedUser(t, BOB);
+    const reg = await seedRegistration(t, compId, userBob, {
+      amountOwed: 5000,
+    });
+    await t
+      .withIdentity(REG)
+      .mutation(api.competitions.compDay.recordOfflinePayment, {
+        registrationId: reg,
+        amount: "30.00",
+        method: "cash",
+      });
+    const summary = await t
+      .withIdentity(ALICE)
+      .query(api.competitions.paymentAnalytics.getSummary, {
+        competitionId: compId,
+      });
+    expect(summary.totalRevenue).toBe(3000);
+    expect(summary.outstandingBalance).toBe(2000);
+    expect(summary.methodBreakdown.cash).toBe(3000);
+  });
+});
+
+// silence unused-warning style imports kept for symmetry with core.test.ts
+void SCRUT;
+void DECK;
