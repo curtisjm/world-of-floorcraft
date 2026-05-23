@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
@@ -46,7 +45,7 @@ export default function AnalyticsDashboardPage() {
 
         <TabsContent value="entries">
           {comp ? (
-            <EntryAnalytics competitionId={comp._id as unknown as number} />
+            <EntryAnalytics competitionId={comp._id} />
           ) : (
             <AnalyticsSkeleton />
           )}
@@ -66,11 +65,12 @@ export default function AnalyticsDashboardPage() {
 
 // ── Entry Analytics ───────────────────────────────────────────
 
-function EntryAnalytics({ competitionId }: { competitionId: number }) {
-  const { data: stats, isLoading } =
-    trpc.stats.getCompetitionStats.useQuery({ competitionId });
+function EntryAnalytics({ competitionId }: { competitionId: Id<"competitions"> }) {
+  const stats = useQuery(api.competitions.stats.getCompetitionStats, {
+    competitionId,
+  });
 
-  if (isLoading) return <AnalyticsSkeleton />;
+  if (stats === undefined) return <AnalyticsSkeleton />;
   if (!stats) return null;
 
   const maxEntries = Math.max(

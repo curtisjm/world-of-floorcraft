@@ -59,6 +59,23 @@ export const listMine = query({
 });
 
 /**
+ * Public list of a user's published routines for the profile page.
+ */
+export const listPublishedByUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const routines = await ctx.db
+      .query("routines")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    return routines
+      .filter((r) => r.isPublished)
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .map(toRoutineSummary);
+  },
+});
+
+/**
  * List the signed-in user's routines for a single dance, oldest first.
  * Backs the per-dance routines list (`/routines/dance/[dance]`).
  */

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
@@ -30,32 +31,23 @@ export default function OrgCompetitionPage() {
     compSlug: string;
   }>();
 
-  const { data: org } = trpc.org.getBySlug.useQuery({ slug: orgSlug });
-  const { data: comp } = trpc.competition.getBySlug.useQuery({ slug: compSlug });
+  const org = useQuery(api.orgs.getBySlug, { slug: orgSlug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug: compSlug });
 
-  const enabled = !!org && !!comp;
+  const compArgs =
+    comp && org ? { competitionId: comp._id, orgId: org._id } : "skip";
 
-  const { data: schedule, isLoading: schedLoading } =
-    trpc.orgCompetition.getOrgSchedule.useQuery(
-      { competitionId: comp?.id ?? 0, orgId: org?.id ?? 0 },
-      { enabled },
-    );
-
-  const { data: entries, isLoading: entriesLoading } =
-    trpc.orgCompetition.getOrgEntries.useQuery(
-      { competitionId: comp?.id ?? 0, orgId: org?.id ?? 0 },
-      { enabled },
-    );
-
-  const { data: results, isLoading: resultsLoading } =
-    trpc.orgCompetition.getOrgResults.useQuery(
-      { competitionId: comp?.id ?? 0, orgId: org?.id ?? 0 },
-      { enabled },
-    );
+  const schedule = useQuery(api.competitions.orgCompetition.getOrgSchedule, compArgs);
+  const entries = useQuery(api.competitions.orgCompetition.getOrgEntries, compArgs);
+  const results = useQuery(api.competitions.orgCompetition.getOrgResults, compArgs);
 
   if (!org || !comp) {
     return <OrgCompSkeleton />;
   }
+
+  const schedLoading = schedule === undefined;
+  const entriesLoading = entries === undefined;
+  const resultsLoading = results === undefined;
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
@@ -231,8 +223,6 @@ export default function OrgCompetitionPage() {
     </div>
   );
 }
-
-// ── Shared Components ─────────────────────────────────────────
 
 function PlacementBadge({ placement }: { placement: number }) {
   const color =

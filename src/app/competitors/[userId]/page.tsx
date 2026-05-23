@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent } from "@shared/ui/card";
@@ -25,17 +27,19 @@ import { toast } from "sonner";
 export default function CompetitorHistoryPage() {
   const { userId: profileUserId } = useParams<{ userId: string }>();
   const { user: currentUser } = useUser();
-  const isOwnProfile = currentUser?.id === profileUserId;
+  const me = useQuery(api.users.me, currentUser ? {} : "skip");
 
-  const { data: history, isLoading } =
-    trpc.results.getCompetitorHistory.useQuery({ userId: profileUserId });
+  const history = useQuery(api.competitions.results.getCompetitorHistory, {
+    userId: profileUserId as Id<"users">,
+  });
 
-  const { data: myRemovalRequests } =
-    trpc.recordRemoval.getMyRequests.useQuery(undefined, {
-      enabled: isOwnProfile,
-    });
+  const isOwnProfile = me?._id === profileUserId;
+  const myRemovalRequests = useQuery(
+    api.competitions.recordRemoval.getMyRequests,
+    isOwnProfile ? {} : "skip",
+  );
 
-  if (isLoading) {
+  if (history === undefined) {
     return <HistorySkeleton />;
   }
 
@@ -52,7 +56,6 @@ export default function CompetitorHistoryPage() {
     );
   }
 
-  // Build a set of competition IDs that have pending/approved removal requests
   const removalsByComp = new Map(
     (myRemovalRequests ?? []).map((r) => [r.competitionId, r.status]),
   );
@@ -173,22 +176,25 @@ export default function CompetitorHistoryPage() {
   );
 }
 
-// ── Record Removal Dialog ─────────────────────────────────────
-
-function RemovalDialog({ competitionId }: { competitionId: number }) {
+function RemovalDialog({ competitionId }: { competitionId: Id<"competitions"> }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
-  const utils = trpc.useUtils();
+  const submit = useMutation(api.competitions.recordRemoval.submit);
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = trpc.recordRemoval.submit.useMutation({
-    onSuccess: () => {
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      await submit({ competitionId, reason });
       toast.success("Removal request submitted");
-      utils.recordRemoval.getMyRequests.invalidate();
       setOpen(false);
       setReason("");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -217,18 +223,16 @@ function RemovalDialog({ competitionId }: { competitionId: number }) {
             Cancel
           </Button>
           <Button
-            onClick={() => submit.mutate({ competitionId, reason })}
-            disabled={reason.trim().length === 0 || submit.isPending}
+            onClick={handleSubmit}
+            disabled={reason.trim().length === 0 || submitting}
           >
-            {submit.isPending ? "Submitting..." : "Submit Request"}
+            {submitting ? "Submitting..." : "Submit Request"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-// ── Shared Components ─────────────────────────────────────────
 
 function PlacementBadge({ placement }: { placement: number }) {
   const variant =

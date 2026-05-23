@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../convex/_generated/api";
 import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
@@ -24,46 +23,21 @@ import {
 export default function ScheduleEstimationPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
-  const {
-    data: schedule,
-    isLoading,
-    refetch,
-  } = trpc.scheduleEstimation.getEstimatedSchedule.useQuery(
-    // TODO Task 10/11: scheduleEstimation router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp },
+  const schedule = useQuery(
+    api.competitions.scheduleEstimation.getEstimatedSchedule,
+    comp ? { competitionId: comp._id } : "skip",
   );
 
-  const updateSettings = trpc.scheduleEstimation.updateCompSettings.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Settings updated");
-      setShowSettings(false);
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const setOverride = trpc.scheduleEstimation.setEventOverride.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Override saved");
-    },
-    onError: (err) => toast.error(err.message),
-  });
-
-  const removeOverride = trpc.scheduleEstimation.removeEventOverride.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success("Override removed");
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const updateSettings = useMutation(
+    api.competitions.scheduleEstimation.updateCompSettings,
+  );
 
   const [showSettings, setShowSettings] = useState(false);
   const [minutesPerCouple, setMinutesPerCouple] = useState("1.5");
   const [transitionMin, setTransitionMin] = useState("2.0");
+  const [saving, setSaving] = useState(false);
 
-  if (isLoading || !comp) {
+  if (schedule === undefined || !comp) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-48" />
@@ -71,6 +45,24 @@ export default function ScheduleEstimationPage() {
       </div>
     );
   }
+
+  const handleSave = async () => {
+    if (!comp) return;
+    setSaving(true);
+    try {
+      await updateSettings({
+        competitionId: comp._id,
+        minutesPerCouplePerDance: parseFloat(minutesPerCouple),
+        transitionMinutes: parseFloat(transitionMin),
+      });
+      toast.success("Settings updated");
+      setShowSettings(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -110,11 +102,11 @@ export default function ScheduleEstimationPage() {
                     <Badge variant="outline" className="text-xs">
                       {block.type === "session" ? "Session" : "Break"}
                     </Badge>
-                    {block.estimatedMinutes && (
+                    {block.estimatedMinutes ? (
                       <span className="text-xs text-muted-foreground">
                         ~{Math.round(block.estimatedMinutes)} min
                       </span>
-                    )}
+                    ) : null}
                   </div>
                   {block.events?.length > 0 && (
                     <div className="space-y-1 ml-4">
@@ -143,7 +135,6 @@ export default function ScheduleEstimationPage() {
         ))
       )}
 
-      {/* Settings Dialog */}
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent>
           <DialogHeader>
@@ -168,18 +159,8 @@ export default function ScheduleEstimationPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              onClick={() => {
-                updateSettings.mutate({
-                  // TODO Task 10/11: scheduleEstimation router still expects numeric competitionId
-                  competitionId: comp._id as unknown as number,
-                  minutesPerCouplePerDance: minutesPerCouple,
-                  transitionMinutes: transitionMin,
-                });
-              }}
-              disabled={updateSettings.isPending}
-            >
-              {updateSettings.isPending ? "Saving..." : "Save"}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { Badge } from "@shared/ui/badge";
 import { Card, CardContent } from "@shared/ui/card";
 import { Input } from "@shared/ui/input";
@@ -12,11 +13,11 @@ export default function CompetitorSearchPage() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
 
-  const { data: results, isLoading } =
-    trpc.results.searchCompetitors.useQuery(
-      { query: debouncedQuery },
-      { enabled: debouncedQuery.length >= 1 },
-    );
+  const results = useQuery(
+    api.competitions.results.searchCompetitors,
+    debouncedQuery.length >= 1 ? { query: debouncedQuery } : "skip",
+  );
+  const isLoading = debouncedQuery.length >= 1 && results === undefined;
 
   return (
     <div className="max-w-3xl mx-auto py-6 px-4 sm:py-8 space-y-6">

@@ -152,6 +152,32 @@ async function listActiveFollowingIds(
 // ── Single post ─────────────────────────────────────────────────────
 
 /**
+ * Published posts by a single user, filtered by visibility against the viewer.
+ * Used by the user profile page to render their posts tab.
+ */
+export const listByAuthor = query({
+  args: { authorId: v.id("users") },
+  handler: async (ctx, args) => {
+    const viewer = await getCurrentUserOrNull(ctx);
+    const viewerId = viewer?._id ?? null;
+
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_author", (q) => q.eq("authorId", args.authorId))
+      .collect();
+
+    const visible = [] as Doc<"posts">[];
+    for (const post of posts) {
+      if (await isPostAccessible(ctx, post, viewerId)) visible.push(post);
+    }
+    visible.sort((a, b) => (b.publishedAt ?? 0) - (a.publishedAt ?? 0));
+    return visible.map((p) =>
+      postProjection(p, null, null),
+    );
+  },
+});
+
+/**
  * Fetch a single post with author info, returning `null` when the post is
  * missing or the viewer cannot see it (drafts, follower/org visibility).
  */

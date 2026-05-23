@@ -30,9 +30,6 @@ __pycache__/
 # Data pipeline working files
 data/raw/
 
-# Test database
-.pg-test/
-
 # Local tooling
 .claude/
 .playwright-mcp/

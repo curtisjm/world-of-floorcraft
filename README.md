@@ -54,7 +54,7 @@ Figures are introduced at progressively higher examination levels. Higher levels
 
 ### Real-Time Messaging
 - Direct messages, group chats, and org channels
-- Real-time delivery via Ably
+- Real-time delivery via Convex reactive queries
 - Typing indicators and presence
 
 ### Competition Organizer
@@ -64,12 +64,12 @@ Full competition lifecycle management with real-time scoring using the [skating 
 - **Registration** — Couple registration, per-event or flat-fee pricing, Stripe Connect payments, competitor number assignment, TBA partner finder, team match submissions
 - **Pre-comp** — Add/drop request management, automatic round generation with heat assignments, schedule estimation, statistics dashboard, award calculator
 - **Scoring** — Full skating system engine (Rules 5–11), callback tally, single and multi-dance placement, tabulation tables, results workflow (compute → review → publish)
-- **Judge UI** — Standalone tablet interface with separate JWT auth (no platform account required), tap-to-toggle callback marking, tap-to-rank finals, real-time submission via Ably
+- **Judge UI** — Standalone tablet interface with separate JWT auth (no platform account required), tap-to-toggle callback marking, tap-to-rank finals, real-time submission via Convex reactive queries
 - **Comp Day** — Scrutineer dashboard, registration table, deck captain check-in grid, emcee schedule with announcements, projector display, competitor live view
 - **Post-comp** — Public results with Summary + Marks tabs, competitor search and history, competition calendar with filters, organizer feedback forms with analytics, financial analytics, record removal requests
 - **Org Views** — Per-organization schedule, entries, and results for team coaches and admins
 
-38 frontend pages, 26 tRPC routers, 230+ integration tests. See [`docs/comp-organizer/`](docs/comp-organizer/) for full documentation.
+See [`docs/comp-organizer/`](docs/comp-organizer/) for full documentation.
 
 ## Tech Stack
 
@@ -79,13 +79,10 @@ Full competition lifecycle management with real-time scoring using the [skating 
 | Language | [TypeScript](https://www.typescriptlang.org/) | End-to-end type safety |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com/) | Utility-first CSS |
 | UI Components | [shadcn/ui](https://ui.shadcn.com/) | Accessible components on Radix UI primitives |
-| Database | [PostgreSQL](https://www.postgresql.org/) via [Neon](https://neon.tech/) | Serverless PostgreSQL |
-| ORM | [Drizzle](https://orm.drizzle.team/) | TypeScript-first SQL ORM |
-| API | [tRPC v11](https://trpc.io/) | End-to-end typesafe API layer |
-| Auth | [Clerk](https://clerk.com/) | Authentication with OAuth providers |
-| Real-time | [Ably](https://ably.com/) | WebSocket messaging and live competition updates |
+| Backend & DB | [Convex](https://www.convex.dev/) | Reactive database, queries/mutations/actions, real-time subscriptions |
+| Auth | [Clerk](https://clerk.com/) | Authentication with OAuth providers; Convex JWT integration |
 | Editor | [Tiptap](https://tiptap.dev/) | WYSIWYG markdown editor for posts |
-| Payments | [Stripe](https://stripe.com/) | Competition registration payments via Connect |
+| Payments | [Stripe](https://stripe.com/) | Competition registration payments via Connect; webhook fulfilled into Convex |
 | Judge Auth | [jose](https://github.com/panva/jose) | Edge-compatible JWT for judge tablet sessions |
 | Drag & Drop | [@dnd-kit/react](https://dndkit.com/) | Schedule builder reordering |
 | Hosting | [Vercel](https://vercel.com/) | Deployment platform |
@@ -99,22 +96,28 @@ The codebase follows a **modular monolith** pattern organized by domain:
 ```
 src/
   domains/
-    syllabus/         # Figure graph, dance browsing, visualization
-    routines/         # Routine builder and management
-    social/           # Feed, posts, comments, likes, follows, saves
-    messaging/        # DMs, group chats, org channels
-    orgs/             # Organizations, membership, org profiles
-    competitions/     # Competition organizer, scoring, judge UI, comp-day ops
+    syllabus/         # Figure graph, dance browsing UI
+    routines/         # Routine builder UI
+    social/           # Feed, posts, comments, likes, follows, saves UI
+    messaging/        # DMs, group chats, org channels UI
+    orgs/             # Organizations UI
+    competitions/     # Competition organizer, scoring, judge UI, comp-day ops UI
   shared/
-    auth/             # Clerk helpers, protected procedures
-    db/               # Database connection, shared enums
     ui/               # shadcn/ui components
-    components/       # App shell (nav, layout)
-    lib/              # tRPC client, utilities
-    schema.ts         # Users table (shared across domains)
+    components/       # App shell (nav, layout, Convex/Clerk providers)
+    lib/              # Utility helpers
+convex/
+  schema.ts           # All Convex tables and indexes
+  lib/                # Auth, permission, money, time helpers
+  syllabus/           # Convex syllabus functions
+  routines.ts         # Convex routine functions
+  social/             # Convex social functions
+  orgs.ts             # Convex org functions
+  messaging.ts        # Convex messaging functions
+  competitions/       # Convex competition functions and Stripe actions
 ```
 
-Each domain owns its schema, routers, components, and routes. Cross-domain access uses explicit query/type exports. See [docs/](docs/) for detailed architecture documentation.
+Each domain owns its UI components and route pages. Convex functions live alongside the schema in `convex/` and serve as the backend boundary. See [docs/](docs/) for detailed architecture documentation.
 
 ## Database Schema
 
@@ -173,7 +176,8 @@ Available as Tailwind utilities: `text-bronze`, `border-silver`, `bg-gold`, etc.
 ### Prerequisites
 
 - [Nix](https://nixos.org/download/) with flakes enabled, or Node.js 22+ with pnpm
-- A [Neon](https://neon.tech/) PostgreSQL database
+- A [Convex](https://www.convex.dev/) account
+- A [Clerk](https://clerk.com/) application with a Convex JWT template
 
 ### Setup
 
@@ -187,14 +191,16 @@ pnpm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Add DATABASE_URL from Neon dashboard
+# Add NEXT_PUBLIC_CONVEX_URL (created by `npx convex dev`)
+# Add CLERK_JWT_ISSUER_DOMAIN (from Clerk JWT template settings)
 # Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY from Clerk
+# Add STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET for competition payments
 
-# Push schema to database
-pnpm db:push
+# Provision Convex (generates _generated/, validates schema)
+CONVEX_AGENT_MODE=anonymous npx convex dev --once
 
 # Seed syllabus data
-pnpm db:seed
+pnpm seed
 
 # Start dev server
 pnpm dev
@@ -208,8 +214,8 @@ Figures are extracted from scanned pages of "The Ballroom Technique" using Claud
 # 1. Extract figures from PDF page images
 python scripts/extract_figures.py
 
-# 2. Seed the database from extracted YAML
-pnpm db:seed
+# 2. Seed Convex from extracted YAML
+pnpm seed
 ```
 
 ## Available Scripts
@@ -217,13 +223,12 @@ pnpm db:seed
 | Command | Description |
 |---------|-------------|
 | `pnpm dev` | Start development server |
+| `pnpm convex:dev` | Run Convex dev server (regenerates `_generated/`) |
 | `pnpm build` | Production build |
 | `pnpm lint` | Run ESLint |
-| `pnpm db:generate` | Generate Drizzle migrations |
-| `pnpm db:push` | Push schema directly to database |
-| `pnpm db:studio` | Open Drizzle Studio (database GUI) |
-| `pnpm db:seed` | Seed database from extracted YAML |
-| `pnpm test` | Run integration tests (requires `nix develop` on NixOS) |
+| `pnpm seed` | Seed Convex syllabus data from extracted YAML |
+| `pnpm test` | Run Convex function tests |
+| `pnpm test:e2e` | Run Playwright end-to-end tests |
 
 ## Status
 
@@ -237,7 +242,7 @@ pnpm db:seed
 - [x] Save/bookmark system with folders
 - [x] User profiles with competition level badges
 - [x] Organizations with configurable membership (open, invite-only, request-to-join)
-- [x] Real-time messaging via Ably (DMs, group chats, org channels)
+- [x] Real-time messaging via Convex (DMs, group chats, org channels)
 - [x] Competition organizer — full lifecycle from creation to post-comp analytics
 - [x] Skating system scoring engine (Rules 5–11) with tabulation
 - [x] Judge tablet UI with standalone JWT auth
@@ -249,7 +254,7 @@ pnpm db:seed
 - [x] Dark theme with ISTD level accent colors
 - [x] PDF extraction and database seed pipeline
 
-**375 integration tests across 52 test files.**
+Convex function tests cover the migrated backend behavior.
 
 ### Future
 - [ ] Photo/video media support

@@ -1,45 +1,18 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
-import { useState } from "react";
-import superjson from "superjson";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@shared/ui/tooltip";
 import { Toaster } from "@shared/ui/sonner";
-import { trpc } from "@shared/lib/trpc";
 import { ConvexClientProvider } from "@shared/components/convex-client-provider";
 
-function getBaseUrl() {
-  if (typeof window !== "undefined") return "";
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return `http://localhost:3000`;
-}
-
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
-      links: [
-        httpBatchLink({
-          url: `${getBaseUrl()}/api/trpc`,
-          transformer: superjson,
-        }),
-      ],
-    })
-  );
-
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ConvexClientProvider>
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              {children}
-              <Toaster richColors closeButton />
-            </TooltipProvider>
-          </QueryClientProvider>
-        </trpc.Provider>
+        <TooltipProvider>
+          {children}
+          <Toaster richColors closeButton />
+        </TooltipProvider>
       </ConvexClientProvider>
     </ThemeProvider>
   );

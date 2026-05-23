@@ -9,6 +9,7 @@
  */
 
 import type * as competitions_addDrop from "../competitions/addDrop.js";
+import type * as competitions_awards from "../competitions/awards.js";
 import type * as competitions_calendar from "../competitions/calendar.js";
 import type * as competitions_compDay from "../competitions/compDay.js";
 import type * as competitions_core from "../competitions/core.js";
@@ -31,9 +32,11 @@ import type * as competitions_registration from "../competitions/registration.js
 import type * as competitions_results from "../competitions/results.js";
 import type * as competitions_rounds from "../competitions/rounds.js";
 import type * as competitions_schedule from "../competitions/schedule.js";
+import type * as competitions_scheduleEstimation from "../competitions/scheduleEstimation.js";
 import type * as competitions_scoring from "../competitions/scoring.js";
 import type * as competitions_scrutineer from "../competitions/scrutineer.js";
 import type * as competitions_staff from "../competitions/staff.js";
+import type * as competitions_stats from "../competitions/stats.js";
 import type * as competitions_stripeActions from "../competitions/stripeActions.js";
 import type * as competitions_tba from "../competitions/tba.js";
 import type * as competitions_teamMatch from "../competitions/teamMatch.js";
@@ -68,6 +71,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "competitions/addDrop": typeof competitions_addDrop;
+  "competitions/awards": typeof competitions_awards;
   "competitions/calendar": typeof competitions_calendar;
   "competitions/compDay": typeof competitions_compDay;
   "competitions/core": typeof competitions_core;
@@ -90,9 +94,11 @@ declare const fullApi: ApiFromModules<{
   "competitions/results": typeof competitions_results;
   "competitions/rounds": typeof competitions_rounds;
   "competitions/schedule": typeof competitions_schedule;
+  "competitions/scheduleEstimation": typeof competitions_scheduleEstimation;
   "competitions/scoring": typeof competitions_scoring;
   "competitions/scrutineer": typeof competitions_scrutineer;
   "competitions/staff": typeof competitions_staff;
+  "competitions/stats": typeof competitions_stats;
   "competitions/stripeActions": typeof competitions_stripeActions;
   "competitions/tba": typeof competitions_tba;
   "competitions/teamMatch": typeof competitions_teamMatch;

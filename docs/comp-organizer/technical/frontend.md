@@ -1,5 +1,11 @@
 # Frontend Architecture — Competition Organizer
 
+> **NOTE:** The data layer has migrated from Drizzle/tRPC/Ably to Convex
+> (see `docs/superpowers/plans/2026-05-22-convex-migration.md`). References
+> below to `trpc.*` hooks, Drizzle schema files, and Ably channels describe
+> the historical architecture. The route structure is current; data fetching
+> now uses `useQuery(api.<domain>.<fn>, args)` and `useMutation(api.<domain>.<fn>)`.
+
 ## Route Structure
 
 ```

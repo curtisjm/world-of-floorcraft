@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
-import { appRouter } from "@shared/auth/routers";
-import { createTRPCContext } from "@shared/auth/trpc";
+import { fetchMutation } from "convex/nextjs";
+import { api } from "../../../../../convex/_generated/api";
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -8,9 +8,7 @@ export async function POST() {
 
   if (token) {
     try {
-      const ctx = await createTRPCContext();
-      const caller = appRouter.createCaller(ctx);
-      await caller.judgeSession.logout({ token });
+      await fetchMutation(api.competitions.judgeSession.logout, { token });
     } catch {
       // Best-effort session invalidation — clear cookie regardless
     }

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { trpc } from "@shared/lib/trpc";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { Badge } from "@shared/ui/badge";
 import { Button } from "@shared/ui/button";
 import { Card, CardContent } from "@shared/ui/card";
@@ -26,12 +27,13 @@ export default function ResultsBrowsePage() {
   const [style, setStyle] = useState<string | undefined>(undefined);
   const [offset, setOffset] = useState(0);
 
-  const { data, isLoading } = trpc.calendar.getPast.useQuery({
+  const data = useQuery(api.competitions.calendar.getPast, {
     year,
     style: style as (typeof STYLES)[number] | undefined,
     limit: PAGE_SIZE,
     offset,
   });
+  const isLoading = data === undefined;
 
   const competitions = data?.competitions ?? [];
   const total = data?.total ?? 0;

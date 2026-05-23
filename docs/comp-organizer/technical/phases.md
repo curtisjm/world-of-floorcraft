@@ -1,5 +1,10 @@
 # Implementation Phases
 
+> **NOTE:** This document describes the original phased implementation on
+> Drizzle/tRPC/Ably. The platform now runs on Convex; see
+> `docs/superpowers/plans/2026-05-22-convex-migration.md` for the migration
+> plan that ported every phase below into Convex functions.
+
 Each phase is independently deployable and builds on the previous one.
 
 ---

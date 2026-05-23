@@ -1,30 +1,31 @@
 import { cookies } from "next/headers";
-import { appRouter } from "@shared/auth/routers";
-import { createTRPCContext } from "@shared/auth/trpc";
+import { ConvexError } from "convex/values";
+import { fetchMutation } from "convex/nextjs";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const ctx = await createTRPCContext();
-  const caller = appRouter.createCaller(ctx);
 
   try {
-    const result = await caller.judgeSession.authenticate({
-      compCode: body.compCode,
-      masterPassword: body.masterPassword,
-      judgeId: body.judgeId,
-    });
+    const result = await fetchMutation(
+      api.competitions.judgeSession.authenticate,
+      {
+        compCode: body.compCode,
+        masterPassword: body.masterPassword,
+        judgeId: body.judgeId as Id<"judges">,
+      },
+    );
 
-    // Set httpOnly cookie with the JWT
     const cookieStore = await cookies();
     cookieStore.set("judge_token", result.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       path: "/",
-      maxAge: 60 * 60 * 24, // 24 hours (matches JWT expiry)
+      maxAge: 60 * 60 * 24,
     });
 
-    // Return non-sensitive data only — token stays in httpOnly cookie
     return Response.json({
       judgeName: result.judgeName,
       competitionName: result.competitionName,
@@ -32,12 +33,23 @@ export async function POST(req: Request) {
       judgeId: result.judgeId,
     });
   } catch (err: unknown) {
-    const trpcErr = err as { code?: string; message?: string };
+    let code: string | undefined;
+    let message: string | undefined;
+    if (err instanceof ConvexError) {
+      const data = err.data as { code?: string; message?: string };
+      code = data?.code;
+      message = data?.message;
+    } else if (err instanceof Error) {
+      message = err.message;
+    }
     const status =
-      trpcErr.code === "TOO_MANY_REQUESTS" ? 429 :
-      trpcErr.code === "UNAUTHORIZED" ? 401 : 400;
+      code === "TOO_MANY_REQUESTS"
+        ? 429
+        : code === "UNAUTHORIZED"
+          ? 401
+          : 400;
     return Response.json(
-      { error: trpcErr.message ?? "Authentication failed" },
+      { error: message ?? "Authentication failed" },
       { status },
     );
   }

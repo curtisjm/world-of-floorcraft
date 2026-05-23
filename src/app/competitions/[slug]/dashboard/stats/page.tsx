@@ -3,34 +3,29 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { trpc } from "@shared/lib/trpc";
 import { api } from "../../../../../../convex/_generated/api";
-import { Button } from "@shared/ui/button";
 import { Input } from "@shared/ui/input";
 import { Label } from "@shared/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui/card";
 import { Skeleton } from "@shared/ui/skeleton";
 import { Badge } from "@shared/ui/badge";
-import { toast } from "sonner";
-import { BarChart3, Trophy, Medal, Award } from "lucide-react";
+import { Medal } from "lucide-react";
 
 export default function StatsPage() {
   const { slug } = useParams<{ slug: string }>();
   const comp = useQuery(api.competitions.core.getBySlug, { slug });
-  const { data: stats, isLoading } = trpc.stats.getCompetitionStats.useQuery(
-    // TODO Task 10/11: stats router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0 },
-    { enabled: !!comp },
+  const stats = useQuery(
+    api.competitions.stats.getCompetitionStats,
+    comp ? { competitionId: comp._id } : "skip",
   );
 
   const [bufferPct, setBufferPct] = useState(10);
-  const { data: awards } = trpc.awards.calculate.useQuery(
-    // TODO Task 10/11: awards router still expects numeric competitionId
-    { competitionId: (comp?._id as unknown as number) ?? 0, bufferPercentage: bufferPct },
-    { enabled: !!comp },
+  const awards = useQuery(
+    api.competitions.awards.calculate,
+    comp ? { competitionId: comp._id, bufferPercentage: bufferPct } : "skip",
   );
 
-  if (isLoading || !comp) {
+  if (stats === undefined || !comp) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-48" />
