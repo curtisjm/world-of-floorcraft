@@ -247,13 +247,15 @@ export default defineSchema({
     bio: v.optional(v.string()),
     competitionLevel: v.optional(competitionLevel),
     competitionLevelHigh: v.optional(competitionLevel),
+    searchText: v.optional(v.string()),
     isPrivate: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_token_identifier", ["tokenIdentifier"])
     .index("by_clerk_user_id", ["clerkUserId"])
-    .index("by_username", ["username"]),
+    .index("by_username", ["username"])
+    .searchIndex("search_profile", { searchField: "searchText" }),
 
   notifications: defineTable({
     userId: v.id("users"),
@@ -371,10 +373,19 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_author", ["authorId"])
+    .index("by_author_published", ["authorId", "publishedAt"])
+    .index("by_author_type_published", ["authorId", "type", "publishedAt"])
     .index("by_type", ["type"])
     .index("by_published", ["publishedAt"])
     .index("by_visibility_published", ["visibility", "publishedAt"])
-    .index("by_org", ["orgId"]),
+    .index("by_visibility_org_published", [
+      "visibility",
+      "visibilityOrgId",
+      "publishedAt",
+    ])
+    .index("by_org", ["orgId"])
+    .index("by_org_published", ["orgId", "publishedAt"])
+    .index("by_org_visibility_published", ["orgId", "visibility", "publishedAt"]),
 
   comments: defineTable({
     postId: v.id("posts"),
@@ -424,7 +435,32 @@ export default defineSchema({
     rolePreference: rolePreference,
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_updated", ["updatedAt"])
+    .index("by_role_updated", ["rolePreference", "updatedAt"]),
+
+  partnerSearchStyleProfiles: defineTable({
+    profileId: v.id("partnerSearchProfiles"),
+    userId: v.id("users"),
+    style: danceStyle,
+    rolePreference: rolePreference,
+    updatedAt: v.number(),
+  })
+    .index("by_profile", ["profileId"])
+    .index("by_style_updated", ["style", "updatedAt"])
+    .index("by_style_role_updated", ["style", "rolePreference", "updatedAt"]),
+
+  partnerSearchLocationTokens: defineTable({
+    profileId: v.id("partnerSearchProfiles"),
+    userId: v.id("users"),
+    token: v.string(),
+    rolePreference: rolePreference,
+    updatedAt: v.number(),
+  })
+    .index("by_profile", ["profileId"])
+    .index("by_token_updated", ["token", "updatedAt"])
+    .index("by_token_role_updated", ["token", "rolePreference", "updatedAt"]),
 
   // ── Organizations ─────────────────────────────────────────────────
 
@@ -487,6 +523,7 @@ export default defineSchema({
     userId: v.id("users"),
     joinedAt: v.number(),
     lastReadAt: v.optional(v.number()),
+    unreadCount: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_conversation_user", ["conversationId", "userId"]),
@@ -551,7 +588,9 @@ export default defineSchema({
   })
     .index("by_slug", ["slug"])
     .index("by_comp_code", ["compCode"])
-    .index("by_org", ["orgId"]),
+    .index("by_org", ["orgId"])
+    .index("by_status", ["status"])
+    .index("by_status_state", ["status", "state"]),
 
   competitionDays: defineTable({
     competitionId: v.id("competitions"),

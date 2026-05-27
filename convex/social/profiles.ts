@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, type QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { getCurrentUser } from "../lib/auth";
+import { buildUserSearchText } from "../lib/search";
 
 /**
  * Public profile reads for the social domain. Ported from the Drizzle/tRPC
@@ -77,26 +78,29 @@ export const getByUsername = query({
 });
 
 /**
- * Search users by username or display name, excluding the caller. There is no
- * Convex search index on `users` (the schema is owned by the foundation
- * task), so this scans and substring-matches in memory — the behavior of the
- * previous SQL `ILIKE` query.
+ * Search users by username or display name, excluding the caller. Search is
+ * backed by the `users.search_profile` Convex search index over denormalized
+ * profile text maintained by `users.ensureCurrentUser` / `updateProfile`.
  */
 export const search = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
     const currentUser = await getCurrentUser(ctx);
-    const needle = args.query.trim().toLowerCase();
-    if (needle.length === 0) return [];
-
-    const users = await ctx.db.query("users").collect();
-    const matches = users.filter((u) => {
-      if (u._id === currentUser._id) return false;
-      const username = u.username?.toLowerCase() ?? "";
-      const displayName = u.displayName?.toLowerCase() ?? "";
-      return username.includes(needle) || displayName.includes(needle);
+    const needle = buildUserSearchText({
+      username: args.query,
+      displayName: undefined,
     });
-    return matches.slice(0, SEARCH_LIMIT).map(publicCard);
+    if (!needle) return [];
+
+    const users = await ctx.db
+      .query("users")
+      .withSearchIndex("search_profile", (q) => q.search("searchText", needle))
+      .take(SEARCH_LIMIT + 1);
+
+    return users
+      .filter((u) => u._id !== currentUser._id)
+      .slice(0, SEARCH_LIMIT)
+      .map(publicCard);
   },
 });
 

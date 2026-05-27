@@ -4,6 +4,7 @@ import { mutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { getCurrentUserOrNull, requireIdentity } from "./lib/auth";
 import { badRequest } from "./lib/errors";
+import { buildUserSearchText } from "./lib/search";
 import { competitionLevel } from "./schema";
 
 /**
@@ -50,7 +51,14 @@ async function ensureUserForIdentity(
       q.eq("tokenIdentifier", identity.tokenIdentifier),
     )
     .unique();
-  if (existing) return existing;
+  if (existing) {
+    const searchText = buildUserSearchText(existing);
+    if (existing.searchText !== searchText) {
+      await ctx.db.patch(existing._id, { searchText, updatedAt: Date.now() });
+      return (await ctx.db.get(existing._id))!;
+    }
+    return existing;
+  }
 
   const displayName =
     identity.name?.trim() ||
@@ -69,6 +77,7 @@ async function ensureUserForIdentity(
     displayName,
     username,
     avatarUrl,
+    searchText: buildUserSearchText({ username, displayName }),
     isPrivate: false,
     createdAt: now,
     updatedAt: now,
@@ -143,6 +152,7 @@ export const updateProfile = mutation({
       competitionLevelHigh?: Doc<"users">["competitionLevelHigh"];
       isPrivate?: boolean;
       avatarUrl?: string;
+      searchText?: string;
       updatedAt: number;
     } = { updatedAt: Date.now() };
 
@@ -210,6 +220,11 @@ export const updateProfile = mutation({
     if (args.avatarUrl !== undefined) {
       patch.avatarUrl = args.avatarUrl;
     }
+
+    patch.searchText = buildUserSearchText({
+      username: patch.username ?? user.username,
+      displayName: patch.displayName ?? user.displayName,
+    });
 
     await ctx.db.patch(user._id, patch);
 

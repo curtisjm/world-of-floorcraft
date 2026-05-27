@@ -54,12 +54,22 @@ export const getUpcoming = query({
     style: v.optional(danceStyle),
   },
   handler: async (ctx, args) => {
-    const all = await ctx.db.query("competitions").collect();
-    const filteredByStatus = all.filter((c) => UPCOMING_STATUSES.has(c.status));
-    const filteredByLocation = filteredByStatus.filter((c) => {
-      if (args.state && c.state?.toLowerCase() !== args.state.toLowerCase()) {
-        return false;
-      }
+    const byStatus = await Promise.all(
+      [...UPCOMING_STATUSES].map((status) =>
+        args.state
+          ? ctx.db
+              .query("competitions")
+              .withIndex("by_status_state", (q) =>
+                q.eq("status", status).eq("state", args.state),
+              )
+              .collect()
+          : ctx.db
+              .query("competitions")
+              .withIndex("by_status", (q) => q.eq("status", status))
+              .collect(),
+      ),
+    );
+    const filteredByLocation = byStatus.flat().filter((c) => {
       if (
         args.city &&
         !c.city?.toLowerCase().includes(args.city.toLowerCase())
@@ -122,11 +132,18 @@ export const getPast = query({
     offset: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const all = await ctx.db.query("competitions").collect();
-    let filtered = all.filter((c) => c.status === "finished").filter((c) => {
-      if (args.state && c.state?.toLowerCase() !== args.state.toLowerCase()) {
-        return false;
-      }
+    let filtered = await (args.state
+      ? ctx.db
+          .query("competitions")
+          .withIndex("by_status_state", (q) =>
+            q.eq("status", "finished").eq("state", args.state),
+          )
+          .collect()
+      : ctx.db
+          .query("competitions")
+          .withIndex("by_status", (q) => q.eq("status", "finished"))
+          .collect());
+    filtered = filtered.filter((c) => {
       if (
         args.city &&
         !c.city?.toLowerCase().includes(args.city.toLowerCase())

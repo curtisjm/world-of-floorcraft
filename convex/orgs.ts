@@ -82,6 +82,7 @@ async function ensureOrgChannelMembership(
       conversationId,
       userId,
       joinedAt: Date.now(),
+      unreadCount: 0,
     });
   }
 }
@@ -474,6 +475,7 @@ export const create = mutation({
       conversationId,
       userId: user._id,
       joinedAt: now,
+      unreadCount: 0,
     });
 
     const created = await ctx.db.get(orgId);

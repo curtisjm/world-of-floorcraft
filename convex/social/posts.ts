@@ -118,6 +118,112 @@ function nextCursor(
   return { publishedAt: last.publishedAt, id: last._id };
 }
 
+function comparePostsNewest(a: Doc<"posts">, b: Doc<"posts">): number {
+  const byTime = (b.publishedAt ?? 0) - (a.publishedAt ?? 0);
+  if (byTime !== 0) return byTime;
+  return a._id < b._id ? 1 : a._id > b._id ? -1 : 0;
+}
+
+async function publicPostsPage(
+  ctx: QueryCtx,
+  limit: number,
+  cursor: { publishedAt: number; id: Id<"posts"> } | undefined,
+): Promise<Doc<"posts">[]> {
+  const sameTimestamp = cursor
+    ? await ctx.db
+        .query("posts")
+        .withIndex("by_visibility_published", (q) =>
+          q.eq("visibility", "public").eq("publishedAt", cursor.publishedAt),
+        )
+        .collect()
+    : [];
+  const older = await ctx.db
+    .query("posts")
+    .withIndex("by_visibility_published", (q) => {
+      const scoped = q.eq("visibility", "public");
+      return cursor
+        ? scoped.lt("publishedAt", cursor.publishedAt)
+        : scoped.gt("publishedAt", 0);
+    })
+    .order("desc")
+    .take(limit + 1);
+
+  return [...sameTimestamp.filter((p) => isBefore(p, cursor)), ...older]
+    .filter((p) => !!p.publishedAt)
+    .sort(comparePostsNewest)
+    .slice(0, limit + 1);
+}
+
+async function followedAuthorCandidates(
+  ctx: QueryCtx,
+  authorId: Id<"users">,
+  limit: number,
+  cursor: { publishedAt: number; id: Id<"posts"> } | undefined,
+): Promise<Doc<"posts">[]> {
+  const sameTimestamp = cursor
+    ? await ctx.db
+        .query("posts")
+        .withIndex("by_author_published", (q) =>
+          q.eq("authorId", authorId).eq("publishedAt", cursor.publishedAt),
+        )
+        .collect()
+    : [];
+  const older = await ctx.db
+    .query("posts")
+    .withIndex("by_author_published", (q) => {
+      const scoped = q.eq("authorId", authorId);
+      return cursor
+        ? scoped.lt("publishedAt", cursor.publishedAt)
+        : scoped.gt("publishedAt", 0);
+    })
+    .order("desc")
+    .take(limit + 1);
+  return [...sameTimestamp, ...older]
+    .filter(
+      (p) =>
+        !!p.publishedAt &&
+        isBefore(p, cursor) &&
+        (p.visibility === "public" || p.visibility === "followers"),
+    )
+    .sort(comparePostsNewest)
+    .slice(0, limit + 1);
+}
+
+async function orgVisibleCandidates(
+  ctx: QueryCtx,
+  orgId: Id<"organizations">,
+  limit: number,
+  cursor: { publishedAt: number; id: Id<"posts"> } | undefined,
+): Promise<Doc<"posts">[]> {
+  const sameTimestamp = cursor
+    ? await ctx.db
+        .query("posts")
+        .withIndex("by_visibility_org_published", (q) =>
+          q
+            .eq("visibility", "organization")
+            .eq("visibilityOrgId", orgId)
+            .eq("publishedAt", cursor.publishedAt),
+        )
+        .collect()
+    : [];
+  const older = await ctx.db
+    .query("posts")
+    .withIndex("by_visibility_org_published", (q) => {
+      const scoped = q
+        .eq("visibility", "organization")
+        .eq("visibilityOrgId", orgId);
+      return cursor
+        ? scoped.lt("publishedAt", cursor.publishedAt)
+        : scoped.gt("publishedAt", 0);
+    })
+    .order("desc")
+    .take(limit + 1);
+  return [...sameTimestamp, ...older]
+    .filter((p) => !!p.publishedAt && isBefore(p, cursor))
+    .sort(comparePostsNewest)
+    .slice(0, limit + 1);
+}
+
 const feedCursor = v.optional(
   v.union(
     v.null(),
@@ -417,13 +523,16 @@ export const listDrafts = query({
   args: {},
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
-    const all = await ctx.db
+    const drafts = await ctx.db
       .query("posts")
-      .withIndex("by_author", (q) => q.eq("authorId", user._id))
+      .withIndex("by_author_type_published", (q) =>
+        q
+          .eq("authorId", user._id)
+          .eq("type", "article")
+          .eq("publishedAt", undefined),
+      )
       .collect();
-    return all
-      .filter((p) => p.type === "article" && !p.publishedAt)
-      .sort((a, b) => b.updatedAt - a.updatedAt);
+    return drafts.sort((a, b) => b.updatedAt - a.updatedAt);
   },
 });
 
@@ -446,31 +555,18 @@ export const followingFeed = query({
     const followingIds = await listActiveFollowingIds(ctx, user._id);
     const userOrgIds = await listUserOrgIds(ctx, user._id);
 
-    const published = await ctx.db
-      .query("posts")
-      .withIndex("by_published")
-      .order("desc")
-      .collect();
-
-    const filtered: Doc<"posts">[] = [];
-    for (const post of published) {
-      if (!post.publishedAt) continue;
-      if (!isBefore(post, cursor ?? undefined)) continue;
-
-      const fromFollowed =
-        !!post.authorId &&
-        followingIds.has(post.authorId) &&
-        (post.visibility === "public" || post.visibility === "followers");
-      const orgVisible =
-        post.visibility === "organization" &&
-        !!post.visibilityOrgId &&
-        userOrgIds.has(post.visibilityOrgId);
-
-      if (fromFollowed || orgVisible) {
-        filtered.push(post);
-        if (filtered.length >= limit + 1) break;
-      }
-    }
+    const candidateGroups = await Promise.all([
+      ...[...followingIds].map((authorId) =>
+        followedAuthorCandidates(ctx, authorId, limit, cursor),
+      ),
+      ...[...userOrgIds].map((orgId) =>
+        orgVisibleCandidates(ctx, orgId, limit, cursor),
+      ),
+    ]);
+    const filtered = candidateGroups
+      .flat()
+      .sort(comparePostsNewest)
+      .slice(0, limit + 1);
 
     const hasMore = filtered.length > limit;
     const items = hasMore ? filtered.slice(0, limit) : filtered;
@@ -502,19 +598,7 @@ export const exploreFeed = query({
     const limit = clampLimit(args.limit);
     const cursor = args.cursor ?? undefined;
 
-    const published = await ctx.db
-      .query("posts")
-      .withIndex("by_visibility_published", (q) => q.eq("visibility", "public"))
-      .order("desc")
-      .collect();
-
-    const filtered: Doc<"posts">[] = [];
-    for (const post of published) {
-      if (!post.publishedAt) continue;
-      if (!isBefore(post, cursor ?? undefined)) continue;
-      filtered.push(post);
-      if (filtered.length >= limit + 1) break;
-    }
+    const filtered = await publicPostsPage(ctx, limit, cursor);
     const hasMore = filtered.length > limit;
     const items = hasMore ? filtered.slice(0, limit) : filtered;
     const lastPost = items[items.length - 1];
@@ -674,23 +758,32 @@ export const listByOrg = query({
     const limit = clampLimit(args.limit);
     const cursor = args.cursor ?? undefined;
 
-    const all = await ctx.db
+    const sameTimestamp = cursor
+      ? await ctx.db
+          .query("posts")
+          .withIndex("by_org_visibility_published", (q) =>
+            q
+              .eq("orgId", args.orgId)
+              .eq("visibility", "public")
+              .eq("publishedAt", cursor.publishedAt),
+          )
+          .collect()
+      : [];
+    const older = await ctx.db
       .query("posts")
-      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
-      .collect();
+      .withIndex("by_org_visibility_published", (q) => {
+        const scoped = q.eq("orgId", args.orgId).eq("visibility", "public");
+        return cursor
+          ? scoped.lt("publishedAt", cursor.publishedAt)
+          : scoped.gt("publishedAt", 0);
+      })
+      .order("desc")
+      .take(limit + 1);
 
-    const filtered = all
-      .filter(
-        (p) =>
-          p.visibility === "public" &&
-          !!p.publishedAt &&
-          isBefore(p, cursor ?? undefined),
-      )
-      .sort((a, b) => {
-        const byTime = (b.publishedAt ?? 0) - (a.publishedAt ?? 0);
-        if (byTime !== 0) return byTime;
-        return a._id < b._id ? 1 : a._id > b._id ? -1 : 0;
-      });
+    const filtered = [...sameTimestamp, ...older]
+      .filter((p) => !!p.publishedAt && isBefore(p, cursor))
+      .sort(comparePostsNewest)
+      .slice(0, limit + 1);
 
     const hasMore = filtered.length > limit;
     const items = hasMore ? filtered.slice(0, limit) : filtered;
@@ -727,12 +820,12 @@ export const listOrgDrafts = query({
   args: { orgId: v.id("organizations") },
   handler: async (ctx, args) => {
     await requireOrgRole(ctx, args.orgId, "admin");
-    const all = await ctx.db
+    const drafts = await ctx.db
       .query("posts")
-      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .withIndex("by_org_published", (q) =>
+        q.eq("orgId", args.orgId).eq("publishedAt", undefined),
+      )
       .collect();
-    return all
-      .filter((p) => !p.publishedAt)
-      .sort((a, b) => b.updatedAt - a.updatedAt);
+    return drafts.sort((a, b) => b.updatedAt - a.updatedAt);
   },
 });

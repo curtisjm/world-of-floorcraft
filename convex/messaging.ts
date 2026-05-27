@@ -136,18 +136,7 @@ export const listConversations = query({
           .order("desc")
           .first();
 
-        const allMessages = await ctx.db
-          .query("messages")
-          .withIndex("by_conversation", (q) =>
-            q.eq("conversationId", membership.conversationId),
-          )
-          .collect();
-        const unreadCount =
-          membership.lastReadAt === undefined
-            ? allMessages.length
-            : allMessages.filter(
-                (m) => m.createdAt > membership.lastReadAt!,
-              ).length;
+        const unreadCount = membership.unreadCount ?? 0;
 
         let otherUser: {
           userId: Id<"users">;
@@ -327,11 +316,13 @@ export const getOrCreateDM = mutation({
       conversationId,
       userId: user._id,
       joinedAt: now,
+      unreadCount: 0,
     });
     await ctx.db.insert("conversationMembers", {
       conversationId,
       userId: args.otherUserId,
       joinedAt: now,
+      unreadCount: 0,
     });
 
     return { _id: conversationId };
@@ -392,6 +383,7 @@ export const createGroup = mutation({
         conversationId,
         userId: memberId,
         joinedAt: now,
+        unreadCount: 0,
       });
     }
 
@@ -444,6 +436,7 @@ export const createOrgChannel = internalMutation({
         conversationId,
         userId: membership.userId,
         joinedAt: now,
+        unreadCount: 0,
       });
     }
 
@@ -498,6 +491,7 @@ export const addMember = mutation({
       conversationId: args.conversationId,
       userId: args.userId,
       joinedAt: Date.now(),
+      unreadCount: 0,
     });
     return { success: true };
   },
@@ -514,7 +508,7 @@ export const markRead = mutation({
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     const member = await requireMembership(ctx, args.conversationId, user._id);
-    await ctx.db.patch(member._id, { lastReadAt: Date.now() });
+    await ctx.db.patch(member._id, { lastReadAt: Date.now(), unreadCount: 0 });
     return { success: true };
   },
 });
@@ -555,7 +549,13 @@ export const send = mutation({
       )
       .collect();
     for (const member of members) {
-      if (member.userId === user._id) continue;
+      if (member.userId === user._id) {
+        await ctx.db.patch(member._id, { unreadCount: 0, lastReadAt: now });
+        continue;
+      }
+      await ctx.db.patch(member._id, {
+        unreadCount: (member.unreadCount ?? 0) + 1,
+      });
       await createNotification(ctx, {
         userId: member.userId,
         type: "message",
