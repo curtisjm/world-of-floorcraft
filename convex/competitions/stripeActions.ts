@@ -101,22 +101,13 @@ export const fulfillStripeWebhook = internalAction({
 
     const session = event.data.object as Stripe.Checkout.Session;
     const registrationIds = parseRegistrationIds(session.metadata);
-    if (registrationIds.length === 0) {
-      // Session metadata was lost or never set; nothing to fulfill on our
-      // side. Acknowledge the event so Stripe stops retrying.
-      return {
-        ok: true,
-        status: 200,
-        body: { received: true, skipped: "no_registrations" },
-      };
-    }
 
     const paymentIntentId =
       typeof session.payment_intent === "string"
         ? session.payment_intent
         : (session.payment_intent?.id ?? undefined);
 
-    await ctx.runMutation(
+    const fulfillment = await ctx.runMutation(
       internal.competitions.payments.fulfillCheckoutSession,
       {
         checkoutSessionId: session.id,
@@ -125,6 +116,14 @@ export const fulfillStripeWebhook = internalAction({
         registrationIds,
       },
     );
+
+    if (fulfillment.status === "skipped") {
+      return {
+        ok: true,
+        status: 200,
+        body: { received: true, skipped: "no_registrations" },
+      };
+    }
 
     return { ok: true, status: 200, body: { received: true } };
   },
@@ -183,6 +182,23 @@ export const createCheckoutSession = action({
         transfer_data: { destination: data.stripeAccountId },
       },
     });
+
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : (session.payment_intent?.id ?? undefined);
+
+    await ctx.runMutation(
+      internal.competitions.payments.persistPendingCheckoutSession,
+      {
+        checkoutSessionId: session.id,
+        paymentIntentId,
+        competitionId: data.competitionId,
+        registrationIds: data.registrationIds,
+        callerUserId: data.callerUserId,
+        amountTotal: data.totalCents,
+      },
+    );
 
     return { url: session.url };
   },
