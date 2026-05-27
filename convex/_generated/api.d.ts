@@ -40,6 +40,7 @@ import type * as competitions_stats from "../competitions/stats.js";
 import type * as competitions_stripeActions from "../competitions/stripeActions.js";
 import type * as competitions_tba from "../competitions/tba.js";
 import type * as competitions_teamMatch from "../competitions/teamMatch.js";
+import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_money from "../lib/money.js";
@@ -102,6 +103,7 @@ declare const fullApi: ApiFromModules<{
   "competitions/stripeActions": typeof competitions_stripeActions;
   "competitions/tba": typeof competitions_tba;
   "competitions/teamMatch": typeof competitions_teamMatch;
+  http: typeof http;
   "lib/auth": typeof lib_auth;
   "lib/errors": typeof lib_errors;
   "lib/money": typeof lib_money;
