@@ -80,26 +80,40 @@ export const list = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    let result;
-    if (args.orgId) {
-      const orgId = args.orgId;
-      result = await ctx.db
+    const result = await (async () => {
+      if (args.orgId && args.status) {
+        const { orgId, status } = args;
+        return ctx.db
+          .query("competitions")
+          .withIndex("by_org_status", (q) =>
+            q.eq("orgId", orgId).eq("status", status),
+          )
+          .order("desc")
+          .paginate(args.paginationOpts);
+      }
+      if (args.orgId) {
+        const { orgId } = args;
+        return ctx.db
+          .query("competitions")
+          .withIndex("by_org", (q) => q.eq("orgId", orgId))
+          .order("desc")
+          .paginate(args.paginationOpts);
+      }
+      if (args.status) {
+        const { status } = args;
+        return ctx.db
+          .query("competitions")
+          .withIndex("by_status", (q) => q.eq("status", status))
+          .order("desc")
+          .paginate(args.paginationOpts);
+      }
+      return ctx.db
         .query("competitions")
-        .withIndex("by_org", (q) => q.eq("orgId", orgId))
         .order("desc")
         .paginate(args.paginationOpts);
-    } else {
-      result = await ctx.db
-        .query("competitions")
-        .order("desc")
-        .paginate(args.paginationOpts);
-    }
-    let items = result.page;
-    if (args.status) {
-      items = items.filter((c) => c.status === args.status);
-    }
+    })();
     const enriched = await Promise.all(
-      items.map(async (c) => {
+      result.page.map(async (c) => {
         const org = await ctx.db.get(c.orgId);
         return {
           ...c,

@@ -133,6 +133,66 @@ describe("competition lifecycle", () => {
     expect(result?.orgSlug).toBe("studio-uno");
   });
 
+  it("list applies status filtering before pagination", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+
+    for (let i = 0; i < 6; i += 1) {
+      const compId = await seedCompetition(t, ALICE, orgId, `Comp ${i}`);
+      if (i % 2 === 1) {
+        await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+          competitionId: compId,
+          status: "advertised",
+        });
+      }
+    }
+
+    const first = await t.query(api.competitions.core.list, {
+      status: "draft",
+      paginationOpts: { numItems: 2, cursor: null },
+    });
+    expect(first.page.map((c) => c.name)).toEqual(["Comp 4", "Comp 2"]);
+    expect(first.isDone).toBe(false);
+
+    const second = await t.query(api.competitions.core.list, {
+      status: "draft",
+      paginationOpts: { numItems: 2, cursor: first.continueCursor },
+    });
+    expect(second.page.map((c) => c.name)).toEqual(["Comp 0"]);
+    expect(second.isDone).toBe(true);
+  });
+
+  it("list applies org and status filtering before pagination", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgA = await seedOrgWithOwner(t, aliceId, { slug: "org-a" });
+    const orgB = await seedOrgWithOwner(t, aliceId, { slug: "org-b" });
+
+    for (let i = 0; i < 6; i += 1) {
+      const compId = await seedCompetition(t, ALICE, orgA, `Org A Comp ${i}`);
+      if (i % 2 === 1) {
+        await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+          competitionId: compId,
+          status: "advertised",
+        });
+      }
+    }
+    await seedCompetition(t, ALICE, orgB, "Org B Newest Draft");
+
+    const result = await t.query(api.competitions.core.list, {
+      orgId: orgA,
+      status: "draft",
+      paginationOpts: { numItems: 2, cursor: null },
+    });
+    expect(result.page.map((c) => c.name)).toEqual([
+      "Org A Comp 4",
+      "Org A Comp 2",
+    ]);
+    expect(result.page.every((c) => c.orgId === orgA && c.status === "draft"))
+      .toBe(true);
+  });
+
   it("update applies provided fields and ignores undefined ones", async () => {
     const t = convexTest(schema, modules);
     const aliceId = await seedUser(t, ALICE);
