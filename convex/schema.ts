@@ -590,7 +590,8 @@ export default defineSchema({
     .index("by_comp_code", ["compCode"])
     .index("by_org", ["orgId"])
     .index("by_status", ["status"])
-    .index("by_status_state", ["status", "state"]),
+    .index("by_status_state", ["status", "state"])
+    .index("by_org_status", ["orgId", "status"]),
 
   competitionDays: defineTable({
     competitionId: v.id("competitions"),
