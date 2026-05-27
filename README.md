@@ -175,9 +175,11 @@ Available as Tailwind utilities: `text-bronze`, `border-silver`, `bg-gold`, etc.
 
 ### Prerequisites
 
-- [Nix](https://nixos.org/download/) with flakes enabled, or Node.js 22+ with pnpm
+- [Nix](https://nixos.org/download/) with flakes enabled, or Node.js 22 with pnpm
+  - Convex Node actions support Node 18/20/22/24; use Node 22 for this project and avoid Node 26.
 - A [Convex](https://www.convex.dev/) account
 - A [Clerk](https://clerk.com/) application with a Convex JWT template
+- Stripe test keys if you are exercising competition payments
 
 ### Setup
 
@@ -189,15 +191,26 @@ direnv allow
 # Install dependencies
 pnpm install
 
-# Set up environment variables
+# Set up local environment variables
 cp .env.example .env.local
-# Add NEXT_PUBLIC_CONVEX_URL (created by `npx convex dev`)
-# Add CLERK_JWT_ISSUER_DOMAIN (from Clerk JWT template settings)
-# Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY from Clerk
-# Add STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET for competition payments
+# Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY from Clerk.
+# NEXT_PUBLIC_CONVEX_URL is written by `npx convex dev`.
+# Add STRIPE_WEBHOOK_SECRET locally only if testing the local webhook route.
 
-# Provision Convex (generates _generated/, validates schema)
-CONVEX_AGENT_MODE=anonymous npx convex dev --once
+# Provision/link Convex with a supported Node version.
+# In the Nix shell you can run `npx convex ...` directly; otherwise use mise to force Node 22.
+# On the first run, Convex may create the deployment and then stop because
+# CLERK_JWT_ISSUER_DOMAIN is not set yet; continue with the env set commands.
+mise exec node@22 -- npx convex dev --once
+
+# Configure backend environment variables on the Convex deployment.
+# CLERK_JWT_ISSUER_DOMAIN is Clerk's Frontend API URL / JWT issuer for the Convex template.
+mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
+mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
+mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
+
+# Validate schema/functions again after Convex env is configured.
+mise exec node@22 -- npx convex dev --once
 
 # Seed syllabus data
 pnpm seed

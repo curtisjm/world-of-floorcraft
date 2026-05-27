@@ -95,14 +95,33 @@ Key patterns:
 - **`t.withIdentity({...})`** — fake an authenticated caller
 - **`t.query(api.x.y, args)` / `t.mutation(...)`** — invoke a Convex function
 
-## Convex Dev Server
+## Convex Dev Server and Validation
 
-For local manual testing, run the Convex dev server:
+Use Node 22 for Convex CLI validation. Convex Node actions support Node
+18/20/22/24; Node 26 is not supported for the Stripe Node actions in
+`convex/competitions/stripeActions.ts`.
 
 ```bash
-CONVEX_AGENT_MODE=anonymous npx convex dev --once   # one-shot regen
-pnpm convex:dev                                     # watch mode
+# One-shot type generation and schema/function validation
+mise exec node@22 -- npx convex dev --once
+
+# Watch mode after the deployment is configured
+pnpm convex:dev
 ```
 
-The first run generates `convex/_generated/`. Keep `pnpm convex:dev` open
-while developing so Convex re-validates as you edit functions.
+`convex dev` writes `NEXT_PUBLIC_CONVEX_URL` to `.env.local` and regenerates
+`convex/_generated/`.
+
+Convex-side auth and Stripe validation need deployment environment variables,
+not just local `.env.local` entries:
+
+```bash
+mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
+mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
+mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
+mise exec node@22 -- npx convex dev --once
+```
+
+Keep `pnpm convex:dev` open while developing so Convex re-validates as you edit
+functions. Convex function tests (`pnpm test`) use `convex-test` and do not need
+live Convex, Clerk, or Stripe services.
