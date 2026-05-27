@@ -14,19 +14,32 @@ test.describe("Auth flow", () => {
     await expect(page.locator(".cl-signUp-root")).toBeVisible({ timeout: 10_000 });
   });
 
-  test("protected route redirects unauthenticated user to sign-in", async ({
-    browser,
-  }) => {
-    // Use a fresh context without the Clerk testing token
-    const context = await browser.newContext();
-    const page = await context.newPage();
+  const unauthenticatedProtectedRoutes = [
+    "/posts/new",
+    "/competitions/create",
+    "/competitions/route-protection-smoke-test/register",
+    "/competitions/route-protection-smoke-test/dashboard",
+    "/partners",
+  ];
 
-    await page.goto("/posts/new");
-    // Clerk middleware should redirect to sign-in
-    await expect(page).toHaveURL(/\/sign-in/, { timeout: 10_000 });
+  for (const route of unauthenticatedProtectedRoutes) {
+    test(`protected route redirects unauthenticated user to sign-in: ${route}`, async ({
+      browser,
+    }) => {
+      // Use a fresh context without the Clerk testing token. These assertions
+      // document that route-level Clerk protection happens before migrated
+      // Convex pages can run authenticated queries and surface UNAUTHORIZED.
+      const context = await browser.newContext();
+      try {
+        const page = await context.newPage();
 
-    await context.close();
-  });
+        await page.goto(route);
+        await expect(page).toHaveURL(/\/sign-in/, { timeout: 10_000 });
+      } finally {
+        await context.close();
+      }
+    });
+  }
 
   test("authenticated user can access protected route", async ({ page }) => {
     await clerk.signIn({
