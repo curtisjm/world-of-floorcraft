@@ -2,8 +2,9 @@
 
 import { ConvexError, v } from "convex/values";
 import Stripe from "stripe";
-import { action } from "../_generated/server";
+import { action, internalAction } from "../_generated/server";
 import { api, internal } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
 
 /**
  * Stripe-facing Convex actions. These run in Node.js because the official
@@ -25,6 +26,109 @@ function getStripe(): Stripe {
   }
   return new Stripe(key);
 }
+
+function getStripeWebhookSecret(): string {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new ConvexError({
+      code: "INTERNAL",
+      message: "Stripe webhook is not configured (STRIPE_WEBHOOK_SECRET missing)",
+    });
+  }
+  return webhookSecret;
+}
+
+function parseRegistrationIds(
+  metadata: Stripe.Metadata | null | undefined,
+): Id<"competitionRegistrations">[] {
+  const raw = metadata?.registrationIds;
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0) as Id<"competitionRegistrations">[];
+}
+
+type WebhookResult =
+  | {
+      ok: true;
+      status: 200;
+      body: { received: true; skipped?: "no_registrations" };
+    }
+  | { ok: false; status: 400 | 503; message: string };
+
+/**
+ * Verify a raw Stripe webhook payload and fulfill completed checkout sessions.
+ *
+ * This is an internal Node action so the public HTTP surface is only the
+ * `/stripe/webhook` HTTP action in `convex/http.ts`, while Stripe SDK work can
+ * still run in Node.js. External callers cannot directly run the fulfillment
+ * mutation; they would need a valid Stripe signature for this raw payload.
+ */
+export const fulfillStripeWebhook = internalAction({
+  args: {
+    payload: v.string(),
+    signature: v.string(),
+  },
+  handler: async (ctx, args): Promise<WebhookResult> => {
+    let stripe: Stripe;
+    let webhookSecret: string;
+    try {
+      stripe = getStripe();
+      webhookSecret = getStripeWebhookSecret();
+    } catch {
+      return {
+        ok: false,
+        status: 503,
+        message: "Stripe webhook not configured",
+      };
+    }
+
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        args.payload,
+        args.signature,
+        webhookSecret,
+      );
+    } catch {
+      return { ok: false, status: 400, message: "Invalid signature" };
+    }
+
+    if (event.type !== "checkout.session.completed") {
+      return { ok: true, status: 200, body: { received: true } };
+    }
+
+    const session = event.data.object as Stripe.Checkout.Session;
+    const registrationIds = parseRegistrationIds(session.metadata);
+    if (registrationIds.length === 0) {
+      // Session metadata was lost or never set; nothing to fulfill on our
+      // side. Acknowledge the event so Stripe stops retrying.
+      return {
+        ok: true,
+        status: 200,
+        body: { received: true, skipped: "no_registrations" },
+      };
+    }
+
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : (session.payment_intent?.id ?? undefined);
+
+    await ctx.runMutation(
+      internal.competitions.payments.fulfillCheckoutSession,
+      {
+        checkoutSessionId: session.id,
+        paymentIntentId,
+        amountTotal: session.amount_total ?? 0,
+        registrationIds,
+      },
+    );
+
+    return { ok: true, status: 200, body: { received: true } };
+  },
+});
 
 /**
  * Start a hosted Stripe Checkout Session for a set of registrations on a

@@ -418,8 +418,7 @@ export const recordRefund = mutation({
 
 /**
  * Idempotent webhook fulfillment for a Stripe Checkout Session. Called from
- * the Next.js `/api/stripe/webhook` route after Stripe-signature
- * verification.
+ * Convex webhook handling after Stripe-signature verification.
  *
  * Idempotency:
  * - If a payment row already exists for `checkoutSessionId`, return it

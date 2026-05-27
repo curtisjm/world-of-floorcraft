@@ -1,68 +1,41 @@
-import Stripe from "stripe";
-import { fetchMutation } from "convex/nextjs";
-import type { FunctionReference } from "convex/server";
-import { internal } from "../../../../../convex/_generated/api";
-import type { Id } from "../../../../../convex/_generated/dataModel";
-
 /**
- * `fetchMutation` is typed to accept public references only. Cast the
- * internal fulfillment mutation through the public-mutation type so the call
- * type-checks. The runtime accepts any function reference; the route is
- * gated by Stripe signature verification above, so unauthenticated callers
- * cannot reach this mutation.
- */
-const fulfillRef =
-  internal.competitions.payments.fulfillCheckoutSession as unknown as FunctionReference<
-    "mutation",
-    "public",
-    {
-      checkoutSessionId: string;
-      paymentIntentId?: string;
-      amountTotal: number;
-      registrationIds: Id<"competitionRegistrations">[];
-    },
-    unknown
-  >;
-
-/**
- * Stripe webhook fulfillment endpoint (Task 11 of the Convex migration).
+ * Compatibility endpoint for Stripe webhook deliveries configured against the
+ * Next.js app. Fulfillment now happens inside Convex: the Convex HTTP action
+ * verifies the Stripe signature, then calls the internal mutation from a
+ * server-only Convex context.
  *
- * Stripe POSTs verified payment events here after a hosted Checkout Session
- * completes. We verify the signature with the official Stripe SDK and then
- * forward the verified event payload to the internal Convex mutation
- * `fulfillCheckoutSession`, which is idempotent by Checkout Session id and
- * PaymentIntent id. Replays from Stripe (or our own retries) never duplicate
- * payment rows or re-mark a registration paid.
- *
- * The route must run in Node.js because the Stripe SDK uses Node primitives,
- * and we must read the raw request body before parsing — Next.js' default
- * JSON parsing would invalidate the signature.
+ * Keep the raw body unchanged while proxying, because Stripe signatures cover
+ * the exact request payload.
  */
 
 export const runtime = "nodejs";
-// Stripe's signature verifies the raw bytes; do not cache, parse, or modify
-// the body upstream.
 export const dynamic = "force-dynamic";
 
-function getStripeOrNull(): {
-  stripe: Stripe;
-  webhookSecret: string;
-} | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secretKey || !webhookSecret) return null;
-  return { stripe: new Stripe(secretKey), webhookSecret };
+const STRIPE_WEBHOOK_PATH = "/stripe/webhook";
+
+function stripTrailingSlash(value: string): string {
+  return value.replace(/\/$/, "");
 }
 
-function parseRegistrationIds(
-  metadata: Stripe.Metadata | null | undefined,
-): Id<"competitionRegistrations">[] {
-  const raw = metadata?.registrationIds;
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0) as Id<"competitionRegistrations">[];
+function getConvexSiteUrl(): string | null {
+  const explicit =
+    process.env.NEXT_PUBLIC_CONVEX_SITE_URL ??
+    process.env.CONVEX_SITE_URL ??
+    process.env.CONVEX_HTTP_URL;
+  if (explicit) return stripTrailingSlash(explicit);
+
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  if (!convexUrl) return null;
+
+  try {
+    const url = new URL(convexUrl);
+    if (url.hostname.endsWith(".convex.cloud")) {
+      url.hostname = url.hostname.replace(/\.convex\.cloud$/, ".convex.site");
+    }
+    return url.origin;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request: Request) {
@@ -71,44 +44,32 @@ export async function POST(request: Request) {
     return new Response("Missing signature", { status: 400 });
   }
 
-  const config = getStripeOrNull();
-  if (!config) {
-    return new Response("Stripe webhook not configured", { status: 503 });
+  const convexSiteUrl = getConvexSiteUrl();
+  if (!convexSiteUrl) {
+    return new Response("Convex webhook URL not configured", { status: 503 });
   }
 
   const body = await request.text();
-  let event: Stripe.Event;
+  const contentType = request.headers.get("content-type") ?? "application/json";
+
+  let response: Response;
   try {
-    event = config.stripe.webhooks.constructEvent(
+    response = await fetch(`${convexSiteUrl}${STRIPE_WEBHOOK_PATH}`, {
+      method: "POST",
       body,
-      signature,
-      config.webhookSecret,
-    );
-  } catch {
-    return new Response("Invalid signature", { status: 400 });
-  }
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const registrationIds = parseRegistrationIds(session.metadata);
-    if (registrationIds.length === 0) {
-      // Session metadata was lost or never set; nothing to fulfill on our
-      // side. Acknowledge the event so Stripe stops retrying.
-      return Response.json({ received: true, skipped: "no_registrations" });
-    }
-
-    const paymentIntentId =
-      typeof session.payment_intent === "string"
-        ? session.payment_intent
-        : (session.payment_intent?.id ?? undefined);
-
-    await fetchMutation(fulfillRef, {
-      checkoutSessionId: session.id,
-      paymentIntentId,
-      amountTotal: session.amount_total ?? 0,
-      registrationIds,
+      headers: {
+        "content-type": contentType,
+        "stripe-signature": signature,
+      },
     });
+  } catch {
+    return new Response("Convex webhook unavailable", { status: 502 });
   }
 
-  return Response.json({ received: true });
+  return new Response(await response.text(), {
+    status: response.status,
+    headers: {
+      "content-type": response.headers.get("content-type") ?? "text/plain",
+    },
+  });
 }
