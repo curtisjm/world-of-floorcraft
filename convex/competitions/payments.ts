@@ -4,9 +4,10 @@ import {
   mutation,
   query,
 } from "../_generated/server";
+import type { MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { getCurrentUser } from "../lib/auth";
-import { badRequest, notFound } from "../lib/errors";
+import { badRequest, forbidden, notFound } from "../lib/errors";
 import {
   requireCompOrgRole,
   requireCompStaffRole,
@@ -27,6 +28,93 @@ import { dollarsToCents } from "../lib/money";
  * idempotent fulfillment mutation here is what those actions and the Next.js
  * webhook route eventually persist to.
  */
+
+async function callerCanManageCheckout(
+  ctx: MutationCtx,
+  competition: Doc<"competitions">,
+  callerUserId: Id<"users">,
+): Promise<boolean> {
+  const org = await ctx.db.get(competition.orgId);
+  if (org?.ownerId === callerUserId) return true;
+
+  const membership = await ctx.db
+    .query("memberships")
+    .withIndex("by_org_user", (q) =>
+      q.eq("orgId", competition.orgId).eq("userId", callerUserId),
+    )
+    .unique();
+  if (membership?.role === "admin") return true;
+
+  const staffRows = await ctx.db
+    .query("competitionStaff")
+    .withIndex("by_competition_user_role", (q) =>
+      q.eq("competitionId", competition._id).eq("userId", callerUserId),
+    )
+    .collect();
+  return staffRows.some(
+    (staff) => staff.role === "registration" || staff.role === "scrutineer",
+  );
+}
+
+async function findPendingCheckoutSession(
+  ctx: MutationCtx,
+  checkoutSessionId: string,
+  paymentIntentId?: string,
+): Promise<Doc<"stripeCheckoutSessions"> | null> {
+  const bySession = await ctx.db
+    .query("stripeCheckoutSessions")
+    .withIndex("by_stripe_checkout_session", (q) =>
+      q.eq("stripeCheckoutSessionId", checkoutSessionId),
+    )
+    .unique();
+  if (bySession) return bySession;
+
+  if (!paymentIntentId) return null;
+  return await ctx.db
+    .query("stripeCheckoutSessions")
+    .withIndex("by_stripe_payment_intent", (q) =>
+      q.eq("stripePaymentIntentId", paymentIntentId),
+    )
+    .unique();
+}
+
+async function markCheckoutSessionFulfilled(
+  ctx: MutationCtx,
+  pending: Doc<"stripeCheckoutSessions"> | null,
+  paymentId: Id<"payments">,
+  paymentIntentId?: string,
+) {
+  if (!pending || pending.status === "fulfilled") return;
+  const now = Date.now();
+  const patch: {
+    status: "fulfilled";
+    paymentId: Id<"payments">;
+    updatedAt: number;
+    fulfilledAt: number;
+    stripePaymentIntentId?: string;
+  } = {
+    status: "fulfilled",
+    paymentId,
+    updatedAt: now,
+    fulfilledAt: now,
+  };
+  if (paymentIntentId && !pending.stripePaymentIntentId) {
+    patch.stripePaymentIntentId = paymentIntentId;
+  }
+  await ctx.db.patch(pending._id, patch);
+}
+
+async function markRegistrationsPaid(
+  ctx: MutationCtx,
+  registrationIds: Id<"competitionRegistrations">[],
+) {
+  for (const regId of registrationIds) {
+    const reg = await ctx.db.get(regId);
+    if (reg && !reg.paidConfirmed) {
+      await ctx.db.patch(regId, { paidConfirmed: true });
+    }
+  }
+}
 
 // ── Queries ─────────────────────────────────────────────────────────
 
@@ -442,7 +530,17 @@ export const fulfillCheckoutSession = internalMutation({
     registrationIds: v.array(v.id("competitionRegistrations")),
   },
   handler: async (ctx, args) => {
-    if (args.registrationIds.length === 0) {
+    const pending = await findPendingCheckoutSession(
+      ctx,
+      args.checkoutSessionId,
+      args.paymentIntentId,
+    );
+    const registrationIds =
+      pending && pending.registrationIds.length > 0
+        ? pending.registrationIds
+        : args.registrationIds;
+
+    if (registrationIds.length === 0) {
       return { status: "skipped", reason: "no_registration_ids" } as const;
     }
 
@@ -453,6 +551,12 @@ export const fulfillCheckoutSession = internalMutation({
       )
       .unique();
     if (bySession) {
+      await markCheckoutSessionFulfilled(
+        ctx,
+        pending,
+        bySession._id,
+        args.paymentIntentId,
+      );
       return { status: "already_fulfilled", paymentId: bySession._id } as const;
     }
 
@@ -467,6 +571,13 @@ export const fulfillCheckoutSession = internalMutation({
         await ctx.db.patch(byIntent._id, {
           stripeCheckoutSessionId: args.checkoutSessionId,
         });
+        await markRegistrationsPaid(ctx, registrationIds);
+        await markCheckoutSessionFulfilled(
+          ctx,
+          pending,
+          byIntent._id,
+          args.paymentIntentId,
+        );
         return {
           status: "linked_existing_intent",
           paymentId: byIntent._id,
@@ -477,7 +588,7 @@ export const fulfillCheckoutSession = internalMutation({
     // Brand new fulfillment — insert one online payment row. When the session
     // covers multiple registrations, attach the row to the first one (the
     // legacy implementation made the same choice) and mark all of them paid.
-    const primaryId = args.registrationIds[0]!;
+    const primaryId = registrationIds[0]!;
     const primaryReg = await ctx.db.get(primaryId);
     if (!primaryReg) notFound("Registration not found");
 
@@ -490,14 +601,66 @@ export const fulfillCheckoutSession = internalMutation({
       createdAt: Date.now(),
     });
 
-    for (const regId of args.registrationIds) {
-      const reg = await ctx.db.get(regId);
-      if (reg && !reg.paidConfirmed) {
-        await ctx.db.patch(regId, { paidConfirmed: true });
-      }
-    }
+    await markRegistrationsPaid(ctx, registrationIds);
+    await markCheckoutSessionFulfilled(
+      ctx,
+      pending,
+      paymentId,
+      args.paymentIntentId,
+    );
 
     return { status: "fulfilled", paymentId } as const;
+  },
+});
+
+/**
+ * Persist the Checkout Session correlation immediately after Stripe creates
+ * the hosted session, before returning its URL to the browser. Webhook
+ * fulfillment can then recover the authorized registration ids even if Stripe
+ * metadata is missing or malformed.
+ */
+export const persistPendingCheckoutSession = internalMutation({
+  args: {
+    checkoutSessionId: v.string(),
+    paymentIntentId: v.optional(v.string()),
+    competitionId: v.id("competitions"),
+    registrationIds: v.array(v.id("competitionRegistrations")),
+    callerUserId: v.id("users"),
+    amountTotal: v.number(),
+  },
+  handler: async (ctx, args) => {
+    if (args.registrationIds.length === 0) {
+      badRequest("registrationIds is required");
+    }
+
+    const now = Date.now();
+    const existing = await findPendingCheckoutSession(
+      ctx,
+      args.checkoutSessionId,
+      args.paymentIntentId,
+    );
+
+    const patch = {
+      stripeCheckoutSessionId: args.checkoutSessionId,
+      stripePaymentIntentId: args.paymentIntentId,
+      competitionId: args.competitionId,
+      registrationIds: args.registrationIds,
+      callerUserId: args.callerUserId,
+      amountTotal: args.amountTotal,
+      updatedAt: now,
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, patch);
+      return await ctx.db.get(existing._id);
+    }
+
+    const id = await ctx.db.insert("stripeCheckoutSessions", {
+      ...patch,
+      status: "pending",
+      createdAt: now,
+    });
+    return await ctx.db.get(id);
   },
 });
 
@@ -556,6 +719,20 @@ export const loadCheckoutData = internalMutation({
 
     if (!comp.stripeAccountId || !comp.stripeOnboardingComplete) {
       badRequest("Competition has not set up online payments");
+    }
+
+    const ownsEveryRegistration = regs.every(
+      (reg) => reg.userId === args.callerUserId,
+    );
+    if (!ownsEveryRegistration) {
+      const canManageCheckout = await callerCanManageCheckout(
+        ctx,
+        comp,
+        args.callerUserId,
+      );
+      if (!canManageCheckout) {
+        forbidden("Cannot check out registrations for another user");
+      }
     }
 
     const totalCents = regs.reduce((sum, r) => sum + r.amountOwed, 0);

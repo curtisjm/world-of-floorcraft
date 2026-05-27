@@ -118,6 +118,22 @@ async function seedRegistration(
   );
 }
 
+async function seedCompetitionStaff(
+  t: T,
+  compId: Id<"competitions">,
+  userId: Id<"users">,
+  role: "registration" | "scrutineer" = "registration",
+): Promise<void> {
+  await t.run((ctx) =>
+    ctx.db.insert("competitionStaff", {
+      competitionId: compId,
+      userId,
+      role,
+      createdAt: Date.now(),
+    }),
+  );
+}
+
 // ── recordManual ─────────────────────────────────────────────────────
 
 describe("recordManual", () => {
@@ -760,6 +776,61 @@ describe("fulfillCheckoutSession", () => {
     );
     expect(result.status).toBe("skipped");
   });
+
+  it("uses a persisted pending checkout session when webhook metadata has no registrations", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const regId = await seedRegistration(t, compId, bobId, { amountOwed: 5000 });
+
+    await t.mutation(
+      internal.competitions.payments.persistPendingCheckoutSession,
+      {
+        checkoutSessionId: "cs_pending",
+        competitionId: compId,
+        registrationIds: [regId],
+        callerUserId: bobId,
+        amountTotal: 5000,
+      },
+    );
+
+    const result = await t.mutation(
+      internal.competitions.payments.fulfillCheckoutSession,
+      {
+        checkoutSessionId: "cs_pending",
+        paymentIntentId: "pi_pending",
+        amountTotal: 5000,
+        registrationIds: [],
+      },
+    );
+    expect(result.status).toBe("fulfilled");
+
+    const pending = await t.run((ctx) =>
+      ctx.db
+        .query("stripeCheckoutSessions")
+        .withIndex("by_stripe_checkout_session", (q) =>
+          q.eq("stripeCheckoutSessionId", "cs_pending"),
+        )
+        .unique(),
+    );
+    expect(pending?.status).toBe("fulfilled");
+    expect(pending?.stripePaymentIntentId).toBe("pi_pending");
+    expect(pending?.paymentId).toBe(result.paymentId);
+
+    const rows = await t.run((ctx) =>
+      ctx.db
+        .query("payments")
+        .withIndex("by_registration", (q) => q.eq("registrationId", regId))
+        .collect(),
+    );
+    expect(rows.length).toBe(1);
+    expect(rows[0]?.stripeCheckoutSessionId).toBe("cs_pending");
+
+    const reg = await t.run((ctx) => ctx.db.get(regId));
+    expect(reg?.paidConfirmed).toBe(true);
+  });
 });
 
 // ── loadCheckoutData ─────────────────────────────────────────────────
@@ -775,15 +846,7 @@ describe("loadCheckoutData", () => {
       stripeOnboardingComplete: true,
     });
     const reg1 = await seedRegistration(t, compId, bobId, { amountOwed: 5000 });
-    const reg2 = await seedRegistration(
-      t,
-      compId,
-      await seedUser(t, {
-        tokenIdentifier: "https://clerk.example.com|user_carol",
-        subject: "user_carol",
-      }),
-      { amountOwed: 3000 },
-    );
+    const reg2 = await seedRegistration(t, compId, bobId, { amountOwed: 3000 });
 
     const data = await t.mutation(
       internal.competitions.payments.loadCheckoutData,
@@ -796,6 +859,65 @@ describe("loadCheckoutData", () => {
     expect(data.stripeAccountId).toBe("acct_test");
     expect(data.competitionId).toBe(compId);
     expect(data.registrationIds.sort()).toEqual([reg1, reg2].sort());
+  });
+
+  it("rejects a caller who does not own every requested registration", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const carolId = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|user_carol",
+      subject: "user_carol",
+    });
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    const bobReg = await seedRegistration(t, compId, bobId, { amountOwed: 5000 });
+    const carolReg = await seedRegistration(t, compId, carolId, {
+      amountOwed: 3000,
+    });
+
+    await expect(
+      t.mutation(internal.competitions.payments.loadCheckoutData, {
+        registrationIds: [bobReg, carolReg],
+        callerUserId: bobId,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("allows competition registration staff to load checkout data for other users", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const carolId = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|user_carol",
+      subject: "user_carol",
+    });
+    const staffId = await seedUser(t, {
+      tokenIdentifier: "https://clerk.example.com|user_staff",
+      subject: "user_staff",
+    });
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    await seedCompetitionStaff(t, compId, staffId, "registration");
+    const bobReg = await seedRegistration(t, compId, bobId, { amountOwed: 5000 });
+    const carolReg = await seedRegistration(t, compId, carolId, {
+      amountOwed: 3000,
+    });
+
+    const data = await t.mutation(
+      internal.competitions.payments.loadCheckoutData,
+      {
+        registrationIds: [bobReg, carolReg],
+        callerUserId: staffId,
+      },
+    );
+    expect(data.totalCents).toBe(8000);
   });
 
   it("rejects when the competition has not finished Stripe onboarding", async () => {

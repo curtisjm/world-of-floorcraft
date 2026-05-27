@@ -672,6 +672,22 @@ export default defineSchema({
     .index("by_stripe_checkout_session", ["stripeCheckoutSessionId"])
     .index("by_stripe_payment_intent", ["stripePaymentIntentId"]),
 
+  stripeCheckoutSessions: defineTable({
+    stripeCheckoutSessionId: v.string(),
+    stripePaymentIntentId: v.optional(v.string()),
+    competitionId: v.id("competitions"),
+    registrationIds: v.array(v.id("competitionRegistrations")),
+    callerUserId: v.id("users"),
+    amountTotal: v.number(), // cents expected at Checkout creation time
+    status: v.union(v.literal("pending"), v.literal("fulfilled")),
+    paymentId: v.optional(v.id("payments")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    fulfilledAt: v.optional(v.number()),
+  })
+    .index("by_stripe_checkout_session", ["stripeCheckoutSessionId"])
+    .index("by_stripe_payment_intent", ["stripePaymentIntentId"]),
+
   tbaListings: defineTable({
     competitionId: v.id("competitions"),
     userId: v.id("users"),

@@ -80,6 +80,23 @@ export const createCheckoutSession = action({
       },
     });
 
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : (session.payment_intent?.id ?? undefined);
+
+    await ctx.runMutation(
+      internal.competitions.payments.persistPendingCheckoutSession,
+      {
+        checkoutSessionId: session.id,
+        paymentIntentId,
+        competitionId: data.competitionId,
+        registrationIds: data.registrationIds,
+        callerUserId: data.callerUserId,
+        amountTotal: data.totalCents,
+      },
+    );
+
     return { url: session.url };
   },
 });

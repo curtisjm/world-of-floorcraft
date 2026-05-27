@@ -91,11 +91,6 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const registrationIds = parseRegistrationIds(session.metadata);
-    if (registrationIds.length === 0) {
-      // Session metadata was lost or never set; nothing to fulfill on our
-      // side. Acknowledge the event so Stripe stops retrying.
-      return Response.json({ received: true, skipped: "no_registrations" });
-    }
 
     const paymentIntentId =
       typeof session.payment_intent === "string"
