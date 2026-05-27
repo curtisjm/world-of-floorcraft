@@ -47,6 +47,7 @@ import type * as lib_money from "../lib/money.js";
 import type * as lib_pagination from "../lib/pagination.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_postAccess from "../lib/postAccess.js";
+import type * as lib_search from "../lib/search.js";
 import type * as lib_time from "../lib/time.js";
 import type * as messaging from "../messaging.js";
 import type * as orgs from "../orgs.js";
@@ -110,6 +111,7 @@ declare const fullApi: ApiFromModules<{
   "lib/pagination": typeof lib_pagination;
   "lib/permissions": typeof lib_permissions;
   "lib/postAccess": typeof lib_postAccess;
+  "lib/search": typeof lib_search;
   "lib/time": typeof lib_time;
   messaging: typeof messaging;
   orgs: typeof orgs;

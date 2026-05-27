@@ -431,6 +431,42 @@ describe("feeds", () => {
     expect(second.posts).toHaveLength(1);
     expect(second.nextCursor).toBeNull();
   });
+
+  it("followingFeed paginates followed-user posts without returning unrelated posts", async () => {
+    const t = convexTest(schema, modules);
+    const alice = await seedUser(t, ALICE, { username: "alice" });
+    const bob = await seedUser(t, BOB, { username: "bob" });
+    await seedUser(t, CAROL, { username: "carol" });
+    await seedFollow(t, alice, bob);
+
+    for (let i = 0; i < 3; i += 1) {
+      await t.withIdentity(BOB).mutation(api.social.posts.createArticle, {
+        title: `bob-${i}`,
+        body: "Body",
+        publish: true,
+      });
+    }
+    await t.withIdentity(CAROL).mutation(api.social.posts.createArticle, {
+      title: "carol-unrelated",
+      body: "Body",
+      publish: true,
+    });
+
+    const first = await t
+      .withIdentity(ALICE)
+      .query(api.social.posts.followingFeed, { limit: 2 });
+    expect(first.posts).toHaveLength(2);
+    expect(first.posts.every((p) => p.title?.startsWith("bob-"))).toBe(true);
+    expect(first.nextCursor).not.toBeNull();
+
+    const second = await t.withIdentity(ALICE).query(api.social.posts.followingFeed, {
+      limit: 2,
+      cursor: first.nextCursor!,
+    });
+    expect(second.posts).toHaveLength(1);
+    expect(second.posts[0].title?.startsWith("bob-")).toBe(true);
+    expect(second.nextCursor).toBeNull();
+  });
 });
 
 // ── comments ────────────────────────────────────────────────────────
@@ -807,6 +843,44 @@ describe("partnerSearch", () => {
       "bob",
       "carol",
     ]);
+  });
+
+  it("discover filters by indexed location prefixes and paginates", async () => {
+    const t = convexTest(schema, modules);
+    await seedUser(t, ALICE, { username: "alice" });
+    await seedUser(t, BOB, { username: "bob" });
+    await seedUser(t, CAROL, { username: "carol" });
+
+    await t.withIdentity(ALICE).mutation(api.social.partnerSearch.upsert, {
+      danceStyles: ["standard"],
+      location: "Chicago, IL",
+      rolePreference: "lead",
+    });
+    await t.withIdentity(BOB).mutation(api.social.partnerSearch.upsert, {
+      danceStyles: ["latin"],
+      location: "Chicago suburbs",
+      rolePreference: "follow",
+    });
+    await t.withIdentity(CAROL).mutation(api.social.partnerSearch.upsert, {
+      danceStyles: ["standard"],
+      location: "Boston, MA",
+      rolePreference: "both",
+    });
+
+    const first = await t.withIdentity(CAROL).query(api.social.partnerSearch.discover, {
+      location: "chi",
+      limit: 1,
+    });
+    expect(first.items.map((i) => i.username)).toEqual(["bob"]);
+    expect(first.nextCursor).not.toBeNull();
+
+    const second = await t.withIdentity(CAROL).query(api.social.partnerSearch.discover, {
+      location: "chi",
+      limit: 1,
+      cursor: first.nextCursor!,
+    });
+    expect(second.items.map((i) => i.username)).toEqual(["alice"]);
+    expect(second.nextCursor).toBeNull();
   });
 });
 

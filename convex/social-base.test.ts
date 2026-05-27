@@ -4,6 +4,7 @@ import schema from "./schema";
 import { modules } from "./test.setup";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { buildUserSearchText } from "./lib/search";
 
 // Task 5 of the Convex migration: social identity, profiles, follows, and the
 // notification base. These tests pin the behavior ported from the Drizzle/tRPC
@@ -55,6 +56,7 @@ async function seedUser(
       createdAt: Date.now(),
       updatedAt: Date.now(),
       ...overrides,
+      searchText: buildUserSearchText(overrides),
     }),
   );
 }
