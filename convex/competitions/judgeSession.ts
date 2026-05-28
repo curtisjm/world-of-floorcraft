@@ -8,7 +8,13 @@ import {
   hashToken,
   requireJudgeAuth,
 } from "./lib/judgeAuth";
-import { upsertJudgeSubmission, writeFinalMarks } from "./scoring";
+import {
+  loadRoundEventForCompetition,
+  upsertJudgeSubmission,
+  validateDanceNamesForEvent,
+  validateEntriesBelongToEvent,
+  writeFinalMarks,
+} from "./scoring";
 
 /**
  * Judge tablet authentication and submission API — ported from
@@ -329,6 +335,16 @@ export const submitCallbackMarks = mutation({
     if (!active) {
       badRequest("This round is not currently active");
     }
+    const { event } = await loadRoundEventForCompetition(
+      ctx,
+      args.roundId,
+      payload.competitionId,
+    );
+    await validateEntriesBelongToEvent(
+      ctx,
+      event._id,
+      args.marks.map((m) => m.entryId),
+    );
 
     const existing = await ctx.db
       .query("callbackMarks")
@@ -400,6 +416,21 @@ export const submitFinalMarks = mutation({
     if (!active) {
       badRequest("This round is not currently active");
     }
+    const { event } = await loadRoundEventForCompetition(
+      ctx,
+      args.roundId,
+      payload.competitionId,
+    );
+    await validateEntriesBelongToEvent(
+      ctx,
+      event._id,
+      args.marks.map((m) => m.entryId),
+    );
+    await validateDanceNamesForEvent(
+      ctx,
+      event._id,
+      args.marks.map((m) => m.danceName),
+    );
 
     const existing = await ctx.db
       .query("finalMarks")

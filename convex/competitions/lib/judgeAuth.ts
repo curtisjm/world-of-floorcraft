@@ -19,17 +19,25 @@ import { SignJWT, jwtVerify } from "jose";
 import type { Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 
+const MIN_JWT_SECRET_LENGTH = 32;
+
 let _jwtSecret: Uint8Array | null = null;
 
 function getJwtSecret(): Uint8Array {
+  const secret = process.env.JUDGE_JWT_SECRET;
+  if (!secret) {
+    throw new Error(
+      "JUDGE_JWT_SECRET environment variable is required. " +
+        "Set it to a strong random string (min 32 characters).",
+    );
+  }
+  if (secret.length < MIN_JWT_SECRET_LENGTH) {
+    throw new Error(
+      "JUDGE_JWT_SECRET must be at least 32 characters long. " +
+        "Set it to a strong random string (min 32 characters).",
+    );
+  }
   if (!_jwtSecret) {
-    const secret = process.env.JUDGE_JWT_SECRET;
-    if (!secret) {
-      throw new Error(
-        "JUDGE_JWT_SECRET environment variable is required. " +
-          "Set it to a strong random string (min 32 characters).",
-      );
-    }
     _jwtSecret = new TextEncoder().encode(secret);
   }
   return _jwtSecret;
@@ -54,8 +62,9 @@ export async function createJudgeToken(
 export async function verifyJudgeToken(
   token: string,
 ): Promise<JudgeTokenPayload> {
+  const jwtSecret = getJwtSecret();
   try {
-    const { payload } = await jwtVerify(token, getJwtSecret());
+    const { payload } = await jwtVerify(token, jwtSecret);
     return {
       competitionId: payload.competitionId as Id<"competitions">,
       judgeId: payload.judgeId as Id<"judges">,
