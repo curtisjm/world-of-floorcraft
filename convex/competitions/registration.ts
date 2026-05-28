@@ -4,6 +4,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import { getCurrentUser } from "../lib/auth";
 import { notFound } from "../lib/errors";
 import { requireCompOrgRole, requireCompStaffRole } from "../lib/permissions";
+import { buildUserSearchText } from "../lib/search";
 
 /**
  * Competition registrations + pricing tier management + check-in. Ported
@@ -252,6 +253,9 @@ export const getById = query({
   },
 });
 
+const PARTNER_SEARCH_LIMIT = 20;
+const PARTNER_SEARCH_CANDIDATE_LIMIT = 100;
+
 /** Search the global user directory for partners, excluding self. */
 export const searchPartners = query({
   args: {
@@ -260,16 +264,23 @@ export const searchPartners = query({
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
-    const needle = args.query.trim().toLowerCase();
-    if (needle.length === 0) return [];
-    const usersList = await ctx.db.query("users").collect();
-    const matches = usersList.filter(
-      (u) =>
-        u._id !== user._id &&
-        ((u.username ?? "").toLowerCase().includes(needle) ||
-          (u.displayName ?? "").toLowerCase().includes(needle)),
-    );
-    const limited = matches.slice(0, 20);
+    const q = args.query.trim();
+    if (q.length === 0 || q.length > 100) return [];
+
+    const needle = buildUserSearchText({ username: q, displayName: undefined });
+    if (!needle) return [];
+
+    const matches = await ctx.db
+      .query("users")
+      .withSearchIndex("search_profile", (qq) =>
+        qq.search("searchText", needle),
+      )
+      .take(PARTNER_SEARCH_CANDIDATE_LIMIT + 1);
+
+    const limited = matches
+      .filter((u) => u._id !== user._id)
+      .slice(0, PARTNER_SEARCH_LIMIT);
+
     return await Promise.all(
       limited.map(async (u) => {
         const reg = await ctx.db

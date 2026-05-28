@@ -4,6 +4,7 @@ import schema from "../schema";
 import { modules } from "../test.setup";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { buildUserSearchText } from "../lib/search";
 
 // Task 9 of the Convex migration: competition core workflows. These tests
 // pin the behavior ported from the Drizzle/tRPC `competition`, `schedule`,
@@ -42,6 +43,7 @@ async function seedUser(
       createdAt: Date.now(),
       updatedAt: Date.now(),
       ...overrides,
+      searchText: buildUserSearchText(overrides),
     }),
   );
 }
@@ -479,9 +481,18 @@ describe("judges and staff", () => {
 
 describe("registration + entries", () => {
   async function setupAcceptingComp(t: T) {
-    const aliceId = await seedUser(t, ALICE, { username: "alice" });
-    const bobId = await seedUser(t, BOB, { username: "bob" });
-    const carolId = await seedUser(t, CAROL, { username: "carol" });
+    const aliceId = await seedUser(t, ALICE, {
+      username: "alice",
+      displayName: "Alice Anderson",
+    });
+    const bobId = await seedUser(t, BOB, {
+      username: "bob",
+      displayName: "Bob Brown",
+    });
+    const carolId = await seedUser(t, CAROL, {
+      username: "carol",
+      displayName: "Carol Clark",
+    });
     const orgId = await seedOrgWithOwner(t, aliceId);
     const compId = await seedCompetition(t, ALICE, orgId);
     await t.withIdentity(ALICE).mutation(api.competitions.core.update, {
@@ -548,6 +559,101 @@ describe("registration + entries", () => {
         partnerUserId: carolId,
       });
     expect(first?._id).toBe(second?._id);
+  });
+
+  it("searchPartners matches indexed profiles, excludes self, and scopes registrations", async () => {
+    const t = convexTest(schema, modules);
+    const { bobId, carolId, compId, orgId } = await setupAcceptingComp(t);
+
+    const byDisplayName = await t
+      .withIdentity(BOB)
+      .query(api.competitions.registration.searchPartners, {
+        competitionId: compId,
+        query: "Clark",
+      });
+    expect(byDisplayName.find((r) => r.username === "carol")).toMatchObject({
+      displayName: "Carol Clark",
+      registrationId: null,
+    });
+
+    const byUsername = await t
+      .withIdentity(BOB)
+      .query(api.competitions.registration.searchPartners, {
+        competitionId: compId,
+        query: "carol",
+      });
+    expect(byUsername.find((r) => r.userId === carolId)).toBeDefined();
+
+    const selfResults = await t
+      .withIdentity(BOB)
+      .query(api.competitions.registration.searchPartners, {
+        competitionId: compId,
+        query: "bob",
+      });
+    expect(selfResults.find((r) => r.userId === bobId)).toBeUndefined();
+
+    const otherCompId = await seedCompetition(
+      t,
+      ALICE,
+      orgId,
+      "Autumn Invitational",
+    );
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: otherCompId,
+      status: "accepting_entries",
+    });
+    const { self: otherRegistration } = await t
+      .withIdentity(CAROL)
+      .mutation(api.competitions.registration.register, {
+        competitionId: otherCompId,
+      });
+    expect(otherRegistration).not.toBeNull();
+
+    const withoutTargetRegistration = await t
+      .withIdentity(BOB)
+      .query(api.competitions.registration.searchPartners, {
+        competitionId: compId,
+        query: "carol",
+      });
+    expect(
+      withoutTargetRegistration.find((r) => r.userId === carolId)
+        ?.registrationId,
+    ).toBeNull();
+
+    const targetRegistration = await t
+      .withIdentity(BOB)
+      .mutation(api.competitions.registration.ensurePartnerRegistered, {
+        competitionId: compId,
+        partnerUserId: carolId,
+      });
+    const withTargetRegistration = await t
+      .withIdentity(BOB)
+      .query(api.competitions.registration.searchPartners, {
+        competitionId: compId,
+        query: "carol",
+      });
+    expect(
+      withTargetRegistration.find((r) => r.userId === carolId)
+        ?.registrationId,
+    ).toBe(targetRegistration?._id);
+  });
+
+  it("searchPartners rejects empty and oversized queries", async () => {
+    const t = convexTest(schema, modules);
+    const { compId } = await setupAcceptingComp(t);
+
+    await expect(
+      t.withIdentity(BOB).query(api.competitions.registration.searchPartners, {
+        competitionId: compId,
+        query: "   ",
+      }),
+    ).resolves.toEqual([]);
+    await expect(
+      t.withIdentity(BOB).query(api.competitions.registration.searchPartners, {
+        competitionId: compId,
+        query: "a".repeat(101),
+      }),
+    ).resolves.toEqual([]);
   });
 
   it("bulkCreate inserts entries and re-runs are no-ops", async () => {

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, type QueryCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
+import { buildUserSearchText } from "../lib/search";
 
 /**
  * Public results screens — by competition, by event, by competitor, and
@@ -472,27 +473,32 @@ export const getCompetitorHistory = query({
   },
 });
 
+const COMPETITOR_SEARCH_LIMIT = 20;
+const COMPETITOR_SEARCH_CANDIDATE_LIMIT = 100;
+const COMPETITOR_REGISTRATION_LOOKUP_LIMIT = 100;
+
 export const searchCompetitors = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
     const q = args.query.trim();
     if (q.length === 0 || q.length > 100) return [];
-    const lc = q.toLowerCase();
 
-    const users = await ctx.db.query("users").collect();
-    const matching = users.filter((u) => {
-      return (
-        (u.displayName?.toLowerCase().includes(lc) ?? false) ||
-        (u.username?.toLowerCase().includes(lc) ?? false)
-      );
-    });
+    const needle = buildUserSearchText({ username: q, displayName: undefined });
+    if (!needle) return [];
+
+    const matching = await ctx.db
+      .query("users")
+      .withSearchIndex("search_profile", (qq) =>
+        qq.search("searchText", needle),
+      )
+      .take(COMPETITOR_SEARCH_CANDIDATE_LIMIT);
 
     const enriched = await Promise.all(
       matching.map(async (u) => {
         const regs = await ctx.db
           .query("competitionRegistrations")
           .withIndex("by_user", (qq) => qq.eq("userId", u._id))
-          .collect();
+          .take(COMPETITOR_REGISTRATION_LOOKUP_LIMIT);
         const active = regs.filter((r) => !r.cancelled);
         const compIds = new Set(active.map((r) => r.competitionId));
         return {
@@ -505,6 +511,6 @@ export const searchCompetitors = query({
     );
 
     enriched.sort((a, b) => b.competitionCount - a.competitionCount);
-    return enriched.slice(0, 20);
+    return enriched.slice(0, COMPETITOR_SEARCH_LIMIT);
   },
 });
