@@ -440,6 +440,7 @@ export const recordManual = mutation({
     if (!Number.isFinite(cents)) badRequest("Invalid amount");
 
     const id = await ctx.db.insert("payments", {
+      competitionId: reg.competitionId,
       registrationId: args.registrationId,
       amount: cents,
       method: args.method,
@@ -486,6 +487,7 @@ export const recordRefund = mutation({
     if (!Number.isFinite(cents)) badRequest("Invalid amount");
 
     const id = await ctx.db.insert("payments", {
+      competitionId: reg.competitionId,
       registrationId: args.registrationId,
       amount: -cents,
       method: args.method,
@@ -543,6 +545,10 @@ export const fulfillCheckoutSession = internalMutation({
       return { status: "skipped", reason: "no_registration_ids" } as const;
     }
 
+    const primaryId = registrationIds[0]!;
+    const primaryReg = await ctx.db.get(primaryId);
+    if (!primaryReg) notFound("Registration not found");
+
     const bySession = await ctx.db
       .query("payments")
       .withIndex("by_stripe_checkout_session", (q) =>
@@ -550,6 +556,9 @@ export const fulfillCheckoutSession = internalMutation({
       )
       .unique();
     if (bySession) {
+      if (!bySession.competitionId) {
+        await ctx.db.patch(bySession._id, { competitionId: primaryReg.competitionId });
+      }
       await markCheckoutSessionFulfilled(
         ctx,
         pending,
@@ -568,6 +577,7 @@ export const fulfillCheckoutSession = internalMutation({
         .unique();
       if (byIntent) {
         await ctx.db.patch(byIntent._id, {
+          competitionId: primaryReg.competitionId,
           stripeCheckoutSessionId: args.checkoutSessionId,
         });
         await markRegistrationsPaid(ctx, registrationIds);
@@ -587,11 +597,8 @@ export const fulfillCheckoutSession = internalMutation({
     // Brand new fulfillment — insert one online payment row. When the session
     // covers multiple registrations, attach the row to the first one (the
     // legacy implementation made the same choice) and mark all of them paid.
-    const primaryId = registrationIds[0]!;
-    const primaryReg = await ctx.db.get(primaryId);
-    if (!primaryReg) notFound("Registration not found");
-
     const paymentId = await ctx.db.insert("payments", {
+      competitionId: primaryReg.competitionId,
       registrationId: primaryId,
       amount: args.amountTotal,
       method: "online",

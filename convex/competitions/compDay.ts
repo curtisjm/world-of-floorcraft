@@ -10,6 +10,7 @@ import { badRequest, notFound } from "../lib/errors";
 import { requireCompStaffRole } from "../lib/permissions";
 import { dollarsToCents } from "../lib/money";
 import { announcementNoteType, paymentMethod } from "../schema";
+import { applyApprovedAddDropRequest } from "./integrity";
 
 /**
  * Competition-day workflows for the emcee, deck-captain, and registration
@@ -791,6 +792,7 @@ export const recordOfflinePayment = mutation({
     }
     const cents = dollarsToCents(args.amount);
     const id = await ctx.db.insert("payments", {
+      competitionId: reg.competitionId,
       registrationId: args.registrationId,
       amount: cents,
       method: args.method,
@@ -812,33 +814,7 @@ export const approveAddDrop = mutation({
     ]);
     if (request.status !== "pending") badRequest("Request already resolved");
 
-    if (request.type === "add") {
-      await ctx.db.insert("entries", {
-        eventId: request.eventId,
-        leaderRegistrationId: request.leaderRegistrationId,
-        followerRegistrationId: request.followerRegistrationId,
-        scratched: false,
-        createdBy: user._id,
-        createdAt: Date.now(),
-      });
-    } else {
-      const existing = await ctx.db
-        .query("entries")
-        .withIndex("by_event_couple", (q) =>
-          q
-            .eq("eventId", request.eventId)
-            .eq("leaderRegistrationId", request.leaderRegistrationId)
-            .eq("followerRegistrationId", request.followerRegistrationId),
-        )
-        .collect();
-      for (const e of existing) await ctx.db.delete(e._id);
-    }
-
-    await ctx.db.patch(args.requestId, {
-      status: "approved",
-      reviewedBy: user._id,
-      reviewedAt: Date.now(),
-    });
+    await applyApprovedAddDropRequest(ctx, request, user._id);
     return await ctx.db.get(args.requestId);
   },
 });
@@ -859,6 +835,7 @@ export const rejectAddDrop = mutation({
       status: "rejected",
       reviewedBy: user._id,
       reviewedAt: Date.now(),
+      reviewNotes: args.reason,
     });
     return await ctx.db.get(args.requestId);
   },

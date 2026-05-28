@@ -10,6 +10,7 @@ import { getCurrentUser } from "../lib/auth";
 import { badRequest, notFound } from "../lib/errors";
 import { requireOrgRole } from "../lib/permissions";
 import { addDropType } from "../schema";
+import { computeAffectsRounds, validateAddDropRequest } from "./integrity";
 
 /**
  * Org-scoped views into a competition (schedule of org's entries, finance
@@ -308,13 +309,21 @@ export const submitAddDrop = mutation({
     const user = await getCurrentUser(ctx);
     await requireOrgRole(ctx, args.orgId, "admin");
 
-    const leaderReg = await ctx.db.get(args.leaderRegistrationId);
-    const followerReg = await ctx.db.get(args.followerRegistrationId);
+    const comp = await ctx.db.get(args.competitionId);
+    if (!comp) notFound("Competition not found");
+    const { leaderReg, followerReg } = await validateAddDropRequest(ctx, args);
     const isOrgMember =
-      leaderReg?.orgId === args.orgId || followerReg?.orgId === args.orgId;
+      leaderReg.orgId === args.orgId || followerReg.orgId === args.orgId;
     if (!isOrgMember) {
       badRequest("At least one partner must be a member of this organization");
     }
+
+    const affectsRounds = await computeAffectsRounds(
+      ctx,
+      args.eventId,
+      args.type,
+      comp.maxFinalSize,
+    );
 
     const id = await ctx.db.insert("addDropRequests", {
       competitionId: args.competitionId,
@@ -325,6 +334,7 @@ export const submitAddDrop = mutation({
       followerRegistrationId: args.followerRegistrationId,
       reason: args.reason,
       status: "pending",
+      affectsRounds,
       createdAt: Date.now(),
     });
     return await ctx.db.get(id);

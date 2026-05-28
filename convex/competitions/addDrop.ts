@@ -1,10 +1,14 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query, type QueryCtx } from "../_generated/server";
-import type { Id } from "../_generated/dataModel";
+import { mutation, query } from "../_generated/server";
 import { getCurrentUser } from "../lib/auth";
 import { forbidden, notFound } from "../lib/errors";
 import { requireCompStaffRole } from "../lib/permissions";
 import { addDropType } from "../schema";
+import {
+  applyApprovedAddDropRequest,
+  computeAffectsRounds,
+  validateAddDropRequest,
+} from "./integrity";
 
 /**
  * Add/drop requests submitted after entries close. Ported from
@@ -13,29 +17,6 @@ import { addDropType } from "../schema";
  * event's max final size, so the dashboard can sort safe-vs-needs-review
  * without re-running the count.
  */
-
-const DEFAULT_FINAL_SIZE = 8;
-
-async function computeAffectsRounds(
-  ctx: QueryCtx,
-  eventId: Id<"competitionEvents">,
-  type: "add" | "drop",
-  compMaxFinalSize: number | undefined,
-): Promise<boolean> {
-  const event = await ctx.db.get(eventId);
-  if (!event) return false;
-  const maxFinal =
-    event.maxFinalSize ?? compMaxFinalSize ?? DEFAULT_FINAL_SIZE;
-  const eventEntries = await ctx.db
-    .query("entries")
-    .withIndex("by_event", (q) => q.eq("eventId", eventId))
-    .collect();
-  const active = eventEntries.filter((e) => !e.scratched).length;
-  if (type === "add") {
-    return active === maxFinal;
-  }
-  return active === maxFinal + 1;
-}
 
 // ── Queries ─────────────────────────────────────────────────────────
 
@@ -103,15 +84,7 @@ export const submit = mutation({
       });
     }
 
-    const leaderReg = await ctx.db.get(args.leaderRegistrationId);
-    const followerReg = await ctx.db.get(args.followerRegistrationId);
-    if (!leaderReg || !followerReg) notFound("Registration not found");
-    if (leaderReg.userId === followerReg.userId) {
-      throw new ConvexError({
-        code: "BAD_REQUEST",
-        message: "Leader and follower cannot be the same person",
-      });
-    }
+    const { leaderReg, followerReg } = await validateAddDropRequest(ctx, args);
 
     const isPartner =
       user._id === leaderReg.userId || user._id === followerReg.userId;
@@ -127,28 +100,6 @@ export const submit = mutation({
     }
     if (!isPartner && !isOrgAdmin) {
       forbidden("Must be a partner or org admin to submit add/drop requests");
-    }
-
-    const existingEntry = await ctx.db
-      .query("entries")
-      .withIndex("by_event_couple", (q) =>
-        q
-          .eq("eventId", args.eventId)
-          .eq("leaderRegistrationId", args.leaderRegistrationId)
-          .eq("followerRegistrationId", args.followerRegistrationId),
-      )
-      .unique();
-    if (args.type === "add" && existingEntry) {
-      throw new ConvexError({
-        code: "BAD_REQUEST",
-        message: "Entry already exists for this event",
-      });
-    }
-    if (args.type === "drop" && !existingEntry) {
-      throw new ConvexError({
-        code: "BAD_REQUEST",
-        message: "No entry exists for this event",
-      });
     }
 
     const affectsRounds = await computeAffectsRounds(
@@ -188,33 +139,7 @@ export const approve = mutation({
       });
     }
 
-    if (request.type === "add") {
-      await ctx.db.insert("entries", {
-        eventId: request.eventId,
-        leaderRegistrationId: request.leaderRegistrationId,
-        followerRegistrationId: request.followerRegistrationId,
-        createdAt: Date.now(),
-        createdBy: user._id,
-        scratched: false,
-      });
-    } else {
-      const existing = await ctx.db
-        .query("entries")
-        .withIndex("by_event_couple", (q) =>
-          q
-            .eq("eventId", request.eventId)
-            .eq("leaderRegistrationId", request.leaderRegistrationId)
-            .eq("followerRegistrationId", request.followerRegistrationId),
-        )
-        .unique();
-      if (existing) await ctx.db.delete(existing._id);
-    }
-
-    await ctx.db.patch(args.requestId, {
-      status: "approved",
-      reviewedBy: user._id,
-      reviewedAt: Date.now(),
-    });
+    await applyApprovedAddDropRequest(ctx, request, user._id);
     return await ctx.db.get(args.requestId);
   },
 });
@@ -239,6 +164,7 @@ export const reject = mutation({
       status: "rejected",
       reviewedBy: user._id,
       reviewedAt: Date.now(),
+      reviewNotes: args.reason,
     });
     return await ctx.db.get(args.requestId);
   },
@@ -265,32 +191,7 @@ export const approveAllSafe = mutation({
 
     let approved = 0;
     for (const request of safe) {
-      if (request.type === "add") {
-        await ctx.db.insert("entries", {
-          eventId: request.eventId,
-          leaderRegistrationId: request.leaderRegistrationId,
-          followerRegistrationId: request.followerRegistrationId,
-          createdAt: Date.now(),
-          createdBy: user._id,
-          scratched: false,
-        });
-      } else {
-        const existing = await ctx.db
-          .query("entries")
-          .withIndex("by_event_couple", (q) =>
-            q
-              .eq("eventId", request.eventId)
-              .eq("leaderRegistrationId", request.leaderRegistrationId)
-              .eq("followerRegistrationId", request.followerRegistrationId),
-          )
-          .unique();
-        if (existing) await ctx.db.delete(existing._id);
-      }
-      await ctx.db.patch(request._id, {
-        status: "approved",
-        reviewedBy: user._id,
-        reviewedAt: Date.now(),
-      });
+      await applyApprovedAddDropRequest(ctx, request, user._id);
       approved++;
     }
     return { approved };

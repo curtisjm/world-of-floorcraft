@@ -680,6 +680,7 @@ export default defineSchema({
     .index("by_competition_org", ["competitionId", "orgId"]),
 
   entries: defineTable({
+    competitionId: v.optional(v.id("competitions")),
     eventId: v.id("competitionEvents"),
     leaderRegistrationId: v.id("competitionRegistrations"),
     followerRegistrationId: v.id("competitionRegistrations"),
@@ -687,6 +688,8 @@ export default defineSchema({
     createdBy: v.id("users"),
     scratched: v.boolean(),
   })
+    .index("by_competition", ["competitionId"])
+    .index("by_competition_event", ["competitionId", "eventId"])
     .index("by_event", ["eventId"])
     .index("by_leader", ["leaderRegistrationId"])
     .index("by_follower", ["followerRegistrationId"])
@@ -697,6 +700,7 @@ export default defineSchema({
     ]),
 
   payments: defineTable({
+    competitionId: v.optional(v.id("competitions")),
     registrationId: v.id("competitionRegistrations"),
     amount: v.number(), // cents
     method: paymentMethod,
@@ -708,6 +712,8 @@ export default defineSchema({
     processedBy: v.optional(v.id("users")),
     createdAt: v.number(),
   })
+    .index("by_competition", ["competitionId"])
+    .index("by_competition_registration", ["competitionId", "registrationId"])
     .index("by_registration", ["registrationId"])
     .index("by_stripe_checkout_session", ["stripeCheckoutSessionId"])
     .index("by_stripe_payment_intent", ["stripePaymentIntentId"]),
@@ -756,6 +762,7 @@ export default defineSchema({
     leaderRegistrationId: v.id("competitionRegistrations"),
     followerRegistrationId: v.id("competitionRegistrations"),
     reason: v.optional(v.string()),
+    reviewNotes: v.optional(v.string()),
     status: addDropStatus,
     reviewedBy: v.optional(v.id("users")),
     reviewedAt: v.optional(v.number()),
