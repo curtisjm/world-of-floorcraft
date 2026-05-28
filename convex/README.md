@@ -42,6 +42,7 @@ values on the Convex deployment with `npx convex env set`.
 | `CLERK_SECRET_KEY` | `.env.local` | Clerk secret key used by Next.js/server routes. |
 | `CLERK_JWT_ISSUER_DOMAIN` | Convex deployment env | Clerk Frontend API URL / JWT issuer from https://dashboard.clerk.com/apps/setup/convex. Required by `auth.config.ts`. |
 | `STRIPE_SECRET_KEY` | Convex deployment env | Used by Stripe Node actions. |
+| `STRIPE_CHECKOUT_ALLOWED_ORIGINS` | Convex deployment env | Comma-separated list of allowed app origins for Stripe Checkout success/cancel redirects, for example `https://your-app.example.com,http://localhost:3000`. |
 | `STRIPE_WEBHOOK_SECRET` | Convex deployment env and `.env.local` if using the Next.js webhook route locally | Stripe webhook signing secret. |
 
 Set Convex deployment env before validating functions:
@@ -49,6 +50,7 @@ Set Convex deployment env before validating functions:
 ```bash
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
+mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
 ```
 
@@ -69,6 +71,7 @@ mise exec node@22 -- npx convex dev --once
 # Set the Convex deployment env values, then validate again.
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
+mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
 mise exec node@22 -- npx convex dev --once
 ```
