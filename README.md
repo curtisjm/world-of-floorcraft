@@ -205,8 +205,11 @@ mise exec node@22 -- npx convex dev --once
 
 # Configure backend environment variables on the Convex deployment.
 # CLERK_JWT_ISSUER_DOMAIN is Clerk's Frontend API URL / JWT issuer for the Convex template.
+# STRIPE_CHECKOUT_ALLOWED_ORIGINS is a comma-separated list of allowed app origins
+# for Checkout success/cancel redirects, and must be set on the Convex deployment.
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
+mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
 
 # Validate schema/functions again after Convex env is configured.

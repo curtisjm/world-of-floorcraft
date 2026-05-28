@@ -38,6 +38,7 @@ import type * as competitions_scrutineer from "../competitions/scrutineer.js";
 import type * as competitions_staff from "../competitions/staff.js";
 import type * as competitions_stats from "../competitions/stats.js";
 import type * as competitions_stripeActions from "../competitions/stripeActions.js";
+import type * as competitions_stripeReturnUrls from "../competitions/stripeReturnUrls.js";
 import type * as competitions_tba from "../competitions/tba.js";
 import type * as competitions_teamMatch from "../competitions/teamMatch.js";
 import type * as http from "../http.js";
@@ -102,6 +103,7 @@ declare const fullApi: ApiFromModules<{
   "competitions/staff": typeof competitions_staff;
   "competitions/stats": typeof competitions_stats;
   "competitions/stripeActions": typeof competitions_stripeActions;
+  "competitions/stripeReturnUrls": typeof competitions_stripeReturnUrls;
   "competitions/tba": typeof competitions_tba;
   "competitions/teamMatch": typeof competitions_teamMatch;
   http: typeof http;

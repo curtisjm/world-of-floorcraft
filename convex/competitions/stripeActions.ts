@@ -5,6 +5,10 @@ import Stripe from "stripe";
 import { action, internalAction } from "../_generated/server";
 import { api, internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import {
+  STRIPE_CHECKOUT_ALLOWED_ORIGINS_ENV,
+  validateStripeCheckoutReturnUrls,
+} from "./stripeReturnUrls";
 
 /**
  * Stripe-facing Convex actions. These run in Node.js because the official
@@ -159,6 +163,11 @@ export const createCheckoutSession = action({
       },
     );
 
+    const returnUrls = validateStripeCheckoutReturnUrls(
+      { successUrl: args.successUrl, cancelUrl: args.cancelUrl },
+      process.env[STRIPE_CHECKOUT_ALLOWED_ORIGINS_ENV],
+    );
+
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -172,8 +181,8 @@ export const createCheckoutSession = action({
           quantity: 1,
         },
       ],
-      success_url: args.successUrl,
-      cancel_url: args.cancelUrl,
+      success_url: returnUrls.successUrl,
+      cancel_url: returnUrls.cancelUrl,
       metadata: {
         competitionId: String(data.competitionId),
         registrationIds: data.registrationIds.join(","),
