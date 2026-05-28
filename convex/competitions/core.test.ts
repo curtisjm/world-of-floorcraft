@@ -407,6 +407,184 @@ describe("events", () => {
       "Jive",
     ]);
   });
+
+  it("remove cascades event rounds, heats, marks, results, and entries", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const carolId = await seedUser(t, CAROL);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const event = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.events.create, {
+        competitionId: compId,
+        name: "Bronze Standard Waltz",
+        style: "standard",
+        level: "bronze",
+        eventType: "single_dance",
+        dances: ["Waltz"],
+      });
+
+    const ids = await t.run(async (ctx) => {
+      const leaderRegId = await ctx.db.insert("competitionRegistrations", {
+        competitionId: compId,
+        userId: bobId,
+        amountOwed: 0,
+        paidConfirmed: false,
+        checkedIn: false,
+        registeredAt: Date.now(),
+        registeredBy: bobId,
+        cancelled: false,
+      });
+      const followerRegId = await ctx.db.insert("competitionRegistrations", {
+        competitionId: compId,
+        userId: carolId,
+        amountOwed: 0,
+        paidConfirmed: false,
+        checkedIn: false,
+        registeredAt: Date.now(),
+        registeredBy: carolId,
+        cancelled: false,
+      });
+      const entryId = await ctx.db.insert("entries", {
+        competitionId: compId,
+        eventId: event._id,
+        leaderRegistrationId: leaderRegId,
+        followerRegistrationId: followerRegId,
+        createdAt: Date.now(),
+        createdBy: aliceId,
+        scratched: false,
+      });
+      const judgeId = await ctx.db.insert("judges", {
+        firstName: "Judy",
+        lastName: "Judge",
+        initials: "JJ",
+        createdAt: Date.now(),
+      });
+      const roundId = await ctx.db.insert("rounds", {
+        eventId: event._id,
+        roundType: "final",
+        position: 1,
+        callbacksRequested: 6,
+        status: "completed",
+        heatsApproved: true,
+      });
+      const heatId = await ctx.db.insert("heats", {
+        roundId,
+        heatNumber: 1,
+        status: "completed",
+      });
+      const heatAssignmentId = await ctx.db.insert("heatAssignments", {
+        heatId,
+        entryId,
+      });
+      const eventTimeOverrideId = await ctx.db.insert("eventTimeOverrides", {
+        eventId: event._id,
+        estimatedMinutes: 3,
+      });
+      const callbackMarkId = await ctx.db.insert("callbackMarks", {
+        roundId,
+        judgeId,
+        entryId,
+        marked: true,
+      });
+      const finalMarkId = await ctx.db.insert("finalMarks", {
+        roundId,
+        judgeId,
+        entryId,
+        danceName: "Waltz",
+        placement: 1,
+      });
+      const judgeSubmissionId = await ctx.db.insert("judgeSubmissions", {
+        roundId,
+        judgeId,
+        status: "confirmed",
+      });
+      const callbackResultId = await ctx.db.insert("callbackResults", {
+        roundId,
+        entryId,
+        totalMarks: 1,
+        advanced: true,
+      });
+      const finalResultId = await ctx.db.insert("finalResults", {
+        roundId,
+        entryId,
+        placement: 1,
+      });
+      const tabulationTableId = await ctx.db.insert("tabulationTables", {
+        roundId,
+        entryId,
+        tableData: { rows: [] },
+      });
+      const roundResultsMetaId = await ctx.db.insert("roundResultsMeta", {
+        roundId,
+        status: "computed",
+      });
+      const activeRoundId = await ctx.db.insert("activeRounds", {
+        competitionId: compId,
+        roundId,
+        startedAt: Date.now(),
+      });
+      const markCorrectionId = await ctx.db.insert("markCorrections", {
+        roundId,
+        judgeId,
+        entryId,
+        oldValue: "2",
+        newValue: "1",
+        source: "scrutineer",
+        createdAt: Date.now(),
+      });
+      const deckCheckinId = await ctx.db.insert("deckCaptainCheckins", {
+        roundId,
+        entryId,
+        status: "present",
+        checkedInBy: aliceId,
+        updatedAt: Date.now(),
+      });
+      return {
+        eventId: event._id,
+        entryId,
+        roundId,
+        heatId,
+        heatAssignmentId,
+        eventTimeOverrideId,
+        callbackMarkId,
+        finalMarkId,
+        judgeSubmissionId,
+        callbackResultId,
+        finalResultId,
+        tabulationTableId,
+        roundResultsMetaId,
+        activeRoundId,
+        markCorrectionId,
+        deckCheckinId,
+      };
+    });
+
+    await t.withIdentity(ALICE).mutation(api.competitions.events.remove, {
+      eventId: event._id,
+    });
+
+    await t.run(async (ctx) => {
+      await expect(ctx.db.get(ids.eventId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.entryId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.roundId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.heatId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.heatAssignmentId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.eventTimeOverrideId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.callbackMarkId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.finalMarkId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.judgeSubmissionId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.callbackResultId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.finalResultId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.tabulationTableId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.roundResultsMetaId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.activeRoundId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.markCorrectionId)).resolves.toBeNull();
+      await expect(ctx.db.get(ids.deckCheckinId)).resolves.toBeNull();
+    });
+  });
 });
 
 // ── judges + staff ───────────────────────────────────────────────────
@@ -585,6 +763,7 @@ describe("registration + entries", () => {
         ],
       });
     expect(created).toHaveLength(1);
+    expect(created[0]?.competitionId).toBe(compId);
 
     const repeat = await t
       .withIdentity(BOB)
@@ -598,6 +777,134 @@ describe("registration + entries", () => {
         ],
       });
     expect(repeat[0]?._id).toBe(created[0]?._id);
+  });
+
+  it("bulkCreate rejects a later event from another competition", async () => {
+    const t = convexTest(schema, modules);
+    const { compId, orgId } = await setupAcceptingComp(t);
+    const comp2Id = await seedCompetition(t, ALICE, orgId, "Other Comp");
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: comp2Id,
+      status: "accepting_entries",
+    });
+
+    const eventA = await t.withIdentity(ALICE).mutation(
+      api.competitions.events.create,
+      {
+        competitionId: compId,
+        name: "Bronze Standard Waltz",
+        style: "standard",
+        level: "bronze",
+        eventType: "single_dance",
+        dances: ["Waltz"],
+      },
+    );
+    const eventB = await t.withIdentity(ALICE).mutation(
+      api.competitions.events.create,
+      {
+        competitionId: comp2Id,
+        name: "Bronze Latin Cha Cha",
+        style: "latin",
+        level: "bronze",
+        eventType: "single_dance",
+        dances: ["Cha Cha"],
+      },
+    );
+    const { self: bobReg, partner: carolReg } = await t
+      .withIdentity(BOB)
+      .mutation(api.competitions.registration.register, {
+        competitionId: compId,
+        partnerUsername: "carol",
+      });
+
+    await expect(
+      t.withIdentity(BOB).mutation(api.competitions.entries.bulkCreate, {
+        entries: [
+          {
+            eventId: eventA._id,
+            leaderRegistrationId: bobReg!._id,
+            followerRegistrationId: carolReg!._id,
+          },
+          {
+            eventId: eventB._id,
+            leaderRegistrationId: bobReg!._id,
+            followerRegistrationId: carolReg!._id,
+          },
+        ],
+      }),
+    ).rejects.toThrow();
+
+    const created = await t.run((ctx) =>
+      ctx.db
+        .query("entries")
+        .withIndex("by_event", (q) => q.eq("eventId", eventA._id))
+        .collect(),
+    );
+    expect(created).toHaveLength(0);
+  });
+
+  it("stats aggregates competition-scoped entries and payments", async () => {
+    const t = convexTest(schema, modules);
+    const { compId } = await setupAcceptingComp(t);
+
+    const eventA = await t.withIdentity(ALICE).mutation(
+      api.competitions.events.create,
+      {
+        competitionId: compId,
+        name: "Bronze Standard Waltz",
+        style: "standard",
+        level: "bronze",
+        eventType: "single_dance",
+        dances: ["Waltz"],
+      },
+    );
+    await t.withIdentity(ALICE).mutation(api.competitions.events.create, {
+      competitionId: compId,
+      name: "Bronze Latin Cha Cha",
+      style: "latin",
+      level: "bronze",
+      eventType: "single_dance",
+      dances: ["Cha Cha"],
+    });
+    const { self: bobReg, partner: carolReg } = await t
+      .withIdentity(BOB)
+      .mutation(api.competitions.registration.register, {
+        competitionId: compId,
+        partnerUsername: "carol",
+      });
+
+    await t.withIdentity(BOB).mutation(api.competitions.entries.bulkCreate, {
+      entries: [
+        {
+          eventId: eventA._id,
+          leaderRegistrationId: bobReg!._id,
+          followerRegistrationId: carolReg!._id,
+        },
+      ],
+    });
+    const payment = await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.payments.recordManual, {
+        registrationId: bobReg!._id,
+        amount: "10.00",
+        method: "cash",
+      });
+    expect(payment.competitionId).toBe(compId);
+
+    const stats = await t
+      .withIdentity(ALICE)
+      .query(api.competitions.stats.getCompetitionStats, {
+        competitionId: compId,
+      });
+    expect(stats.totalRegistrations).toBe(2);
+    expect(stats.totalEntries).toBe(1);
+    expect(stats.totalEvents).toBe(2);
+    expect(stats.totalCollected).toBe("10.00");
+    expect(stats.totalOwed).toBe("50.00");
+    expect(stats.entriesPerEvent).toEqual([
+      expect.objectContaining({ eventName: "Bronze Latin Cha Cha", entryCount: 0 }),
+      expect.objectContaining({ eventName: "Bronze Standard Waltz", entryCount: 1 }),
+    ]);
   });
 
   it("entries.remove + per-event pricing recalculates amountOwed", async () => {
@@ -970,6 +1277,63 @@ describe("add/drop", () => {
         .collect(),
     );
     expect(inserted).toHaveLength(1);
+    expect(inserted[0]?.competitionId).toBe(compId);
+  });
+
+  it("submit rejects an event from another competition", async () => {
+    const t = convexTest(schema, modules);
+    const ctx = await setupClosedCompWithEntry(t);
+    const { compId, orgId } = await t.run(async (dbCtx) => {
+      const comp = await dbCtx.db.get(ctx.compId);
+      return { compId: ctx.compId, orgId: comp!.orgId };
+    });
+    const otherCompId = await seedCompetition(t, ALICE, orgId, "Other Comp");
+    const otherEvent = await t.withIdentity(ALICE).mutation(
+      api.competitions.events.create,
+      {
+        competitionId: otherCompId,
+        name: "Bronze Latin Cha Cha",
+        style: "latin",
+        level: "bronze",
+        eventType: "single_dance",
+        dances: ["Cha Cha"],
+      },
+    );
+
+    await expect(
+      t.withIdentity(BOB).mutation(api.competitions.addDrop.submit, {
+        competitionId: compId,
+        type: "add",
+        eventId: otherEvent._id,
+        leaderRegistrationId: ctx.bobReg!._id,
+        followerRegistrationId: ctx.carolReg!._id,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("reject stores reviewer notes separately from submitter reason", async () => {
+    const t = convexTest(schema, modules);
+    const { compId, eventB, bobReg, carolReg } = await setupClosedCompWithEntry(t);
+
+    const request = await t.withIdentity(BOB).mutation(
+      api.competitions.addDrop.submit,
+      {
+        competitionId: compId,
+        type: "add",
+        eventId: eventB._id,
+        leaderRegistrationId: bobReg!._id,
+        followerRegistrationId: carolReg!._id,
+        reason: "submitter wants more dancing",
+      },
+    );
+    const rejected = await t.withIdentity(ALICE).mutation(
+      api.competitions.addDrop.reject,
+      { requestId: request!._id, reason: "reviewer says no" },
+    );
+
+    expect(rejected?.status).toBe("rejected");
+    expect(rejected?.reason).toBe("submitter wants more dancing");
+    expect(rejected?.reviewNotes).toBe("reviewer says no");
   });
 
   it("approveAllSafe only resolves non-rounds-affecting requests", async () => {

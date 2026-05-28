@@ -246,6 +246,7 @@ export const create = mutation({
     }
 
     const id = await ctx.db.insert("entries", {
+      competitionId: event.competitionId,
       eventId: args.eventId,
       leaderRegistrationId: args.leaderRegistrationId,
       followerRegistrationId: args.followerRegistrationId,
@@ -329,9 +330,29 @@ export const bulkCreate = mutation({
       });
     }
     const user = await getCurrentUser(ctx);
-    const firstEvent = await ctx.db.get(args.entries[0]!.eventId);
-    if (!firstEvent) notFound("Event not found");
-    const comp = await ctx.db.get(firstEvent.competitionId);
+    const eventIds = new Set<Id<"competitionEvents">>();
+    for (const e of args.entries) eventIds.add(e.eventId);
+
+    const eventMap = new Map<
+      Id<"competitionEvents">,
+      Doc<"competitionEvents">
+    >();
+    let competitionId: Id<"competitions"> | null = null;
+    for (const eventId of eventIds) {
+      const event = await ctx.db.get(eventId);
+      if (!event) notFound("Event not found");
+      if (competitionId === null) {
+        competitionId = event.competitionId;
+      } else if (event.competitionId !== competitionId) {
+        throw new ConvexError({
+          code: "BAD_REQUEST",
+          message: "All events must belong to the same competition",
+        });
+      }
+      eventMap.set(eventId, event);
+    }
+
+    const comp = await ctx.db.get(competitionId!);
     if (!comp) notFound("Competition not found");
     if (comp.status !== "accepting_entries") {
       throw new ConvexError({
@@ -342,6 +363,7 @@ export const bulkCreate = mutation({
 
     const regIds = new Set<Id<"competitionRegistrations">>();
     for (const e of args.entries) {
+      if (!eventMap.has(e.eventId)) notFound("Event not found");
       regIds.add(e.leaderRegistrationId);
       regIds.add(e.followerRegistrationId);
     }
@@ -395,6 +417,7 @@ export const bulkCreate = mutation({
         continue;
       }
       const id = await ctx.db.insert("entries", {
+        competitionId: comp._id,
         eventId: e.eventId,
         leaderRegistrationId: e.leaderRegistrationId,
         followerRegistrationId: e.followerRegistrationId,

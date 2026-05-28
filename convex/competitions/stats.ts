@@ -23,25 +23,29 @@ export const getCompetitionStats = query({
       )
       .collect();
 
+    const eventStats = new Map(
+      events.map((event) => [
+        event._id,
+        { eventId: event._id, eventName: event.name, entryCount: 0 },
+      ]),
+    );
+    const competitionEntries = await ctx.db
+      .query("entries")
+      .withIndex("by_competition", (q) =>
+        q.eq("competitionId", args.competitionId),
+      )
+      .collect();
+
     let totalEntries = 0;
-    const entriesPerEvent: {
-      eventId: string;
-      eventName: string;
-      entryCount: number;
-    }[] = [];
-    for (const event of events) {
-      const rows = await ctx.db
-        .query("entries")
-        .withIndex("by_event", (q) => q.eq("eventId", event._id))
-        .collect();
-      const activeEntries = rows.filter((r) => !r.scratched);
-      totalEntries += activeEntries.length;
-      entriesPerEvent.push({
-        eventId: event._id,
-        eventName: event.name,
-        entryCount: activeEntries.length,
-      });
+    for (const entry of competitionEntries) {
+      if (entry.scratched) continue;
+      const eventStat = eventStats.get(entry.eventId);
+      if (!eventStat) continue;
+      eventStat.entryCount += 1;
+      totalEntries += 1;
     }
+
+    const entriesPerEvent = Array.from(eventStats.values());
     entriesPerEvent.sort((a, b) => a.eventName.localeCompare(b.eventName));
 
     const orgCounts = new Map<string | null, number>();
@@ -53,17 +57,21 @@ export const getCompetitionStats = query({
       ([orgId, count]) => ({ orgId, count }),
     );
 
+    const activeRegIds = new Set(activeRegs.map((reg) => reg._id));
+    const totalOwedCents = activeRegs.reduce(
+      (sum, reg) => sum + reg.amountOwed,
+      0,
+    );
+    const competitionPayments = await ctx.db
+      .query("payments")
+      .withIndex("by_competition", (q) =>
+        q.eq("competitionId", args.competitionId),
+      )
+      .collect();
     let totalCollectedCents = 0;
-    let totalOwedCents = 0;
-    for (const reg of activeRegs) {
-      totalOwedCents += reg.amountOwed;
-      const payments = await ctx.db
-        .query("payments")
-        .withIndex("by_registration", (q) => q.eq("registrationId", reg._id))
-        .collect();
-      for (const p of payments) {
-        if (p.amount > 0) totalCollectedCents += p.amount;
-      }
+    for (const payment of competitionPayments) {
+      if (!activeRegIds.has(payment.registrationId)) continue;
+      if (payment.amount > 0) totalCollectedCents += payment.amount;
     }
 
     return {
