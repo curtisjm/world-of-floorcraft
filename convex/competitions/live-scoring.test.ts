@@ -1083,7 +1083,7 @@ describe("scrutineer", () => {
 // ── Live view ──────────────────────────────────────────────────────
 
 describe("liveView", () => {
-  it("getSchedule returns null for missing competition", async () => {
+  it("getSchedule returns competition schedule", async () => {
     const t = convexTest(schema, modules);
     const aliceId = await seedUser(t, ALICE);
     const orgId = await seedOrgWithOwner(t, aliceId);
@@ -1094,6 +1094,85 @@ describe("liveView", () => {
     });
     expect(schedule?.competition.id).toBe(compId);
     expect(schedule?.days).toHaveLength(1);
+  });
+
+  it("getSchedule orders flattened blocks by day position then block position", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await t.run(async (ctx) => {
+      const day1 = await ctx.db.insert("competitionDays", {
+        competitionId: compId,
+        date: "2026-06-01",
+        position: 1,
+      });
+      const day2 = await ctx.db.insert("competitionDays", {
+        competitionId: compId,
+        date: "2026-06-02",
+        position: 2,
+      });
+      await ctx.db.insert("scheduleBlocks", {
+        dayId: day1,
+        type: "session",
+        label: "Day 1 Late",
+        position: 2,
+      });
+      await ctx.db.insert("scheduleBlocks", {
+        dayId: day1,
+        type: "session",
+        label: "Day 1 Later",
+        position: 3,
+      });
+      await ctx.db.insert("scheduleBlocks", {
+        dayId: day2,
+        type: "session",
+        label: "Day 2 Early",
+        position: 1,
+      });
+    });
+
+    const schedule = await t.query(api.competitions.liveView.getSchedule, {
+      competitionId: compId,
+    });
+
+    expect(schedule?.blocks.map((block) => block.label)).toEqual([
+      "Day 1 Late",
+      "Day 1 Later",
+      "Day 2 Early",
+    ]);
+  });
+
+  it("getSchedule reports partially progressed events as in_progress", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const eventId = await seedEvent(t, compId);
+    await t.run(async (ctx) => {
+      await ctx.db.insert("rounds", {
+        eventId,
+        roundType: "semi_final",
+        position: 1,
+        status: "completed",
+        heatsApproved: true,
+      });
+      await ctx.db.insert("rounds", {
+        eventId,
+        roundType: "final",
+        position: 2,
+        status: "pending",
+        heatsApproved: false,
+      });
+    });
+
+    const schedule = await t.query(api.competitions.liveView.getSchedule, {
+      competitionId: compId,
+    });
+
+    expect(schedule?.events.find((event) => event.id === eventId)?.status).toBe(
+      "in_progress",
+    );
   });
 
   it("getPublishedResults filters to published rounds", async () => {
@@ -1107,6 +1186,25 @@ describe("liveView", () => {
       { eventId },
     );
     expect(result).toEqual({ eventName: "Standard Bronze Waltz", rounds: [] });
+  });
+});
+
+// ── Schedule estimation ────────────────────────────────────────────
+
+describe("scheduleEstimation", () => {
+  it("getEstimatedSchedule rejects unauthorized users", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+
+    await expect(
+      t.withIdentity(BOB).query(
+        api.competitions.scheduleEstimation.getEstimatedSchedule,
+        { competitionId: compId },
+      ),
+    ).rejects.toThrow(/required/);
   });
 });
 

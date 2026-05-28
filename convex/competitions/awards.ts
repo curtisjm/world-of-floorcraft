@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { badRequest } from "../lib/errors";
 import { requireCompStaffRole } from "../lib/permissions";
 
 export const calculate = query({
@@ -14,6 +15,21 @@ export const calculate = query({
       args.competitionId,
       ["registration"],
     );
+
+    if (
+      args.assumedFinalSize !== undefined &&
+      (!Number.isFinite(args.assumedFinalSize) ||
+        !Number.isInteger(args.assumedFinalSize) ||
+        args.assumedFinalSize < 1)
+    ) {
+      badRequest("assumedFinalSize must be a positive integer");
+    }
+    if (
+      args.bufferPercentage !== undefined &&
+      (!Number.isFinite(args.bufferPercentage) || args.bufferPercentage < 0)
+    ) {
+      badRequest("bufferPercentage must be finite and non-negative");
+    }
 
     const bufferPercentage = args.bufferPercentage ?? 10;
     const defaultFinalSize =

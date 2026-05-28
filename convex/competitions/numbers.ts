@@ -11,6 +11,15 @@ import { requireCompOrgRole, requireCompStaffRole } from "../lib/permissions";
  * exclusion list.
  */
 
+function requirePositiveInteger(value: number, fieldName: string) {
+  if (!Number.isFinite(value) || !Number.isInteger(value) || value < 1) {
+    throw new ConvexError({
+      code: "BAD_REQUEST",
+      message: `${fieldName} must be a positive integer`,
+    });
+  }
+}
+
 export const listAssignments = query({
   args: { competitionId: v.id("competitions") },
   handler: async (ctx, args) => {
@@ -100,25 +109,23 @@ export const manualAssign = mutation({
     number: v.number(),
   },
   handler: async (ctx, args) => {
-    if (args.number < 1) {
-      throw new ConvexError({
-        code: "BAD_REQUEST",
-        message: "Number must be positive",
-      });
-    }
+    requirePositiveInteger(args.number, "number");
     const reg = await ctx.db.get(args.registrationId);
     if (!reg) notFound("Registration not found");
     await requireCompStaffRole(ctx, reg.competitionId, ["registration"]);
 
-    const conflict = await ctx.db
+    const conflicts = await ctx.db
       .query("competitionRegistrations")
       .withIndex("by_competition_number", (q) =>
         q
           .eq("competitionId", reg.competitionId)
           .eq("competitorNumber", args.number),
       )
-      .unique();
-    if (conflict && conflict._id !== args.registrationId) {
+      .collect();
+    const activeConflict = conflicts.find(
+      (conflict) => !conflict.cancelled && conflict._id !== args.registrationId,
+    );
+    if (activeConflict) {
       throw new ConvexError({
         code: "CONFLICT",
         message: `Number ${args.number} is already assigned`,
@@ -149,8 +156,14 @@ export const updateSettings = mutation({
   handler: async (ctx, args) => {
     await requireCompOrgRole(ctx, args.competitionId);
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
-    if (args.numberStart !== undefined) patch.numberStart = args.numberStart;
+    if (args.numberStart !== undefined) {
+      requirePositiveInteger(args.numberStart, "numberStart");
+      patch.numberStart = args.numberStart;
+    }
     if (args.numberExclusions !== undefined) {
+      for (const exclusion of args.numberExclusions) {
+        requirePositiveInteger(exclusion, "numberExclusions");
+      }
       patch.numberExclusions = args.numberExclusions;
     }
     await ctx.db.patch(args.competitionId, patch);
