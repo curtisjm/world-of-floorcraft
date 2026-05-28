@@ -4,6 +4,7 @@ import schema from "../schema";
 import { modules } from "../test.setup";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
+import { buildUserSearchText } from "../lib/search";
 import { createJudgeToken } from "./lib/judgeAuth";
 
 // Task 10 of the Convex migration: competition live and scoring. These tests
@@ -65,12 +66,15 @@ async function seedUser(
   overrides: { username?: string; displayName?: string } = {},
 ): Promise<Id<"users">> {
   const now = Date.now();
+  const displayName = overrides.displayName ?? identity.subject;
+  const username = overrides.username;
   return t.run((ctx) =>
     ctx.db.insert("users", {
       tokenIdentifier: identity.tokenIdentifier,
       clerkUserId: identity.subject,
-      displayName: overrides.displayName ?? identity.subject,
-      username: overrides.username,
+      displayName,
+      username,
+      searchText: buildUserSearchText({ username, displayName }),
       isPrivate: false,
       createdAt: now,
       updatedAt: now,
@@ -1363,19 +1367,53 @@ describe("results (public)", () => {
     expect(result).toBeNull();
   });
 
-  it("searchCompetitors filters by displayName", async () => {
+  it("searchCompetitors matches indexed display names and usernames", async () => {
     const t = convexTest(schema, modules);
-    const aliceId = await seedUser(t, ALICE, { displayName: "Alice Carter" });
-    await seedUser(t, BOB, { displayName: "Bob Builder" });
+    const aliceId = await seedUser(t, ALICE, {
+      username: "alice_c",
+      displayName: "Alice Carter",
+    });
+    const bobId = await seedUser(t, BOB, {
+      username: "bob_builder",
+      displayName: "Robert Builder",
+    });
     const orgId = await seedOrgWithOwner(t, aliceId);
     const compId = await seedCompetition(t, ALICE, orgId);
     await seedRegistration(t, compId, aliceId);
+    await seedRegistration(t, compId, bobId);
 
-    const results = await t.query(
+    const byDisplayName = await t.query(
       api.competitions.results.searchCompetitors,
       { query: "alice" },
     );
-    expect(results.find((r) => r.displayName === "Alice Carter")).toBeDefined();
+    expect(
+      byDisplayName.find((r) => r.displayName === "Alice Carter"),
+    ).toMatchObject({ username: "alice_c", competitionCount: 1 });
+
+    const byUsername = await t.query(
+      api.competitions.results.searchCompetitors,
+      { query: "bob_builder" },
+    );
+    expect(byUsername.find((r) => r.username === "bob_builder")).toMatchObject(
+      { displayName: "Robert Builder", competitionCount: 1 },
+    );
+  });
+
+  it("searchCompetitors rejects empty and oversized queries", async () => {
+    const t = convexTest(schema, modules);
+    await seedUser(t, ALICE, {
+      username: "alice_c",
+      displayName: "Alice Carter",
+    });
+
+    await expect(
+      t.query(api.competitions.results.searchCompetitors, { query: "   " }),
+    ).resolves.toEqual([]);
+    await expect(
+      t.query(api.competitions.results.searchCompetitors, {
+        query: "a".repeat(101),
+      }),
+    ).resolves.toEqual([]);
   });
 });
 
