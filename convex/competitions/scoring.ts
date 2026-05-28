@@ -1,8 +1,12 @@
 import { v } from "convex/values";
-import { mutation, query, type MutationCtx } from "../_generated/server";
+import {
+  mutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { badRequest, forbidden, notFound } from "../lib/errors";
-import { getCurrentUser } from "../lib/auth";
 import { requireCompOrgRole } from "../lib/permissions";
 import {
   singleDance,
@@ -10,6 +14,76 @@ import {
   tallyCallbacks,
   type Marks,
 } from "./lib/scoring";
+
+type Ctx = MutationCtx | QueryCtx;
+
+export async function loadRoundEventForCompetition(
+  ctx: Ctx,
+  roundId: Id<"rounds">,
+  competitionId?: Id<"competitions">,
+) {
+  const round = await ctx.db.get(roundId);
+  if (!round) notFound("Round not found");
+  const event = await ctx.db.get(round.eventId);
+  if (!event) notFound("Event not found");
+  if (competitionId !== undefined && event.competitionId !== competitionId) {
+    badRequest("Round does not belong to this competition");
+  }
+  return { round, event, competitionId: event.competitionId };
+}
+
+export async function requireScoringStaffForRound(
+  ctx: Ctx,
+  roundId: Id<"rounds">,
+) {
+  const roundEvent = await loadRoundEventForCompetition(ctx, roundId);
+  await requireCompOrgRole(ctx, roundEvent.event.competitionId);
+  return roundEvent;
+}
+
+export async function requireJudgeAssignedToCompetition(
+  ctx: Ctx,
+  competitionId: Id<"competitions">,
+  judgeId: Id<"judges">,
+) {
+  const assignment = await ctx.db
+    .query("competitionJudges")
+    .withIndex("by_competition_judge", (q) =>
+      q.eq("competitionId", competitionId).eq("judgeId", judgeId),
+    )
+    .unique();
+  if (!assignment) badRequest("Judge is not assigned to this competition");
+}
+
+export async function validateEntriesBelongToEvent(
+  ctx: Ctx,
+  eventId: Id<"competitionEvents">,
+  entryIds: Id<"entries">[],
+) {
+  for (const entryId of [...new Set(entryIds)]) {
+    const entry = await ctx.db.get(entryId);
+    if (!entry || entry.eventId !== eventId) {
+      badRequest("Entry does not belong to this round's event");
+    }
+  }
+}
+
+export async function validateDanceNamesForEvent(
+  ctx: Ctx,
+  eventId: Id<"competitionEvents">,
+  danceNames: string[],
+) {
+  const dances = await ctx.db
+    .query("eventDances")
+    .withIndex("by_event_position", (q) => q.eq("eventId", eventId))
+    .collect();
+  const validDanceNames = new Set(dances.map((d) => d.danceName));
+  for (const danceName of [...new Set(danceNames)]) {
+    if (!validDanceNames.has(danceName)) {
+      badRequest("Dance is not part of this event");
+    }
+  }
+}
 
 /**
  * Mark submission and result computation — ported from
@@ -123,9 +197,17 @@ export const submitCallbackMarks = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    await getCurrentUser(ctx);
-    const round = await ctx.db.get(args.roundId);
-    if (!round) notFound("Round not found");
+    const { event } = await requireScoringStaffForRound(ctx, args.roundId);
+    await requireJudgeAssignedToCompetition(
+      ctx,
+      event.competitionId,
+      args.judgeId,
+    );
+    await validateEntriesBelongToEvent(
+      ctx,
+      event._id,
+      args.marks.map((m) => m.entryId),
+    );
 
     await writeCallbackMarks(ctx, args.roundId, args.judgeId, args.marks);
     await upsertJudgeSubmission(ctx, args.roundId, args.judgeId);
@@ -146,9 +228,22 @@ export const submitFinalMarks = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    await getCurrentUser(ctx);
-    const round = await ctx.db.get(args.roundId);
-    if (!round) notFound("Round not found");
+    const { event } = await requireScoringStaffForRound(ctx, args.roundId);
+    await requireJudgeAssignedToCompetition(
+      ctx,
+      event.competitionId,
+      args.judgeId,
+    );
+    await validateEntriesBelongToEvent(
+      ctx,
+      event._id,
+      args.marks.map((m) => m.entryId),
+    );
+    await validateDanceNamesForEvent(
+      ctx,
+      event._id,
+      args.marks.map((m) => m.danceName),
+    );
     for (const m of args.marks) {
       if (m.placement < 1) badRequest("placement must be >= 1");
     }
@@ -161,7 +256,7 @@ export const submitFinalMarks = mutation({
 export const getSubmissionStatus = query({
   args: { roundId: v.id("rounds") },
   handler: async (ctx, args) => {
-    await getCurrentUser(ctx);
+    await requireScoringStaffForRound(ctx, args.roundId);
     return await ctx.db
       .query("judgeSubmissions")
       .withIndex("by_round_judge", (q) => q.eq("roundId", args.roundId))
