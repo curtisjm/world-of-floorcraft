@@ -17,6 +17,7 @@ import type * as competitions_defaultEvents from "../competitions/defaultEvents.
 import type * as competitions_entries from "../competitions/entries.js";
 import type * as competitions_events from "../competitions/events.js";
 import type * as competitions_feedback from "../competitions/feedback.js";
+import type * as competitions_integrity from "../competitions/integrity.js";
 import type * as competitions_judgeSession from "../competitions/judgeSession.js";
 import type * as competitions_judges from "../competitions/judges.js";
 import type * as competitions_lib_judgeAuth from "../competitions/lib/judgeAuth.js";
@@ -82,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   "competitions/entries": typeof competitions_entries;
   "competitions/events": typeof competitions_events;
   "competitions/feedback": typeof competitions_feedback;
+  "competitions/integrity": typeof competitions_integrity;
   "competitions/judgeSession": typeof competitions_judgeSession;
   "competitions/judges": typeof competitions_judges;
   "competitions/lib/judgeAuth": typeof competitions_lib_judgeAuth;
