@@ -2,15 +2,15 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { getCurrentUser } from "../lib/auth";
 import { badRequest, forbidden, notFound } from "../lib/errors";
+import { requireCompOrgRole } from "../lib/permissions";
 
 /**
  * GDPR-style record removal requests — competitors can request that their
  * competition records be hidden from public results. Ported from
  * `src/domains/competitions/routers/record-removal.ts`.
  *
- * `listPending` is the staging point for a future platform-admin role. For
- * now any authenticated user can fetch the queue, mirroring the tRPC
- * behavior; harden when role checks land.
+ * Review access is scoped to the competition's organizers/scrutineers instead
+ * of a global platform-admin role.
  */
 
 export const getMyRequests = query({
@@ -35,11 +35,16 @@ export const getMyRequests = query({
 });
 
 export const listPending = query({
-  args: {},
-  handler: async (ctx) => {
-    await getCurrentUser(ctx);
-    const all = await ctx.db.query("recordRemovalRequests").collect();
-    const pending = all.filter((r) => r.status === "pending");
+  args: { competitionId: v.id("competitions") },
+  handler: async (ctx, args) => {
+    await requireCompOrgRole(ctx, args.competitionId);
+    const requests = await ctx.db
+      .query("recordRemovalRequests")
+      .withIndex("by_competition", (q) =>
+        q.eq("competitionId", args.competitionId),
+      )
+      .collect();
+    const pending = requests.filter((r) => r.status === "pending");
     return await Promise.all(
       pending.map(async (r) => {
         const user = await ctx.db.get(r.userId);
@@ -58,9 +63,12 @@ export const listPending = query({
 export const getRequest = query({
   args: { requestId: v.id("recordRemovalRequests") },
   handler: async (ctx, args) => {
-    await getCurrentUser(ctx);
+    const currentUser = await getCurrentUser(ctx);
     const request = await ctx.db.get(args.requestId);
     if (!request) return null;
+    if (request.userId !== currentUser._id) {
+      await requireCompOrgRole(ctx, request.competitionId);
+    }
     const user = await ctx.db.get(request.userId);
     const comp = await ctx.db.get(request.competitionId);
     const reg = await ctx.db
@@ -126,6 +134,21 @@ export const submit = mutation({
       .unique();
     if (!reg) badRequest("You have no entries in this competition");
 
+    if (args.entryId) {
+      const entry = await ctx.db.get(args.entryId);
+      if (!entry) badRequest("Entry not found");
+      const event = await ctx.db.get(entry.eventId);
+      if (!event || event.competitionId !== args.competitionId) {
+        badRequest("Entry does not belong to this competition");
+      }
+      if (
+        entry.leaderRegistrationId !== reg._id &&
+        entry.followerRegistrationId !== reg._id
+      ) {
+        forbidden("Entry does not belong to your registration");
+      }
+    }
+
     const existing = await ctx.db
       .query("recordRemovalRequests")
       .withIndex("by_user_competition", (q) =>
@@ -153,9 +176,12 @@ async function reviewRequest(
   status: "approved" | "rejected",
   reviewNotes: string | undefined,
 ) {
-  const reviewer = await getCurrentUser(ctx);
   const request = await ctx.db.get(requestId);
   if (!request) notFound("Request not found");
+  const { user: reviewer } = await requireCompOrgRole(
+    ctx,
+    request.competitionId,
+  );
   if (request.status !== "pending") badRequest("Request is not pending");
   await ctx.db.patch(requestId, {
     status,

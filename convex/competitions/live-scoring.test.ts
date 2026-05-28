@@ -1382,10 +1382,30 @@ describe("results (public)", () => {
 // ── Record removal ────────────────────────────────────────────────
 
 describe("recordRemoval", () => {
+  async function seedPendingRemoval(t: T) {
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: compId,
+      status: "finished",
+    });
+    await seedRegistration(t, compId, bobId);
+    const request = await t
+      .withIdentity(BOB)
+      .mutation(api.competitions.recordRemoval.submit, {
+        competitionId: compId,
+        reason: "Withdraw me",
+      });
+    if (!request) throw new Error("Expected seeded removal request");
+    return { compId, request };
+  }
+
   it("submit requires a finished competition with prior registration", async () => {
     const t = convexTest(schema, modules);
     const aliceId = await seedUser(t, ALICE);
-    await seedUser(t, BOB);
+    const bobId = await seedUser(t, BOB);
     const orgId = await seedOrgWithOwner(t, aliceId);
     const compId = await seedCompetition(t, ALICE, orgId);
 
@@ -1400,15 +1420,6 @@ describe("recordRemoval", () => {
       competitionId: compId,
       status: "finished",
     });
-    const bobId = await t.run((ctx) =>
-      ctx.db
-        .query("users")
-        .withIndex("by_token_identifier", (q) =>
-          q.eq("tokenIdentifier", BOB.tokenIdentifier),
-        )
-        .unique()
-        .then((u) => u!._id),
-    );
     await seedRegistration(t, compId, bobId);
     const req = await t
       .withIdentity(BOB)
@@ -1419,38 +1430,107 @@ describe("recordRemoval", () => {
     expect(req?.status).toBe("pending");
   });
 
-  it("approve transitions pending to approved", async () => {
+  it("restricts pending queue to competition organizers", async () => {
+    const t = convexTest(schema, modules);
+    const { compId } = await seedPendingRemoval(t);
+    await seedUser(t, DECK);
+
+    await expect(
+      t.withIdentity(DECK).query(api.competitions.recordRemoval.listPending, {
+        competitionId: compId,
+      }),
+    ).rejects.toThrow();
+
+    const pending = await t
+      .withIdentity(ALICE)
+      .query(api.competitions.recordRemoval.listPending, {
+        competitionId: compId,
+      });
+    expect(pending).toHaveLength(1);
+  });
+
+  it("allows request owners to view details without organizer access", async () => {
+    const t = convexTest(schema, modules);
+    const { request } = await seedPendingRemoval(t);
+    await seedUser(t, DECK);
+
+    const detail = await t
+      .withIdentity(BOB)
+      .query(api.competitions.recordRemoval.getRequest, {
+        requestId: request._id,
+      });
+    expect(detail?._id).toBe(request._id);
+
+    await expect(
+      t.withIdentity(DECK).query(api.competitions.recordRemoval.getRequest, {
+        requestId: request._id,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("rejects review attempts by non-organizers", async () => {
+    const t = convexTest(schema, modules);
+    const { request } = await seedPendingRemoval(t);
+    await seedUser(t, DECK);
+
+    await expect(
+      t.withIdentity(DECK).mutation(api.competitions.recordRemoval.approve, {
+        requestId: request._id,
+      }),
+    ).rejects.toThrow();
+    await expect(
+      t.withIdentity(DECK).mutation(api.competitions.recordRemoval.reject, {
+        requestId: request._id,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("allows competition scrutineers to review pending requests", async () => {
+    const t = convexTest(schema, modules);
+    const { compId, request } = await seedPendingRemoval(t);
+    const scrutId = await seedUser(t, SCRUT);
+    await seedStaff(t, compId, scrutId, "scrutineer");
+
+    const approved = await t
+      .withIdentity(SCRUT)
+      .mutation(api.competitions.recordRemoval.approve, {
+        requestId: request._id,
+      });
+    expect(approved?.status).toBe("approved");
+    expect(approved?.reviewedBy).toBe(scrutId);
+  });
+
+  it("rejects entry-scoped submissions for entries outside the caller registration", async () => {
     const t = convexTest(schema, modules);
     const aliceId = await seedUser(t, ALICE);
-    await seedUser(t, BOB);
+    const bobId = await seedUser(t, BOB);
+    const deckId = await seedUser(t, DECK);
+    const scrutId = await seedUser(t, SCRUT);
     const orgId = await seedOrgWithOwner(t, aliceId);
     const compId = await seedCompetition(t, ALICE, orgId);
     await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
       competitionId: compId,
       status: "finished",
     });
-    const bobId = await t.run((ctx) =>
-      ctx.db
-        .query("users")
-        .withIndex("by_token_identifier", (q) =>
-          q.eq("tokenIdentifier", BOB.tokenIdentifier),
-        )
-        .unique()
-        .then((u) => u!._id),
-    );
+    const eventId = await seedEvent(t, compId);
     await seedRegistration(t, compId, bobId);
-    const req = await t
-      .withIdentity(BOB)
-      .mutation(api.competitions.recordRemoval.submit, {
+    const deckRegId = await seedRegistration(t, compId, deckId);
+    const scrutRegId = await seedRegistration(t, compId, scrutId);
+    const otherEntryId = await seedEntry(
+      t,
+      eventId,
+      deckRegId,
+      scrutRegId,
+      deckId,
+    );
+
+    await expect(
+      t.withIdentity(BOB).mutation(api.competitions.recordRemoval.submit, {
         competitionId: compId,
-        reason: "Withdraw me",
-      });
-    const approved = await t
-      .withIdentity(ALICE)
-      .mutation(api.competitions.recordRemoval.approve, {
-        requestId: req!._id,
-      });
-    expect(approved?.status).toBe("approved");
+        entryId: otherEntryId,
+        reason: "Withdraw this entry",
+      }),
+    ).rejects.toThrow();
   });
 });
 
@@ -1470,7 +1550,3 @@ describe("calendar", () => {
     expect(upcoming.find((c) => c.id === compId)).toBeDefined();
   });
 });
-
-// silence unused-warning style imports kept for symmetry with core.test.ts
-void SCRUT;
-void DECK;
