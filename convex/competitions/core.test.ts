@@ -652,6 +652,36 @@ describe("registration + entries", () => {
   });
 });
 
+// ── awards ───────────────────────────────────────────────────────────
+
+describe("awards", () => {
+  it("rejects invalid calculation inputs", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+
+    await expect(
+      t.withIdentity(ALICE).query(api.competitions.awards.calculate, {
+        competitionId: compId,
+        assumedFinalSize: 0,
+      }),
+    ).rejects.toThrow(/positive integer/);
+    await expect(
+      t.withIdentity(ALICE).query(api.competitions.awards.calculate, {
+        competitionId: compId,
+        assumedFinalSize: 2.5,
+      }),
+    ).rejects.toThrow(/positive integer/);
+    await expect(
+      t.withIdentity(ALICE).query(api.competitions.awards.calculate, {
+        competitionId: compId,
+        bufferPercentage: -1,
+      }),
+    ).rejects.toThrow(/finite and non-negative/);
+  });
+});
+
 // ── numbers ──────────────────────────────────────────────────────────
 
 describe("numbers", () => {
@@ -736,6 +766,90 @@ describe("numbers", () => {
         number: 42,
       }),
     ).rejects.toThrow();
+  });
+
+  it("validates number assignment settings as positive integers", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const regId = await t.run((ctx) =>
+      ctx.db.insert("competitionRegistrations", {
+        competitionId: compId,
+        userId: bobId,
+        amountOwed: 0,
+        paidConfirmed: false,
+        checkedIn: false,
+        registeredAt: Date.now(),
+        registeredBy: bobId,
+        cancelled: false,
+      }),
+    );
+
+    await expect(
+      t.withIdentity(ALICE).mutation(api.competitions.numbers.manualAssign, {
+        registrationId: regId,
+        number: 1.5,
+      }),
+    ).rejects.toThrow(/positive integer/);
+    await expect(
+      t.withIdentity(ALICE).mutation(api.competitions.numbers.updateSettings, {
+        competitionId: compId,
+        numberStart: 0,
+      }),
+    ).rejects.toThrow(/positive integer/);
+    await expect(
+      t.withIdentity(ALICE).mutation(api.competitions.numbers.updateSettings, {
+        competitionId: compId,
+        numberExclusions: [3, -1],
+      }),
+    ).rejects.toThrow(/positive integer/);
+  });
+
+  it("manualAssign ignores cancelled duplicate number conflicts", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const carolId = await seedUser(t, CAROL);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+    const cancelledRows = [bobId, carolId];
+    for (const userId of cancelledRows) {
+      await t.run((ctx) =>
+        ctx.db.insert("competitionRegistrations", {
+          competitionId: compId,
+          userId,
+          competitorNumber: 42,
+          amountOwed: 0,
+          paidConfirmed: false,
+          checkedIn: false,
+          registeredAt: Date.now(),
+          registeredBy: userId,
+          cancelled: true,
+        }),
+      );
+    }
+    const activeId = await t.run((ctx) =>
+      ctx.db.insert("competitionRegistrations", {
+        competitionId: compId,
+        userId: aliceId,
+        amountOwed: 0,
+        paidConfirmed: false,
+        checkedIn: false,
+        registeredAt: Date.now(),
+        registeredBy: aliceId,
+        cancelled: false,
+      }),
+    );
+
+    await t.withIdentity(ALICE).mutation(api.competitions.numbers.manualAssign, {
+      registrationId: activeId,
+      number: 42,
+    });
+
+    const active = await t.run((ctx) => ctx.db.get(activeId));
+    expect(active?.competitorNumber).toBe(42);
   });
 });
 

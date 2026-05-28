@@ -62,6 +62,8 @@ export const getEstimatedSchedule = query({
       });
     }
 
+    await requireCompOrgRole(ctx, args.competitionId);
+
     const minutesPerCouplePerDance = comp.minutesPerCouplePerDance ?? 1.5;
     const transitionMinutes = comp.transitionMinutes ?? 2.0;
 

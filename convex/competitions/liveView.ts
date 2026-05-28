@@ -28,9 +28,9 @@ export const getSchedule = query({
         .query("scheduleBlocks")
         .withIndex("by_day_position", (q) => q.eq("dayId", day._id))
         .collect();
+      dayBlocks.sort((a, b) => a.position - b.position);
       blocks.push(...dayBlocks);
     }
-    blocks.sort((a, b) => a.position - b.position);
 
     const events = await ctx.db
       .query("competitionEvents")
@@ -112,7 +112,7 @@ export const getSchedule = query({
       ) {
         status = "completed";
       } else if (eventRounds.some((r) => r.status !== "pending")) {
-        status = "completed";
+        status = "in_progress";
       }
 
       const coupleNumbers = [
