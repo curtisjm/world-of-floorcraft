@@ -1,7 +1,16 @@
+import { anyApi } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import * as bcrypt from "bcryptjs";
-import { mutation, query } from "../_generated/server";
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
+import { rateLimiter } from "../rateLimits";
+import type { ActionCtx } from "../_generated/server";
 import { badRequest, notFound } from "../lib/errors";
 import {
   createJudgeToken,
@@ -26,72 +35,86 @@ import {
  * dropped; competition live state is now subscribed via Convex queries.
  */
 
-const AUTH_RATE_LIMIT = 5;
-const AUTH_RATE_WINDOW_MS = 15 * 60 * 1000;
+type JudgeAuthCandidate = {
+  competitionId: Id<"competitions">;
+  masterPasswordHash: string;
+  judgeAssigned: boolean;
+};
 
-const authFailures = new Map<string, { count: number; resetAt: number }>();
+type JudgeAuthResult = {
+  token: string;
+  judgeName: string;
+  competitionName: string;
+  competitionId: Id<"competitions">;
+  judgeId: Id<"judges">;
+};
 
-function checkAuthRateLimit(compCode: string): void {
-  const key = compCode.toUpperCase();
-  const now = Date.now();
-  const entry = authFailures.get(key);
-  if (entry && now <= entry.resetAt && entry.count >= AUTH_RATE_LIMIT) {
-    throw new ConvexError({
-      code: "TOO_MANY_REQUESTS",
-      message: "Too many authentication attempts. Please try again later.",
-    });
+function normalizeCompCode(compCode: string): string {
+  return compCode.trim().toUpperCase();
+}
+
+function throwTooManyAuthAttempts(): never {
+  throw new ConvexError({
+    code: "TOO_MANY_REQUESTS",
+    message: "Too many authentication attempts. Please try again later.",
+  });
+}
+
+function throwInvalidCredentials(): never {
+  throw new ConvexError({
+    code: "UNAUTHORIZED",
+    message: "Invalid credentials",
+  });
+}
+
+async function assertJudgeAuthNotRateLimited(
+  ctx: ActionCtx,
+  compCode: string,
+): Promise<void> {
+  const { ok } = await rateLimiter.check(ctx, "judgeAuthFailures", {
+    key: normalizeCompCode(compCode),
+    count: 1,
+  });
+  if (!ok) {
+    throwTooManyAuthAttempts();
   }
 }
 
-function recordAuthFailure(compCode: string): void {
-  const key = compCode.toUpperCase();
-  const now = Date.now();
-  const entry = authFailures.get(key);
-  if (!entry || now > entry.resetAt) {
-    authFailures.set(key, {
-      count: 1,
-      resetAt: now + AUTH_RATE_WINDOW_MS,
-    });
-  } else {
-    entry.count++;
+async function recordJudgeAuthFailure(
+  ctx: ActionCtx,
+  compCode: string,
+): Promise<void> {
+  const { ok } = await rateLimiter.limit(ctx, "judgeAuthFailures", {
+    key: normalizeCompCode(compCode),
+  });
+  if (!ok) {
+    throwTooManyAuthAttempts();
   }
+}
+
+async function resetJudgeAuthFailures(
+  ctx: ActionCtx,
+  compCode: string,
+): Promise<void> {
+  await rateLimiter.reset(ctx, "judgeAuthFailures", {
+    key: normalizeCompCode(compCode),
+  });
 }
 
 // ── Authenticate ────────────────────────────────────────────────────
 
-export const authenticate = mutation({
+export const loadJudgeAuthCandidate = internalQuery({
   args: {
     compCode: v.string(),
-    masterPassword: v.string(),
     judgeId: v.id("judges"),
   },
   handler: async (ctx, args) => {
-    checkAuthRateLimit(args.compCode);
-
     const comp = await ctx.db
       .query("competitions")
-      .withIndex("by_comp_code", (q) =>
-        q.eq("compCode", args.compCode.toUpperCase()),
-      )
+      .withIndex("by_comp_code", (q) => q.eq("compCode", args.compCode))
       .unique();
     if (!comp || !comp.masterPasswordHash) {
-      recordAuthFailure(args.compCode);
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Invalid credentials",
-      });
-    }
-
-    const valid = await bcrypt.compare(
-      args.masterPassword,
-      comp.masterPasswordHash,
-    );
-    if (!valid) {
-      recordAuthFailure(args.compCode);
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Invalid credentials",
-      });
+      return null;
     }
 
     const assignment = await ctx.db
@@ -100,21 +123,32 @@ export const authenticate = mutation({
         q.eq("competitionId", comp._id).eq("judgeId", args.judgeId),
       )
       .unique();
-    if (!assignment) {
-      recordAuthFailure(args.compCode);
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Invalid credentials",
-      });
-    }
 
+    return {
+      competitionId: comp._id,
+      masterPasswordHash: comp.masterPasswordHash,
+      judgeAssigned: assignment !== null,
+    };
+  },
+});
+
+export const createAuthenticatedJudgeSession = internalMutation({
+  args: {
+    competitionId: v.id("competitions"),
+    judgeId: v.id("judges"),
+  },
+  handler: async (ctx, args): Promise<JudgeAuthResult> => {
+    const comp = await ctx.db.get(args.competitionId);
+    if (!comp) {
+      throwInvalidCredentials();
+    }
     const judge = await ctx.db.get(args.judgeId);
 
     // End any existing active session for this judge.
     const existingSessions = await ctx.db
       .query("judgeSessions")
       .withIndex("by_competition_judge", (q) =>
-        q.eq("competitionId", comp._id).eq("judgeId", args.judgeId),
+        q.eq("competitionId", args.competitionId).eq("judgeId", args.judgeId),
       )
       .collect();
     for (const s of existingSessions) {
@@ -124,7 +158,7 @@ export const authenticate = mutation({
     }
 
     const sessionId = await ctx.db.insert("judgeSessions", {
-      competitionId: comp._id,
+      competitionId: args.competitionId,
       judgeId: args.judgeId,
       status: "active",
       tokenHash: "pending",
@@ -132,7 +166,7 @@ export const authenticate = mutation({
     });
 
     const token = await createJudgeToken({
-      competitionId: comp._id,
+      competitionId: args.competitionId,
       judgeId: args.judgeId,
       sessionId,
     });
@@ -143,9 +177,54 @@ export const authenticate = mutation({
       token,
       judgeName: judge ? `${judge.firstName} ${judge.lastName}` : "Unknown",
       competitionName: comp.name,
-      competitionId: comp._id,
+      competitionId: args.competitionId,
       judgeId: args.judgeId,
     };
+  },
+});
+
+export const authenticate = action({
+  args: {
+    compCode: v.string(),
+    masterPassword: v.string(),
+    judgeId: v.id("judges"),
+  },
+  handler: async (ctx, args): Promise<JudgeAuthResult> => {
+    const compCode = normalizeCompCode(args.compCode);
+    await assertJudgeAuthNotRateLimited(ctx, compCode);
+
+    const candidate = (await ctx.runQuery(
+      anyApi.competitions.judgeSession.loadJudgeAuthCandidate,
+      { compCode, judgeId: args.judgeId },
+    )) as JudgeAuthCandidate | null;
+    if (!candidate) {
+      await recordJudgeAuthFailure(ctx, compCode);
+      throwInvalidCredentials();
+    }
+
+    const valid = await bcrypt.compare(
+      args.masterPassword,
+      candidate.masterPasswordHash,
+    );
+    if (!valid) {
+      await recordJudgeAuthFailure(ctx, compCode);
+      throwInvalidCredentials();
+    }
+
+    if (!candidate.judgeAssigned) {
+      await recordJudgeAuthFailure(ctx, compCode);
+      throwInvalidCredentials();
+    }
+
+    await resetJudgeAuthFailures(ctx, compCode);
+
+    return (await ctx.runMutation(
+      anyApi.competitions.judgeSession.createAuthenticatedJudgeSession,
+      {
+        competitionId: candidate.competitionId,
+        judgeId: args.judgeId,
+      },
+    )) as JudgeAuthResult;
   },
 });
 

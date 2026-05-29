@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { ConvexError } from "convex/values";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
@@ -114,7 +114,7 @@ function AuthScreen({
   const [judgeId, setJudgeId] = useState("");
   const [isPending, setIsPending] = useState(false);
 
-  const authenticateMutation = useMutation(
+  const authenticateMutation = useAction(
     api.competitions.judgeSession.authenticate,
   );
 

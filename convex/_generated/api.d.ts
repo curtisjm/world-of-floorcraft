@@ -53,6 +53,7 @@ import type * as lib_search from "../lib/search.js";
 import type * as lib_time from "../lib/time.js";
 import type * as messaging from "../messaging.js";
 import type * as orgs from "../orgs.js";
+import type * as rateLimits from "../rateLimits.js";
 import type * as routines from "../routines.js";
 import type * as social_comments from "../social/comments.js";
 import type * as social_follows from "../social/follows.js";
@@ -119,6 +120,7 @@ declare const fullApi: ApiFromModules<{
   "lib/time": typeof lib_time;
   messaging: typeof messaging;
   orgs: typeof orgs;
+  rateLimits: typeof rateLimits;
   routines: typeof routines;
   "social/comments": typeof social_comments;
   "social/follows": typeof social_follows;
@@ -160,4 +162,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};
