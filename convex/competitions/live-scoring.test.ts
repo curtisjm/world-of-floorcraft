@@ -1,3 +1,4 @@
+import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test";
 import { convexTest, type TestConvex } from "convex-test";
 import { beforeAll, describe, expect, it } from "vitest";
 import schema from "../schema";
@@ -782,6 +783,7 @@ describe("judgeSession", () => {
 
   async function setupCompetitionWithJudge() {
     const t = convexTest(schema, modules);
+    registerRateLimiter(t);
     const aliceId = await seedUser(t, ALICE);
     const orgId = await seedOrgWithOwner(t, aliceId);
     const compId = await seedCompetition(t, ALICE, orgId);
@@ -804,9 +806,21 @@ describe("judgeSession", () => {
     return { t, orgId, compId, judgeId };
   }
 
+  async function expectAuthErrorCode(
+    authAttempt: Promise<unknown>,
+    code: "UNAUTHORIZED" | "TOO_MANY_REQUESTS",
+  ) {
+    try {
+      await authAttempt;
+      throw new Error(`Expected judge authentication to fail with ${code}`);
+    } catch (error) {
+      expect((error as { data?: { code?: string } }).data?.code).toBe(code);
+    }
+  }
+
   it("authenticate returns a JWT for valid credentials", async () => {
     const { t, judgeId } = await setupCompetitionWithJudge();
-    const result = await t.mutation(api.competitions.judgeSession.authenticate, {
+    const result = await t.action(api.competitions.judgeSession.authenticate, {
       compCode: "ABCD",
       masterPassword: "letmein",
       judgeId,
@@ -817,13 +831,124 @@ describe("judgeSession", () => {
 
   it("authenticate rejects wrong password", async () => {
     const { t, judgeId } = await setupCompetitionWithJudge();
-    await expect(
-      t.mutation(api.competitions.judgeSession.authenticate, {
+    await expectAuthErrorCode(
+      t.action(api.competitions.judgeSession.authenticate, {
         compCode: "ABCD",
         masterPassword: "nope",
         judgeId,
       }),
-    ).rejects.toThrow();
+      "UNAUTHORIZED",
+    );
+  });
+
+  it("rate limits failed judge authentication attempts by competition code", async () => {
+    const { t, judgeId } = await setupCompetitionWithJudge();
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await expectAuthErrorCode(
+        t.action(api.competitions.judgeSession.authenticate, {
+          compCode: "abcd",
+          masterPassword: `wrong-${attempt}`,
+          judgeId,
+        }),
+        "UNAUTHORIZED",
+      );
+    }
+
+    await expectAuthErrorCode(
+      t.action(api.competitions.judgeSession.authenticate, {
+        compCode: " ABCD ",
+        masterPassword: "letmein",
+        judgeId,
+      }),
+      "TOO_MANY_REQUESTS",
+    );
+  });
+
+  it("keeps failed judge authentication limits independent per competition code", async () => {
+    const { t, orgId, judgeId } = await setupCompetitionWithJudge();
+    const otherCompId = await seedCompetition(t, ALICE, orgId, "Autumn Open");
+    const otherJudgeId = await seedJudge(t, otherCompId, {
+      firstName: "Jane",
+      lastName: "Judge",
+    });
+    await t.withIdentity(ALICE).mutation(api.competitions.core.setCompCode, {
+      competitionId: otherCompId,
+      compCode: "WXYZ",
+    });
+    await t
+      .withIdentity(ALICE)
+      .mutation(api.competitions.core.setMasterPassword, {
+        competitionId: otherCompId,
+        password: "opensesame",
+      });
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await expectAuthErrorCode(
+        t.action(api.competitions.judgeSession.authenticate, {
+          compCode: "ABCD",
+          masterPassword: `wrong-${attempt}`,
+          judgeId,
+        }),
+        "UNAUTHORIZED",
+      );
+    }
+
+    const result = await t.action(api.competitions.judgeSession.authenticate, {
+      compCode: "WXYZ",
+      masterPassword: "opensesame",
+      judgeId: otherJudgeId,
+    });
+    expect(result.token).toBeTruthy();
+    await expectAuthErrorCode(
+      t.action(api.competitions.judgeSession.authenticate, {
+        compCode: "ABCD",
+        masterPassword: "letmein",
+        judgeId,
+      }),
+      "TOO_MANY_REQUESTS",
+    );
+  });
+
+  it("resets failed judge authentication attempts after successful authentication", async () => {
+    const { t, judgeId } = await setupCompetitionWithJudge();
+
+    for (let attempt = 0; attempt < 4; attempt++) {
+      await expectAuthErrorCode(
+        t.action(api.competitions.judgeSession.authenticate, {
+          compCode: "ABCD",
+          masterPassword: `wrong-${attempt}`,
+          judgeId,
+        }),
+        "UNAUTHORIZED",
+      );
+    }
+
+    const result = await t.action(api.competitions.judgeSession.authenticate, {
+      compCode: "ABCD",
+      masterPassword: "letmein",
+      judgeId,
+    });
+    expect(result.token).toBeTruthy();
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await expectAuthErrorCode(
+        t.action(api.competitions.judgeSession.authenticate, {
+          compCode: "ABCD",
+          masterPassword: `wrong-after-reset-${attempt}`,
+          judgeId,
+        }),
+        "UNAUTHORIZED",
+      );
+    }
+    await expectAuthErrorCode(
+      t.action(api.competitions.judgeSession.authenticate, {
+        compCode: "ABCD",
+        masterPassword: "letmein",
+        judgeId,
+      }),
+      "TOO_MANY_REQUESTS",
+    );
   });
 
   it("submitCallbackMarks requires an active round", async () => {
@@ -838,7 +963,7 @@ describe("judgeSession", () => {
         heatsApproved: false,
       }),
     );
-    const auth = await t.mutation(
+    const auth = await t.action(
       api.competitions.judgeSession.authenticate,
       { compCode: "ABCD", masterPassword: "letmein", judgeId },
     );
@@ -883,7 +1008,7 @@ describe("judgeSession", () => {
         startedAt: Date.now(),
       }),
     );
-    const auth = await t.mutation(
+    const auth = await t.action(
       api.competitions.judgeSession.authenticate,
       { compCode: "ABCD", masterPassword: "letmein", judgeId },
     );
@@ -933,7 +1058,7 @@ describe("judgeSession", () => {
         startedAt: Date.now(),
       }),
     );
-    const auth = await t.mutation(
+    const auth = await t.action(
       api.competitions.judgeSession.authenticate,
       { compCode: "ABCD", masterPassword: "letmein", judgeId },
     );
@@ -978,7 +1103,7 @@ describe("judgeSession", () => {
         startedAt: Date.now(),
       }),
     );
-    const auth = await t.mutation(
+    const auth = await t.action(
       api.competitions.judgeSession.authenticate,
       { compCode: "ABCD", masterPassword: "letmein", judgeId },
     );
@@ -995,7 +1120,7 @@ describe("judgeSession", () => {
   it("getActiveRound returns null when nothing is running", async () => {
     const { t, compId, judgeId } = await setupCompetitionWithJudge();
     void compId;
-    const auth = await t.mutation(
+    const auth = await t.action(
       api.competitions.judgeSession.authenticate,
       { compCode: "ABCD", masterPassword: "letmein", judgeId },
     );

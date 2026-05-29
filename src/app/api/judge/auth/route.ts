@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { ConvexError } from "convex/values";
-import { fetchMutation } from "convex/nextjs";
+import { fetchAction } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   try {
-    const result = await fetchMutation(
+    const result = await fetchAction(
       api.competitions.judgeSession.authenticate,
       {
         compCode: body.compCode,
