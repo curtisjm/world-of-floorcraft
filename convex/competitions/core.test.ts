@@ -228,29 +228,183 @@ describe("competition lifecycle", () => {
     expect(advertised?.status).toBe("advertised");
   });
 
-  it("remove cascades schedule + events + staff + registrations", async () => {
+  it("remove hard-deletes setup-only competitions without leaving orphans", async () => {
     const t = convexTest(schema, modules);
     const aliceId = await seedUser(t, ALICE);
     const orgId = await seedOrgWithOwner(t, aliceId);
     const compId = await seedCompetition(t, ALICE, orgId);
 
-    await t.withIdentity(ALICE).mutation(api.competitions.schedule.addDay, {
-      competitionId: compId,
-      date: "2026-09-01",
+    const ids = await t.run(async (ctx) => {
+      const now = Date.now();
+      const dayId = await ctx.db.insert("competitionDays", {
+        competitionId: compId,
+        date: "2026-09-01",
+        position: 1,
+      });
+      const blockId = await ctx.db.insert("scheduleBlocks", {
+        dayId,
+        type: "session",
+        label: "Ballroom",
+        position: 1,
+      });
+      const eventId = await ctx.db.insert("competitionEvents", {
+        competitionId: compId,
+        sessionId: blockId,
+        name: "Bronze Waltz",
+        style: "standard",
+        level: "bronze",
+        eventType: "single_dance",
+      });
+      await ctx.db.insert("eventDances", {
+        eventId,
+        danceName: "Waltz",
+        position: 1,
+      });
+      await ctx.db.insert("eventTimeOverrides", {
+        eventId,
+        estimatedMinutes: 12,
+      });
+      const judgeId = await ctx.db.insert("judges", {
+        firstName: "Ada",
+        lastName: "Judge",
+        createdAt: now,
+      });
+      await ctx.db.insert("competitionJudges", {
+        competitionId: compId,
+        judgeId,
+        createdAt: now,
+      });
+      await ctx.db.insert("competitionStaff", {
+        competitionId: compId,
+        userId: aliceId,
+        role: "scrutineer",
+        createdAt: now,
+      });
+      await ctx.db.insert("pricingTiers", {
+        competitionId: compId,
+        name: "Early bird",
+        price: 2500,
+      });
+      return { dayId, eventId };
     });
+
     await t.withIdentity(ALICE).mutation(api.competitions.core.remove, {
       competitionId: compId,
     });
+
     expect(await t.run((ctx) => ctx.db.get(compId))).toBeNull();
-    const days = await t.run((ctx) =>
-      ctx.db
+    expect(await t.run((ctx) => ctx.db.get(ids.eventId))).toBeNull();
+    const remaining = await t.run(async (ctx) => ({
+      days: await ctx.db
         .query("competitionDays")
         .withIndex("by_competition_position", (q) =>
           q.eq("competitionId", compId),
         )
         .collect(),
+      blocks: await ctx.db
+        .query("scheduleBlocks")
+        .withIndex("by_day_position", (q) => q.eq("dayId", ids.dayId))
+        .collect(),
+      dances: await ctx.db
+        .query("eventDances")
+        .withIndex("by_event_position", (q) => q.eq("eventId", ids.eventId))
+        .collect(),
+      overrides: await ctx.db
+        .query("eventTimeOverrides")
+        .withIndex("by_event", (q) => q.eq("eventId", ids.eventId))
+        .collect(),
+      staff: await ctx.db
+        .query("competitionStaff")
+        .withIndex("by_competition_user_role", (q) =>
+          q.eq("competitionId", compId),
+        )
+        .collect(),
+      assignedJudges: await ctx.db
+        .query("competitionJudges")
+        .withIndex("by_competition_judge", (q) =>
+          q.eq("competitionId", compId),
+        )
+        .collect(),
+      tiers: await ctx.db
+        .query("pricingTiers")
+        .withIndex("by_competition", (q) => q.eq("competitionId", compId))
+        .collect(),
+    }));
+    expect(Object.values(remaining).every((rows) => rows.length === 0)).toBe(
+      true,
     );
-    expect(days).toHaveLength(0);
+  });
+
+  it("remove rejects competitions with user data and preserves the record", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId);
+
+    await t.run((ctx) =>
+      ctx.db.insert("competitionRegistrations", {
+        competitionId: compId,
+        userId: bobId,
+        amountOwed: 0,
+        paidConfirmed: false,
+        checkedIn: false,
+        registeredAt: Date.now(),
+        registeredBy: bobId,
+        cancelled: false,
+      }),
+    );
+
+    await expect(
+      t.withIdentity(ALICE).mutation(api.competitions.core.remove, {
+        competitionId: compId,
+      }),
+    ).rejects.toThrow(/registrations/);
+    expect(await t.run((ctx) => ctx.db.get(compId))).not.toBeNull();
+  });
+
+  it("archive hides public surfaces but preserves organizer dashboard access", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, "Archive Me");
+
+    await t.withIdentity(ALICE).mutation(api.competitions.core.updateStatus, {
+      competitionId: compId,
+      status: "advertised",
+    });
+    await t.withIdentity(ALICE).mutation(api.competitions.core.archive, {
+      competitionId: compId,
+    });
+
+    await expect(
+      t.query(api.competitions.core.getBySlug, { slug: "archive-me" }),
+    ).resolves.toBeNull();
+    const publicList = await t.query(api.competitions.core.list, {
+      paginationOpts: { numItems: 10, cursor: null },
+    });
+    expect(publicList.page.map((c) => c._id)).not.toContain(compId);
+    await expect(
+      t.query(api.competitions.calendar.getCompetitionPreview, {
+        competitionId: compId,
+      }),
+    ).resolves.toBeNull();
+    const upcoming = await t.query(api.competitions.calendar.getUpcoming, {});
+    expect(upcoming.map((c) => c.id)).not.toContain(compId);
+
+    const organizerView = await t
+      .withIdentity(ALICE)
+      .query(api.competitions.core.getBySlug, {
+        slug: "archive-me",
+        includeArchived: true,
+      });
+    expect(organizerView?.status).toBe("archived");
+    const dashboard = await t
+      .withIdentity(ALICE)
+      .query(api.competitions.core.getForDashboard, {
+        competitionId: compId,
+      });
+    expect(dashboard.status).toBe("archived");
   });
 
   it("setCompCode rejects duplicates", async () => {

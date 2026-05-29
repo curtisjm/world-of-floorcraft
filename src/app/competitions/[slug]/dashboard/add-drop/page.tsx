@@ -26,7 +26,7 @@ type AddDropRequest = {
 
 export default function AddDropManagementPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const requests = useQuery(
     api.competitions.addDrop.listByCompetition,
     comp ? { competitionId: comp._id } : "skip",

@@ -48,7 +48,7 @@ interface Day {
 
 export default function SchedulePage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const days = useQuery(
     api.competitions.schedule.getDays,
     comp ? { competitionId: comp._id } : "skip",

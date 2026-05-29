@@ -539,10 +539,45 @@ export const update = mutation({
   },
 });
 
+async function organizationDeletionBlockers(
+  ctx: QueryCtx | MutationCtx,
+  orgId: Id<"organizations">,
+): Promise<string[]> {
+  const blockers: string[] = [];
+
+  const competitions = await ctx.db
+    .query("competitions")
+    .withIndex("by_org", (q) => q.eq("orgId", orgId))
+    .collect();
+  if (competitions.length > 0) {
+    blockers.push(`competitions (${competitions.length})`);
+  }
+
+  const orgPosts = await ctx.db
+    .query("posts")
+    .withIndex("by_org", (q) => q.eq("orgId", orgId))
+    .collect();
+  const orgVisiblePosts = await ctx.db
+    .query("posts")
+    .withIndex("by_visibility_org_published", (q) =>
+      q.eq("visibility", "organization").eq("visibilityOrgId", orgId),
+    )
+    .collect();
+  const postIds = new Set<Id<"posts">>();
+  for (const post of orgPosts) postIds.add(post._id);
+  for (const post of orgVisiblePosts) postIds.add(post._id);
+  if (postIds.size > 0) {
+    blockers.push(`posts (${postIds.size})`);
+  }
+
+  return blockers;
+}
+
 /**
  * Delete an org. Owner only. Removes memberships, invites, join requests,
  * org channels and their member rows so the storage matches the Postgres
- * `ON DELETE CASCADE` behavior.
+ * `ON DELETE CASCADE` behavior. Competitions and posts must be removed or
+ * archived first so deletion cannot strand public/user-owned records.
  */
 export const remove = mutation({
   args: { orgId: v.id("organizations") },
@@ -552,6 +587,16 @@ export const remove = mutation({
     if (!org) notFound("Organization not found");
     if (org.ownerId !== user._id) {
       forbidden("Only the owner can delete this organization");
+    }
+
+    const blockers = await organizationDeletionBlockers(ctx, args.orgId);
+    if (blockers.length > 0) {
+      throw new ConvexError({
+        code: "CONFLICT",
+        message:
+          "Cannot delete organization while referenced records exist: " +
+          `${blockers.join(", ")}. Remove or archive them first.`,
+      });
     }
 
     const memberships = await ctx.db

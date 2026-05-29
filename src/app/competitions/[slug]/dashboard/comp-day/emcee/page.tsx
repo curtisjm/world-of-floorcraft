@@ -72,7 +72,7 @@ type EmceeDay = {
 
 export default function EmceePage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
 
   const emceeView = useQuery(
     api.competitions.compDay.getEmceeView,

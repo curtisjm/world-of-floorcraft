@@ -309,6 +309,60 @@ describe("organization lifecycle", () => {
       t.withIdentity(ALICE).mutation(api.orgs.remove, { orgId: org._id }),
     ).rejects.toThrow();
   });
+
+  it("remove is blocked by competitions that reference the org", async () => {
+    const t = convexTest(schema, modules);
+    await seedUser(t, ALICE, { username: "alice" });
+    const org = await t
+      .withIdentity(ALICE)
+      .mutation(api.orgs.create, { name: "Studio One" });
+
+    await t.run((ctx) =>
+      ctx.db.insert("competitions", {
+        orgId: org._id,
+        createdBy: org.ownerId,
+        name: "Spring Invitational",
+        slug: "spring-invitational",
+        status: "draft",
+        pricingModel: "flat_fee",
+        requirePaymentAtRegistration: false,
+        stripeOnboardingComplete: false,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }),
+    );
+
+    await expect(
+      t.withIdentity(ALICE).mutation(api.orgs.remove, { orgId: org._id }),
+    ).rejects.toThrow(/competitions/);
+    expect(await t.run((ctx) => ctx.db.get(org._id))).not.toBeNull();
+  });
+
+  it("remove is blocked by org posts that reference the org", async () => {
+    const t = convexTest(schema, modules);
+    await seedUser(t, ALICE, { username: "alice" });
+    const org = await t
+      .withIdentity(ALICE)
+      .mutation(api.orgs.create, { name: "Studio One" });
+
+    await t.run((ctx) =>
+      ctx.db.insert("posts", {
+        orgId: org._id,
+        type: "article",
+        visibility: "public",
+        title: "News",
+        body: "Post body",
+        publishedAt: Date.now(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }),
+    );
+
+    await expect(
+      t.withIdentity(ALICE).mutation(api.orgs.remove, { orgId: org._id }),
+    ).rejects.toThrow(/posts/);
+    expect(await t.run((ctx) => ctx.db.get(org._id))).not.toBeNull();
+  });
 });
 
 // ── discover / listUserOrgs / getBySlug ─────────────────────────────

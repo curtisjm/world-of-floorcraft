@@ -63,15 +63,17 @@ type PricingFormData = z.infer<typeof pricingSchema>;
 export default function SettingsPage() {
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const isLoading = comp === undefined;
 
   const updateMutation = useMutation(api.competitions.core.update);
+  const archiveMutation = useMutation(api.competitions.core.archive);
   const deleteMutation = useMutation(api.competitions.core.remove);
   const compCodeMutation = useMutation(api.competitions.core.setCompCode);
   const masterPasswordMutation = useMutation(api.competitions.core.setMasterPassword);
 
   const [updatePending, setUpdatePending] = useState(false);
+  const [archivePending, setArchivePending] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
   const [compCodePending, setCompCodePending] = useState(false);
   const [masterPasswordPending, setMasterPasswordPending] = useState(false);
@@ -282,9 +284,23 @@ export default function SettingsPage() {
     }
   };
 
+  const handleArchive = async () => {
+    if (!comp || comp.status === "archived") return;
+    if (!confirm(`Archive "${comp.name}"? It will disappear from public competition pages but remain available here.`)) return;
+    setArchivePending(true);
+    try {
+      await archiveMutation({ competitionId: comp._id });
+      toast.success("Competition archived");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setArchivePending(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!comp) return;
-    if (!confirm(`Delete "${comp.name}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete "${comp.name}"? Only setup-only competitions can be hard-deleted.`)) return;
     setDeletePending(true);
     try {
       await deleteMutation({ competitionId: comp._id });
@@ -523,23 +539,47 @@ export default function SettingsPage() {
       {/* Danger Zone */}
       <section>
         <h2 className="text-lg font-semibold text-destructive mb-4">Danger Zone</h2>
-        <Card className="border-destructive/50">
-          <CardContent className="pt-6 flex items-center justify-between">
-            <div>
-              <p className="font-medium">Delete Competition</p>
-              <p className="text-sm text-muted-foreground">
-                This action is irreversible. All data will be permanently deleted.
-              </p>
-            </div>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deletePending}
-            >
-              {deletePending ? "Deleting..." : "Delete"}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card>
+            <CardContent className="pt-6 flex items-center justify-between">
+              <div>
+                <p className="font-medium">Archive Competition</p>
+                <p className="text-sm text-muted-foreground">
+                  Hide this competition from public pages while keeping it available in the organizer dashboard.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleArchive}
+                disabled={archivePending || comp.status === "archived"}
+              >
+                {comp.status === "archived"
+                  ? "Archived"
+                  : archivePending
+                    ? "Archiving..."
+                    : "Archive"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-destructive/50">
+            <CardContent className="pt-6 flex items-center justify-between">
+              <div>
+                <p className="font-medium">Delete Competition</p>
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete setup-only competitions. Competitions with registrations, scoring, payments, or other user data must be archived instead.
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deletePending}
+              >
+                {deletePending ? "Deleting..." : "Delete"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </section>
     </div>
   );

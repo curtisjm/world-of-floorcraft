@@ -199,7 +199,7 @@ export const getCompetitionPreview = query({
   args: { competitionId: v.id("competitions") },
   handler: async (ctx, args) => {
     const comp = await ctx.db.get(args.competitionId);
-    if (!comp) return null;
+    if (!comp || comp.status === "archived") return null;
     const e = await enrichComp(ctx, comp);
     return {
       id: comp._id,

@@ -115,6 +115,7 @@ export const competitionStatus = v.union(
   v.literal("entries_closed"),
   v.literal("running"),
   v.literal("finished"),
+  v.literal("archived"),
 );
 
 export const scheduleBlockType = v.union(
@@ -731,6 +732,7 @@ export default defineSchema({
     updatedAt: v.number(),
     fulfilledAt: v.optional(v.number()),
   })
+    .index("by_competition", ["competitionId"])
     .index("by_stripe_checkout_session", ["stripeCheckoutSessionId"])
     .index("by_stripe_payment_intent", ["stripePaymentIntentId"]),
 

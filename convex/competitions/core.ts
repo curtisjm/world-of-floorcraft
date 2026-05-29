@@ -1,9 +1,14 @@
 import { ConvexError, v } from "convex/values";
 import * as bcrypt from "bcryptjs";
 import { paginationOptsValidator } from "convex/server";
-import { mutation, query, type QueryCtx } from "../_generated/server";
+import {
+  mutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
-import { getCurrentUser } from "../lib/auth";
+import { getCurrentUser, getCurrentUserOrNull } from "../lib/auth";
 import { badRequest, forbidden, notFound } from "../lib/errors";
 import { requireCompOrgRole } from "../lib/permissions";
 import { competitionStatus } from "../schema";
@@ -44,6 +49,348 @@ async function uniqueSlug(
   return slug;
 }
 
+type Ctx = QueryCtx | MutationCtx;
+
+async function canManageCompetition(
+  ctx: Ctx,
+  competition: Doc<"competitions">,
+): Promise<boolean> {
+  const user = await getCurrentUserOrNull(ctx);
+  if (!user) return false;
+
+  const org = await ctx.db.get(competition.orgId);
+  if (org?.ownerId === user._id) return true;
+
+  const membership = await ctx.db
+    .query("memberships")
+    .withIndex("by_org_user", (q) =>
+      q.eq("orgId", competition.orgId).eq("userId", user._id),
+    )
+    .unique();
+  if (membership?.role === "admin") return true;
+
+  const scrutineer = await ctx.db
+    .query("competitionStaff")
+    .withIndex("by_competition_user_role", (q) =>
+      q
+        .eq("competitionId", competition._id)
+        .eq("userId", user._id)
+        .eq("role", "scrutineer"),
+    )
+    .unique();
+  return scrutineer !== null;
+}
+
+async function visibleOnPublicSurfaces(
+  ctx: Ctx,
+  competition: Doc<"competitions">,
+  includeArchived: boolean | undefined,
+): Promise<boolean> {
+  if (competition.status !== "archived") return true;
+  return includeArchived === true && (await canManageCompetition(ctx, competition));
+}
+
+async function competitionDeletionBlockers(
+  ctx: Ctx,
+  competitionId: Id<"competitions">,
+): Promise<string[]> {
+  const blockers: string[] = [];
+  const add = (label: string, count: number) => {
+    if (count > 0) blockers.push(`${label} (${count})`);
+  };
+
+  const registrations = await ctx.db
+    .query("competitionRegistrations")
+    .withIndex("by_competition_user", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  add("registrations", registrations.length);
+
+  const payments = await ctx.db
+    .query("payments")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  add("payments", payments.length);
+
+  const checkoutSessions = await ctx.db
+    .query("stripeCheckoutSessions")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  add("checkout sessions", checkoutSessions.length);
+
+  let registrationCheckins = 0;
+  for (const registration of registrations) {
+    registrationCheckins += (
+      await ctx.db
+        .query("registrationCheckins")
+        .withIndex("by_registration", (q) =>
+          q.eq("registrationId", registration._id),
+        )
+        .collect()
+    ).length;
+  }
+  add("check-ins", registrationCheckins);
+
+  const events = await ctx.db
+    .query("competitionEvents")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+
+  const entryIds = new Set<Id<"entries">>();
+  const directEntries = await ctx.db
+    .query("entries")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  for (const entry of directEntries) entryIds.add(entry._id);
+
+  let rounds = 0;
+  let heats = 0;
+  let heatAssignments = 0;
+  let callbackMarks = 0;
+  let finalMarks = 0;
+  let judgeSubmissions = 0;
+  let callbackResults = 0;
+  let finalResults = 0;
+  let tabulationTables = 0;
+  let roundResultsMeta = 0;
+  const activeRounds = (
+    await ctx.db
+      .query("activeRounds")
+      .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+      .collect()
+  ).length;
+  let markCorrections = 0;
+  let deckCaptainCheckins = 0;
+
+  for (const event of events) {
+    const eventEntries = await ctx.db
+      .query("entries")
+      .withIndex("by_event", (q) => q.eq("eventId", event._id))
+      .collect();
+    for (const entry of eventEntries) entryIds.add(entry._id);
+
+    const eventRounds = await ctx.db
+      .query("rounds")
+      .withIndex("by_event_position", (q) => q.eq("eventId", event._id))
+      .collect();
+    rounds += eventRounds.length;
+
+    for (const round of eventRounds) {
+      const roundHeats = await ctx.db
+        .query("heats")
+        .withIndex("by_round_number", (q) => q.eq("roundId", round._id))
+        .collect();
+      heats += roundHeats.length;
+      for (const heat of roundHeats) {
+        heatAssignments += (
+          await ctx.db
+            .query("heatAssignments")
+            .withIndex("by_heat_entry", (q) => q.eq("heatId", heat._id))
+            .collect()
+        ).length;
+      }
+
+      callbackMarks += (
+        await ctx.db
+          .query("callbackMarks")
+          .withIndex("by_round_judge_entry", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+      finalMarks += (
+        await ctx.db
+          .query("finalMarks")
+          .withIndex("by_round_judge_entry_dance", (q) =>
+            q.eq("roundId", round._id),
+          )
+          .collect()
+      ).length;
+      judgeSubmissions += (
+        await ctx.db
+          .query("judgeSubmissions")
+          .withIndex("by_round_judge", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+      callbackResults += (
+        await ctx.db
+          .query("callbackResults")
+          .withIndex("by_round_entry", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+      finalResults += (
+        await ctx.db
+          .query("finalResults")
+          .withIndex("by_round_entry_dance", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+      tabulationTables += (
+        await ctx.db
+          .query("tabulationTables")
+          .withIndex("by_round_entry_dance", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+      roundResultsMeta += (
+        await ctx.db
+          .query("roundResultsMeta")
+          .withIndex("by_round", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+      markCorrections += (
+        await ctx.db
+          .query("markCorrections")
+          .withIndex("by_round", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+      deckCaptainCheckins += (
+        await ctx.db
+          .query("deckCaptainCheckins")
+          .withIndex("by_round_entry", (q) => q.eq("roundId", round._id))
+          .collect()
+      ).length;
+    }
+  }
+
+  add("entries", entryIds.size);
+  add("rounds", rounds);
+  add("heats", heats);
+  add("heat assignments", heatAssignments);
+  add("callback marks", callbackMarks);
+  add("final marks", finalMarks);
+  add("judge submissions", judgeSubmissions);
+  add("callback results", callbackResults);
+  add("final results", finalResults);
+  add("tabulation tables", tabulationTables);
+  add("round result metadata", roundResultsMeta);
+  add("active rounds", activeRounds);
+  add("mark corrections", markCorrections);
+  add("deck check-ins", deckCaptainCheckins);
+
+  const judgeSessions = await ctx.db
+    .query("judgeSessions")
+    .withIndex("by_competition_judge", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  add("judge sessions", judgeSessions.length);
+
+  const tbaListings = await ctx.db
+    .query("tbaListings")
+    .withIndex("by_competition_fulfilled", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  add("TBA listings", tbaListings.length);
+
+  const teamMatchSubmissions = await ctx.db
+    .query("teamMatchSubmissions")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  add("team match submissions", teamMatchSubmissions.length);
+
+  const addDropRequests = await ctx.db
+    .query("addDropRequests")
+    .withIndex("by_competition_status", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  add("add/drop requests", addDropRequests.length);
+
+  const announcementNotes = await ctx.db
+    .query("announcementNotes")
+    .withIndex("by_competition_day", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  add("announcement notes", announcementNotes.length);
+
+  const feedbackForms = await ctx.db
+    .query("feedbackForms")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  add("feedback forms", feedbackForms.length);
+
+  let feedbackResponses = 0;
+  for (const form of feedbackForms) {
+    feedbackResponses += (
+      await ctx.db
+        .query("feedbackResponses")
+        .withIndex("by_form_user", (q) => q.eq("formId", form._id))
+        .collect()
+    ).length;
+  }
+  add("feedback responses", feedbackResponses);
+
+  const recordRemovalRequests = await ctx.db
+    .query("recordRemovalRequests")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  add("record-removal requests", recordRemovalRequests.length);
+
+  return blockers;
+}
+
+async function deleteCompetitionSetupRows(
+  ctx: MutationCtx,
+  competitionId: Id<"competitions">,
+): Promise<void> {
+  const days = await ctx.db
+    .query("competitionDays")
+    .withIndex("by_competition_position", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  for (const day of days) {
+    const blocks = await ctx.db
+      .query("scheduleBlocks")
+      .withIndex("by_day_position", (q) => q.eq("dayId", day._id))
+      .collect();
+    for (const block of blocks) await ctx.db.delete(block._id);
+    await ctx.db.delete(day._id);
+  }
+
+  const events = await ctx.db
+    .query("competitionEvents")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  for (const event of events) {
+    const dances = await ctx.db
+      .query("eventDances")
+      .withIndex("by_event_position", (q) => q.eq("eventId", event._id))
+      .collect();
+    for (const dance of dances) await ctx.db.delete(dance._id);
+
+    const overrides = await ctx.db
+      .query("eventTimeOverrides")
+      .withIndex("by_event", (q) => q.eq("eventId", event._id))
+      .collect();
+    for (const override of overrides) await ctx.db.delete(override._id);
+
+    await ctx.db.delete(event._id);
+  }
+
+  const competitionJudges = await ctx.db
+    .query("competitionJudges")
+    .withIndex("by_competition_judge", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  for (const judge of competitionJudges) await ctx.db.delete(judge._id);
+
+  const staffRows = await ctx.db
+    .query("competitionStaff")
+    .withIndex("by_competition_user_role", (q) =>
+      q.eq("competitionId", competitionId),
+    )
+    .collect();
+  for (const staff of staffRows) await ctx.db.delete(staff._id);
+
+  const tiers = await ctx.db
+    .query("pricingTiers")
+    .withIndex("by_competition", (q) => q.eq("competitionId", competitionId))
+    .collect();
+  for (const tier of tiers) await ctx.db.delete(tier._id);
+}
+
 // ── Queries ─────────────────────────────────────────────────────────
 
 /**
@@ -52,13 +399,19 @@ async function uniqueSlug(
  * Joins the parent org for header rendering.
  */
 export const getBySlug = query({
-  args: { slug: v.string() },
+  args: {
+    slug: v.string(),
+    includeArchived: v.optional(v.boolean()),
+  },
   handler: async (ctx, args) => {
     const comp = await ctx.db
       .query("competitions")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .unique();
     if (!comp) return null;
+    if (!(await visibleOnPublicSurfaces(ctx, comp, args.includeArchived))) {
+      return null;
+    }
     const org = await ctx.db.get(comp.orgId);
     return {
       ...comp,
@@ -77,6 +430,7 @@ export const list = query({
   args: {
     status: v.optional(competitionStatus),
     orgId: v.optional(v.id("organizations")),
+    includeArchived: v.optional(v.boolean()),
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
@@ -112,8 +466,21 @@ export const list = query({
         .order("desc")
         .paginate(args.paginationOpts);
     })();
+    const visible = [] as Doc<"competitions">[];
+    for (const competition of result.page) {
+      if (
+        await visibleOnPublicSurfaces(
+          ctx,
+          competition,
+          args.includeArchived,
+        )
+      ) {
+        visible.push(competition);
+      }
+    }
+
     const enriched = await Promise.all(
-      result.page.map(async (c) => {
+      visible.map(async (c) => {
         const org = await ctx.db.get(c.orgId);
         return {
           ...c,
@@ -259,8 +626,9 @@ export const setupStatus = query({
       "finished",
     ];
     const registrationOpen =
+      competition.status !== "archived" &&
       statusOrder.indexOf(competition.status) >=
-      statusOrder.indexOf("accepting_entries");
+        statusOrder.indexOf("accepting_entries");
 
     // 5. Competitor numbers — all active registrations have a number
     const regs = await ctx.db
@@ -451,9 +819,24 @@ export const updateStatus = mutation({
 });
 
 /**
- * Delete a competition. Owner only. Cascades to schedule, events, staff,
- * judge assignments, registrations, entries, payments, rounds, marks, and
- * other competition-scoped rows.
+ * Archive a competition so public list/detail/calendar surfaces no longer show
+ * it while organizer dashboard URLs can still manage the retained records.
+ */
+export const archive = mutation({
+  args: { competitionId: v.id("competitions") },
+  handler: async (ctx, args) => {
+    await requireCompOrgRole(ctx, args.competitionId);
+    await ctx.db.patch(args.competitionId, {
+      status: "archived",
+      updatedAt: Date.now(),
+    });
+    return await ctx.db.get(args.competitionId);
+  },
+});
+
+/**
+ * Delete a setup-only competition. Owner only. Real-world/user data blocks
+ * hard deletion; organizers should archive those competitions instead.
  */
 export const remove = mutation({
   args: { competitionId: v.id("competitions") },
@@ -466,118 +849,17 @@ export const remove = mutation({
       forbidden("Only the org owner can delete a competition");
     }
 
-    // Cascading cleanup — schema does not enforce FK on Convex, so we
-    // explicitly delete children. Order: dependents first.
-
-    // Schedule
-    const days = await ctx.db
-      .query("competitionDays")
-      .withIndex("by_competition_position", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const day of days) {
-      const blocks = await ctx.db
-        .query("scheduleBlocks")
-        .withIndex("by_day_position", (q) => q.eq("dayId", day._id))
-        .collect();
-      for (const b of blocks) await ctx.db.delete(b._id);
-      await ctx.db.delete(day._id);
+    const blockers = await competitionDeletionBlockers(ctx, args.competitionId);
+    if (blockers.length > 0) {
+      throw new ConvexError({
+        code: "CONFLICT",
+        message:
+          "Cannot hard-delete a competition with user data. " +
+          `Archive it instead. Blocking records: ${blockers.join(", ")}.`,
+      });
     }
 
-    // Events + dances + per-event derived data
-    const events = await ctx.db
-      .query("competitionEvents")
-      .withIndex("by_competition", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const event of events) {
-      const dances = await ctx.db
-        .query("eventDances")
-        .withIndex("by_event_position", (q) => q.eq("eventId", event._id))
-        .collect();
-      for (const d of dances) await ctx.db.delete(d._id);
-      const rounds = await ctx.db
-        .query("rounds")
-        .withIndex("by_event_position", (q) => q.eq("eventId", event._id))
-        .collect();
-      for (const r of rounds) await ctx.db.delete(r._id);
-      const overrides = await ctx.db
-        .query("eventTimeOverrides")
-        .withIndex("by_event", (q) => q.eq("eventId", event._id))
-        .collect();
-      for (const o of overrides) await ctx.db.delete(o._id);
-      const eventEntries = await ctx.db
-        .query("entries")
-        .withIndex("by_event", (q) => q.eq("eventId", event._id))
-        .collect();
-      for (const e of eventEntries) await ctx.db.delete(e._id);
-      await ctx.db.delete(event._id);
-    }
-
-    // Judges + staff assignments
-    const cjs = await ctx.db
-      .query("competitionJudges")
-      .withIndex("by_competition_judge", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const cj of cjs) await ctx.db.delete(cj._id);
-    const staffRows = await ctx.db
-      .query("competitionStaff")
-      .withIndex("by_competition_user_role", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const s of staffRows) await ctx.db.delete(s._id);
-
-    // Registrations + payments + pricing tiers
-    const regs = await ctx.db
-      .query("competitionRegistrations")
-      .withIndex("by_competition_user", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const reg of regs) {
-      const payRows = await ctx.db
-        .query("payments")
-        .withIndex("by_registration", (q) => q.eq("registrationId", reg._id))
-        .collect();
-      for (const p of payRows) await ctx.db.delete(p._id);
-      await ctx.db.delete(reg._id);
-    }
-    const tiers = await ctx.db
-      .query("pricingTiers")
-      .withIndex("by_competition", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const t of tiers) await ctx.db.delete(t._id);
-
-    // TBA + team match + add/drop
-    const tbas = await ctx.db
-      .query("tbaListings")
-      .withIndex("by_competition_fulfilled", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const t of tbas) await ctx.db.delete(t._id);
-    const teamMatch = await ctx.db
-      .query("teamMatchSubmissions")
-      .withIndex("by_competition", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const t of teamMatch) await ctx.db.delete(t._id);
-    const addDrops = await ctx.db
-      .query("addDropRequests")
-      .withIndex("by_competition_status", (q) =>
-        q.eq("competitionId", args.competitionId),
-      )
-      .collect();
-    for (const ad of addDrops) await ctx.db.delete(ad._id);
-
+    await deleteCompetitionSetupRows(ctx, args.competitionId);
     await ctx.db.delete(args.competitionId);
     return { success: true };
   },

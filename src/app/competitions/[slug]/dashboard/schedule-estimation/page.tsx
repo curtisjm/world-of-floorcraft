@@ -22,7 +22,7 @@ import {
 
 export default function ScheduleEstimationPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const schedule = useQuery(
     api.competitions.scheduleEstimation.getEstimatedSchedule,
     comp ? { competitionId: comp._id } : "skip",

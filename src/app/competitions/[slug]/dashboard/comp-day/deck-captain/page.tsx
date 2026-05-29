@@ -22,7 +22,7 @@ import {
 
 export default function DeckCaptainPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
 
   if (!comp) {
     return (

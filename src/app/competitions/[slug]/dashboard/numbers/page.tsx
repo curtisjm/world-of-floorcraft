@@ -23,7 +23,7 @@ import { Wand2, Pencil, X } from "lucide-react";
 
 export default function NumbersPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const assignments = useQuery(
     api.competitions.numbers.listAssignments,
     comp ? { competitionId: comp._id } : "skip",

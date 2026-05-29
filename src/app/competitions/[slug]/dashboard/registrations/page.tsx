@@ -45,7 +45,7 @@ type RegistrationListItem = {
 
 export default function RegistrationsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const [sortBy, setSortBy] = useState<"org" | "name" | "paid" | "checked_in">("name");
   const registrations = useQuery(
     api.competitions.registration.listByCompetition,

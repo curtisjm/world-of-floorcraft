@@ -20,7 +20,7 @@ import { cn } from "@shared/lib/utils";
 
 export default function RoundsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const events = useQuery(
     api.competitions.events.listByCompetition,
     comp ? { competitionId: comp._id } : "skip",

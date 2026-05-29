@@ -33,7 +33,7 @@ const statusTransitions: Record<string, { label: string; next: string }[]> = {
 
 export default function DashboardOverviewPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const dashboard = useQuery(
     api.competitions.core.getForDashboard,
     comp ? { competitionId: comp._id } : "skip",

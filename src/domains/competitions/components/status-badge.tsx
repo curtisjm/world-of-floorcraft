@@ -31,6 +31,10 @@ const statusConfig: Record<
     label: "Finished",
     className: "border-border bg-muted text-muted-foreground",
   },
+  archived: {
+    label: "Archived",
+    className: "border-border bg-muted text-muted-foreground",
+  },
 };
 
 export function StatusBadge({

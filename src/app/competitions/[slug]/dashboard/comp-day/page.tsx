@@ -63,7 +63,7 @@ function formatTime(date: Date | string | number) {
 
 export default function CompDayDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
 
   const dashboard = useQuery(
     api.competitions.scrutineer.getDashboard,

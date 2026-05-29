@@ -57,7 +57,7 @@ type StaffMember = {
 
 export default function StaffPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const staffList = useQuery(
     api.competitions.staff.listByCompetition,
     comp ? { competitionId: comp._id } : "skip",

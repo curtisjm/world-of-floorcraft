@@ -22,7 +22,7 @@ import { toast } from "sonner";
 
 export default function FeedbackDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
 
   const form = useQuery(
     api.competitions.feedback.getForm,

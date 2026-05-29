@@ -13,7 +13,7 @@ import { Medal } from "lucide-react";
 
 export default function StatsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const stats = useQuery(
     api.competitions.stats.getCompetitionStats,
     comp ? { competitionId: comp._id } : "skip",

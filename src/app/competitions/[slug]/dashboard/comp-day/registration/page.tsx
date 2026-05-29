@@ -56,7 +56,7 @@ type RegRow = {
 
 export default function RegistrationTablePage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
 
   const orgGroups = useQuery(
     api.competitions.compDay.getRegistrationTable,

@@ -13,7 +13,7 @@ import { DollarSign, CreditCard, Banknote, CheckCircle2, AlertCircle } from "luc
 
 export default function PaymentsPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const summary = useQuery(
     api.competitions.payments.summaryByCompetition,
     comp ? { competitionId: comp._id } : "skip",

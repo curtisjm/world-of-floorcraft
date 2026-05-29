@@ -34,7 +34,7 @@ type JudgeFormData = z.infer<typeof judgeSchema>;
 
 export default function JudgesPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
   const assignedJudges = useQuery(
     api.competitions.judges.listByCompetition,
     comp ? { competitionId: comp._id } : "skip",

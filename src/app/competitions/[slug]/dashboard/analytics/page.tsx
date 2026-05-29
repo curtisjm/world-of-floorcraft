@@ -28,7 +28,7 @@ import {
 
 export default function AnalyticsDashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const comp = useQuery(api.competitions.core.getBySlug, { slug });
+  const comp = useQuery(api.competitions.core.getBySlug, { slug, includeArchived: true });
 
   return (
     <div className="space-y-6">
