@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "../_generated/server";
+import { mutation, query, type MutationCtx } from "../_generated/server";
 import type { Doc, Id } from "../_generated/dataModel";
 import { notFound } from "../lib/errors";
 import { requireCompOrgRole } from "../lib/permissions";
@@ -210,6 +210,147 @@ export const update = mutation({
   },
 });
 
+async function loadRoundsByEvent(
+  ctx: MutationCtx,
+  eventId: Id<"competitionEvents">,
+) {
+  return await ctx.db
+    .query("rounds")
+    .withIndex("by_event_position", (q) => q.eq("eventId", eventId))
+    .collect();
+}
+
+async function deleteRoundGraph(ctx: MutationCtx, round: Doc<"rounds">) {
+  const heatAssignmentIds = new Set<Id<"heatAssignments">>();
+
+  const activeRounds = await ctx.db
+    .query("activeRounds")
+    .withIndex("by_round", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const active of activeRounds) await ctx.db.delete(active._id);
+
+  const deckCheckins = await ctx.db
+    .query("deckCaptainCheckins")
+    .withIndex("by_round_entry", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const checkin of deckCheckins) await ctx.db.delete(checkin._id);
+
+  const callbackMarks = await ctx.db
+    .query("callbackMarks")
+    .withIndex("by_round_judge_entry", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const mark of callbackMarks) await ctx.db.delete(mark._id);
+
+  const finalMarks = await ctx.db
+    .query("finalMarks")
+    .withIndex("by_round_judge_entry_dance", (q) =>
+      q.eq("roundId", round._id),
+    )
+    .collect();
+  for (const mark of finalMarks) await ctx.db.delete(mark._id);
+
+  const judgeSubmissions = await ctx.db
+    .query("judgeSubmissions")
+    .withIndex("by_round_judge", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const submission of judgeSubmissions) {
+    await ctx.db.delete(submission._id);
+  }
+
+  const callbackResults = await ctx.db
+    .query("callbackResults")
+    .withIndex("by_round_entry", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const result of callbackResults) await ctx.db.delete(result._id);
+
+  const finalResults = await ctx.db
+    .query("finalResults")
+    .withIndex("by_round_entry_dance", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const result of finalResults) await ctx.db.delete(result._id);
+
+  const tabulationTables = await ctx.db
+    .query("tabulationTables")
+    .withIndex("by_round_entry_dance", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const table of tabulationTables) await ctx.db.delete(table._id);
+
+  const roundMetas = await ctx.db
+    .query("roundResultsMeta")
+    .withIndex("by_round", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const meta of roundMetas) await ctx.db.delete(meta._id);
+
+  const markCorrections = await ctx.db
+    .query("markCorrections")
+    .withIndex("by_round", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const correction of markCorrections) {
+    await ctx.db.delete(correction._id);
+  }
+
+  const heats = await ctx.db
+    .query("heats")
+    .withIndex("by_round_number", (q) => q.eq("roundId", round._id))
+    .collect();
+  for (const heat of heats) {
+    const assignments = await ctx.db
+      .query("heatAssignments")
+      .withIndex("by_heat_entry", (q) => q.eq("heatId", heat._id))
+      .collect();
+    for (const assignment of assignments) {
+      heatAssignmentIds.add(assignment._id);
+      await ctx.db.delete(assignment._id);
+    }
+    await ctx.db.delete(heat._id);
+  }
+
+  await ctx.db.delete(round._id);
+  return heatAssignmentIds;
+}
+
+async function deleteEntryGraphForEvent(
+  ctx: MutationCtx,
+  eventId: Id<"competitionEvents">,
+  heatAssignmentIds: Set<Id<"heatAssignments">>,
+) {
+  const eventEntries = await ctx.db
+    .query("entries")
+    .withIndex("by_event", (q) => q.eq("eventId", eventId))
+    .collect();
+
+  for (const entry of eventEntries) {
+    const assignments = await ctx.db
+      .query("heatAssignments")
+      .withIndex("by_entry", (q) => q.eq("entryId", entry._id))
+      .collect();
+    for (const assignment of assignments) heatAssignmentIds.add(assignment._id);
+  }
+  for (const assignmentId of heatAssignmentIds) {
+    const assignment = await ctx.db.get(assignmentId);
+    if (assignment) await ctx.db.delete(assignmentId);
+  }
+
+  for (const entry of eventEntries) await ctx.db.delete(entry._id);
+}
+
+async function deleteEventMetadata(
+  ctx: MutationCtx,
+  eventId: Id<"competitionEvents">,
+) {
+  const timeOverrides = await ctx.db
+    .query("eventTimeOverrides")
+    .withIndex("by_event", (q) => q.eq("eventId", eventId))
+    .collect();
+  for (const override of timeOverrides) await ctx.db.delete(override._id);
+
+  const dances = await ctx.db
+    .query("eventDances")
+    .withIndex("by_event_position", (q) => q.eq("eventId", eventId))
+    .collect();
+  for (const d of dances) await ctx.db.delete(d._id);
+}
+
 export const remove = mutation({
   args: { eventId: v.id("competitionEvents") },
   handler: async (ctx, args) => {
@@ -217,122 +358,17 @@ export const remove = mutation({
     if (!event) notFound("Event not found");
     await requireCompOrgRole(ctx, event.competitionId);
 
-    const rounds = await ctx.db
-      .query("rounds")
-      .withIndex("by_event_position", (q) => q.eq("eventId", args.eventId))
-      .collect();
-    const eventEntries = await ctx.db
-      .query("entries")
-      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
-      .collect();
-
+    const rounds = await loadRoundsByEvent(ctx, args.eventId);
     const heatAssignmentIds = new Set<Id<"heatAssignments">>();
     for (const round of rounds) {
-      const activeRounds = await ctx.db
-        .query("activeRounds")
-        .withIndex("by_round", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const active of activeRounds) await ctx.db.delete(active._id);
-
-      const deckCheckins = await ctx.db
-        .query("deckCaptainCheckins")
-        .withIndex("by_round_entry", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const checkin of deckCheckins) await ctx.db.delete(checkin._id);
-
-      const callbackMarks = await ctx.db
-        .query("callbackMarks")
-        .withIndex("by_round_judge_entry", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const mark of callbackMarks) await ctx.db.delete(mark._id);
-
-      const finalMarks = await ctx.db
-        .query("finalMarks")
-        .withIndex("by_round_judge_entry_dance", (q) =>
-          q.eq("roundId", round._id),
-        )
-        .collect();
-      for (const mark of finalMarks) await ctx.db.delete(mark._id);
-
-      const judgeSubmissions = await ctx.db
-        .query("judgeSubmissions")
-        .withIndex("by_round_judge", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const submission of judgeSubmissions) await ctx.db.delete(submission._id);
-
-      const callbackResults = await ctx.db
-        .query("callbackResults")
-        .withIndex("by_round_entry", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const result of callbackResults) await ctx.db.delete(result._id);
-
-      const finalResults = await ctx.db
-        .query("finalResults")
-        .withIndex("by_round_entry_dance", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const result of finalResults) await ctx.db.delete(result._id);
-
-      const tabulationTables = await ctx.db
-        .query("tabulationTables")
-        .withIndex("by_round_entry_dance", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const table of tabulationTables) await ctx.db.delete(table._id);
-
-      const roundMetas = await ctx.db
-        .query("roundResultsMeta")
-        .withIndex("by_round", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const meta of roundMetas) await ctx.db.delete(meta._id);
-
-      const markCorrections = await ctx.db
-        .query("markCorrections")
-        .withIndex("by_round", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const correction of markCorrections) await ctx.db.delete(correction._id);
-
-      const heats = await ctx.db
-        .query("heats")
-        .withIndex("by_round_number", (q) => q.eq("roundId", round._id))
-        .collect();
-      for (const heat of heats) {
-        const assignments = await ctx.db
-          .query("heatAssignments")
-          .withIndex("by_heat_entry", (q) => q.eq("heatId", heat._id))
-          .collect();
-        for (const assignment of assignments) {
-          heatAssignmentIds.add(assignment._id);
-          await ctx.db.delete(assignment._id);
-        }
-        await ctx.db.delete(heat._id);
+      const roundHeatAssignmentIds = await deleteRoundGraph(ctx, round);
+      for (const assignmentId of roundHeatAssignmentIds) {
+        heatAssignmentIds.add(assignmentId);
       }
     }
 
-    for (const entry of eventEntries) {
-      const assignments = await ctx.db
-        .query("heatAssignments")
-        .withIndex("by_entry", (q) => q.eq("entryId", entry._id))
-        .collect();
-      for (const assignment of assignments) heatAssignmentIds.add(assignment._id);
-    }
-    for (const assignmentId of heatAssignmentIds) {
-      const assignment = await ctx.db.get(assignmentId);
-      if (assignment) await ctx.db.delete(assignmentId);
-    }
-
-    for (const round of rounds) await ctx.db.delete(round._id);
-
-    const timeOverrides = await ctx.db
-      .query("eventTimeOverrides")
-      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
-      .collect();
-    for (const override of timeOverrides) await ctx.db.delete(override._id);
-
-    const dances = await ctx.db
-      .query("eventDances")
-      .withIndex("by_event_position", (q) => q.eq("eventId", args.eventId))
-      .collect();
-    for (const d of dances) await ctx.db.delete(d._id);
-    for (const e of eventEntries) await ctx.db.delete(e._id);
+    await deleteEntryGraphForEvent(ctx, args.eventId, heatAssignmentIds);
+    await deleteEventMetadata(ctx, args.eventId);
 
     await ctx.db.delete(args.eventId);
     return { success: true };
