@@ -263,4 +263,53 @@ describe("syllabus import", () => {
     }));
     expect(counts).toEqual({ dances: 1, figures: 2, edges: 1 });
   });
+
+  it("bulk import resolves natural keys without delimiter collisions", async () => {
+    const t = setup();
+    const firstVariant = "B\u0000C";
+
+    await t.mutation(internal.syllabus.import.importSyllabus, {
+      dances: [{ name: "waltz", displayName: "Waltz" }],
+      figures: [
+        {
+          danceName: "waltz",
+          name: "Leader",
+          level: "student_teacher" as const,
+        },
+        {
+          danceName: "waltz",
+          name: "A",
+          variantName: firstVariant,
+          level: "student_teacher" as const,
+        },
+        {
+          danceName: "waltz",
+          name: "A\u0000B",
+          variantName: "C",
+          level: "student_teacher" as const,
+        },
+      ],
+      edges: [
+        {
+          danceName: "waltz",
+          sourceName: "Leader",
+          targetName: "A",
+          targetVariantName: firstVariant,
+          level: "student_teacher" as const,
+        },
+      ],
+    });
+
+    const rows = await t.run(async (ctx) => ({
+      figures: await ctx.db.query("figures").collect(),
+      edges: await ctx.db.query("figureEdges").collect(),
+    }));
+    const expectedTarget = rows.figures.find(
+      (figure) => figure.name === "A" && figure.variantName === firstVariant,
+    );
+
+    expect(expectedTarget).toBeTruthy();
+    expect(rows.edges).toHaveLength(1);
+    expect(rows.edges[0].targetFigureId).toBe(expectedTarget?._id);
+  });
 });

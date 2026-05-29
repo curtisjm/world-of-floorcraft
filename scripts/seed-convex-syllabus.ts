@@ -18,12 +18,15 @@
 
 import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse } from "yaml";
 
-const REPO_ROOT = join(__dirname, "..");
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = join(SCRIPT_DIR, "..");
 const DATA_DIR = join(REPO_ROOT, "data");
-const dryRun = process.argv.includes("--dry-run");
+
+export const MAX_UNMATCHED_EDGE_REFERENCES = 224;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -145,6 +148,28 @@ const LEVEL_ORDER: Record<string, number> = {
   licentiate: 2,
   fellow: 3,
 };
+
+export function validateUnmatchedReferenceBudget(
+  edgesUnmatched: number,
+  maxAllowed = MAX_UNMATCHED_EDGE_REFERENCES,
+): { ok: boolean; message: string } {
+  if (edgesUnmatched > maxAllowed) {
+    return {
+      ok: false,
+      message:
+        `Unmatched references skipped (${edgesUnmatched}) exceed the ` +
+        `accepted seed threshold (${maxAllowed}). Review the parser/data ` +
+        `before importing so edge coverage does not regress silently.`,
+    };
+  }
+
+  return {
+    ok: true,
+    message:
+      `Unmatched reference threshold: ${edgesUnmatched}/${maxAllowed} ` +
+      `skipped references (dry run fails above this accepted maximum).`,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Edge parsing helpers (ported verbatim from scripts/seed.ts)
@@ -533,7 +558,8 @@ function buildBundles(figures: RawFigure[]): {
 // Main
 // ---------------------------------------------------------------------------
 
-function main() {
+export function main(argv = process.argv) {
+  const dryRun = argv.includes("--dry-run");
   const figures = loadFigures();
   if (figures.length === 0) {
     console.log("No YAML files to seed from. Run extraction first.");
@@ -558,6 +584,14 @@ function main() {
       `Edges: ${totalEdges} (unmatched references skipped: ${edgesUnmatched})`,
   );
 
+  const unmatchedBudget = validateUnmatchedReferenceBudget(edgesUnmatched);
+  console.log(unmatchedBudget.message);
+  if (!unmatchedBudget.ok) {
+    console.error(`\nERROR: ${unmatchedBudget.message}`);
+    process.exitCode = 1;
+    return;
+  }
+
   if (dryRun) {
     console.log("\n--- DRY RUN: no data written to Convex ---");
     return;
@@ -580,4 +614,9 @@ function main() {
   console.log("\nDone.");
 }
 
-main();
+if (
+  process.argv[1] &&
+  pathToFileURL(process.argv[1]).href === import.meta.url
+) {
+  main();
+}
