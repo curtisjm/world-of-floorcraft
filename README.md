@@ -195,19 +195,23 @@ pnpm install
 cp .env.example .env.local
 # Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY from Clerk.
 # NEXT_PUBLIC_CONVEX_URL is written by `npx convex dev`.
+# JUDGE_JWT_SECRET is generated and set on the Convex deployment below.
 # Add STRIPE_WEBHOOK_SECRET locally only if testing the local webhook route.
 
 # Provision/link Convex with a supported Node version.
 # In the Nix shell you can run `npx convex ...` directly; otherwise use mise to force Node 22.
 # On the first run, Convex may create the deployment and then stop because
-# CLERK_JWT_ISSUER_DOMAIN is not set yet; continue with the env set commands.
+# required Convex env values such as CLERK_JWT_ISSUER_DOMAIN or JUDGE_JWT_SECRET
+# are not set yet; continue with the env set commands.
 mise exec node@22 -- npx convex dev --once
 
 # Configure backend environment variables on the Convex deployment.
 # CLERK_JWT_ISSUER_DOMAIN is Clerk's Frontend API URL / JWT issuer for the Convex template.
+# JUDGE_JWT_SECRET signs judge tablet JWTs and must be a strong 32+ character secret.
 # STRIPE_CHECKOUT_ALLOWED_ORIGINS is a comma-separated list of allowed app origins
 # for Checkout success/cancel redirects, and must be set on the Convex deployment.
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
+mise exec node@22 -- npx convex env set JUDGE_JWT_SECRET "$(openssl rand -base64 32)"
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
 mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...

@@ -112,12 +112,14 @@ pnpm convex:dev
 `convex dev` writes `NEXT_PUBLIC_CONVEX_URL` to `.env.local` and regenerates
 `convex/_generated/`.
 
-Convex-side auth and Stripe validation need deployment environment variables,
-not just local `.env.local` entries:
+Convex-side auth, judge tablet JWTs, and Stripe validation need deployment
+environment variables, not just local `.env.local` entries:
 
 ```bash
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
+mise exec node@22 -- npx convex env set JUDGE_JWT_SECRET "$(openssl rand -base64 32)"
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
+mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
 mise exec node@22 -- npx convex dev --once
 ```

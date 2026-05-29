@@ -41,6 +41,7 @@ values on the Convex deployment with `npx convex env set`.
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `.env.local` | Clerk publishable key used by Next.js. |
 | `CLERK_SECRET_KEY` | `.env.local` | Clerk secret key used by Next.js/server routes. |
 | `CLERK_JWT_ISSUER_DOMAIN` | Convex deployment env | Clerk Frontend API URL / JWT issuer from https://dashboard.clerk.com/apps/setup/convex. Required by `auth.config.ts`. |
+| `JUDGE_JWT_SECRET` | Convex deployment env | Strong random signing secret for judge tablet JWTs. Required by `competitions/lib/judgeAuth.ts`; must be at least 32 characters long. |
 | `STRIPE_SECRET_KEY` | Convex deployment env | Used by Stripe Node actions. |
 | `STRIPE_CHECKOUT_ALLOWED_ORIGINS` | Convex deployment env | Comma-separated list of allowed app origins for Stripe Checkout success/cancel redirects, for example `https://your-app.example.com,http://localhost:3000`. |
 | `STRIPE_WEBHOOK_SECRET` | Convex deployment env and `.env.local` if using the Next.js webhook route locally | Stripe webhook signing secret. |
@@ -49,6 +50,7 @@ Set Convex deployment env before validating functions:
 
 ```bash
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
+mise exec node@22 -- npx convex env set JUDGE_JWT_SECRET "$(openssl rand -base64 32)"
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
 mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
@@ -64,12 +66,14 @@ cp .env.example .env.local
 # Fill Clerk/Stripe values in .env.local as needed for the Next.js app.
 
 # Link/create the Convex dev deployment and write NEXT_PUBLIC_CONVEX_URL.
-# On a fresh deployment, this may stop after creation because CLERK_JWT_ISSUER_DOMAIN
-# is not set yet; continue with `convex env set` and rerun validation.
+# On a fresh deployment, this may stop after creation because required Convex
+# env values such as CLERK_JWT_ISSUER_DOMAIN or JUDGE_JWT_SECRET are not set
+# yet; continue with `convex env set` and rerun validation.
 mise exec node@22 -- npx convex dev --once
 
 # Set the Convex deployment env values, then validate again.
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
+mise exec node@22 -- npx convex env set JUDGE_JWT_SECRET "$(openssl rand -base64 32)"
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
 mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
