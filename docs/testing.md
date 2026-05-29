@@ -2,19 +2,28 @@
 
 ## Quick Start
 
-Convex function tests run in an edge-runtime environment using `convex-test` — no external services needed.
+`pnpm test` runs the full Vitest suite. The suite is split into projects so Convex function tests run in an edge-runtime environment with `convex-test`, while the existing `src/**/*.test.*` and `scripts/**/*.test.*` unit tests run in Node.
 
 ### Running Tests
 
 ```bash
-# All Convex tests
+# Full unit suite: Convex edge-runtime tests + Node unit tests
 pnpm test
 
-# One file
+# Convex-only project
+pnpm vitest run --project convex
+
+# Non-Convex src unit tests only
+pnpm vitest run --project src
+
+# Script guardrail tests only
+pnpm vitest run --project scripts
+
+# One file (Vitest still uses the matching project config)
 pnpm vitest run convex/syllabus.test.ts
 
-# Watch mode
-pnpm vitest convex/messaging.test.ts
+# Watch mode for one project
+pnpm vitest --project convex convex/messaging.test.ts
 ```
 
 End-to-end tests run with Playwright:
@@ -38,7 +47,7 @@ maps to the `users.tokenIdentifier`/`clerkUserId` index keys used by
 ## Test Layout
 
 ```
-convex/
+convex/                      # Vitest project: convex (edge-runtime)
   schema.ts                  # Tables and indexes shared by every test
   test.setup.ts              # `import.meta.glob` of function modules
   foundation.test.ts         # Sanity check that schema loads
@@ -55,6 +64,9 @@ convex/
     core.test.ts
     live-scoring.test.ts
     payments.test.ts
+
+src/**/*.test.{ts,js,tsx,jsx} # Vitest project: src (node)
+scripts/**/*.test.{ts,js}      # Vitest project: scripts (node)
 ```
 
 ## Writing a Test
