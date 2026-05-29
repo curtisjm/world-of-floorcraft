@@ -102,7 +102,11 @@ async function seedRegistration(
   t: T,
   compId: Id<"competitions">,
   userId: Id<"users">,
-  overrides: { amountOwed?: number; paidConfirmed?: boolean } = {},
+  overrides: {
+    amountOwed?: number;
+    paidConfirmed?: boolean;
+    cancelled?: boolean;
+  } = {},
 ): Promise<Id<"competitionRegistrations">> {
   return t.run((ctx) =>
     ctx.db.insert("competitionRegistrations", {
@@ -113,7 +117,7 @@ async function seedRegistration(
       checkedIn: false,
       registeredAt: Date.now(),
       registeredBy: userId,
-      cancelled: false,
+      cancelled: overrides.cancelled ?? false,
     }),
   );
 }
@@ -129,6 +133,23 @@ async function seedCompetitionStaff(
       competitionId: compId,
       userId,
       role,
+      createdAt: Date.now(),
+    }),
+  );
+}
+
+async function seedPayment(
+  t: T,
+  compId: Id<"competitions">,
+  registrationId: Id<"competitionRegistrations">,
+  amount: number,
+): Promise<Id<"payments">> {
+  return t.run((ctx) =>
+    ctx.db.insert("payments", {
+      competitionId: compId,
+      registrationId,
+      amount,
+      method: "cash",
       createdAt: Date.now(),
     }),
   );
@@ -859,6 +880,146 @@ describe("loadCheckoutData", () => {
     expect(data.stripeAccountId).toBe("acct_test");
     expect(data.competitionId).toBe(compId);
     expect(data.registrationIds.sort()).toEqual([reg1, reg2].sort());
+  });
+
+  it("charges only the outstanding balance after a partial payment", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    const regId = await seedRegistration(t, compId, bobId, {
+      amountOwed: 5000,
+    });
+    await seedPayment(t, compId, regId, 1750);
+
+    const data = await t.mutation(
+      internal.competitions.payments.loadCheckoutData,
+      {
+        registrationIds: [regId],
+        callerUserId: bobId,
+      },
+    );
+    expect(data.totalCents).toBe(3250);
+  });
+
+  it("counts refunds when calculating outstanding balance", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    const regId = await seedRegistration(t, compId, bobId, {
+      amountOwed: 5000,
+    });
+    await seedPayment(t, compId, regId, 4000);
+    await seedPayment(t, compId, regId, -1500);
+
+    const data = await t.mutation(
+      internal.competitions.payments.loadCheckoutData,
+      {
+        registrationIds: [regId],
+        callerUserId: bobId,
+      },
+    );
+    expect(data.totalCents).toBe(2500);
+  });
+
+  it("sums outstanding balances across multiple registrations", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    const reg1 = await seedRegistration(t, compId, bobId, { amountOwed: 5000 });
+    const reg2 = await seedRegistration(t, compId, bobId, { amountOwed: 3000 });
+    await seedPayment(t, compId, reg1, 1000);
+    await seedPayment(t, compId, reg2, 2500);
+
+    const data = await t.mutation(
+      internal.competitions.payments.loadCheckoutData,
+      {
+        registrationIds: [reg1, reg2],
+        callerUserId: bobId,
+      },
+    );
+    expect(data.totalCents).toBe(4500);
+    expect(data.registrationIds.sort()).toEqual([reg1, reg2].sort());
+  });
+
+  it("rejects cancelled registrations", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    const regId = await seedRegistration(t, compId, bobId, {
+      amountOwed: 5000,
+      cancelled: true,
+    });
+
+    await expect(
+      t.mutation(internal.competitions.payments.loadCheckoutData, {
+        registrationIds: [regId],
+        callerUserId: bobId,
+      }),
+    ).rejects.toThrow(/cancelled/i);
+  });
+
+  it("rejects fully paid registrations", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    const regId = await seedRegistration(t, compId, bobId, {
+      amountOwed: 5000,
+    });
+    await seedPayment(t, compId, regId, 5000);
+
+    await expect(
+      t.mutation(internal.competitions.payments.loadCheckoutData, {
+        registrationIds: [regId],
+        callerUserId: bobId,
+      }),
+    ).rejects.toThrow(/paid/i);
+  });
+
+  it("rejects registrations already marked paid", async () => {
+    const t = convexTest(schema, modules);
+    const aliceId = await seedUser(t, ALICE);
+    const bobId = await seedUser(t, BOB);
+    const orgId = await seedOrgWithOwner(t, aliceId);
+    const compId = await seedCompetition(t, ALICE, orgId, {
+      stripeAccountId: "acct_test",
+      stripeOnboardingComplete: true,
+    });
+    const regId = await seedRegistration(t, compId, bobId, {
+      amountOwed: 5000,
+      paidConfirmed: true,
+    });
+
+    await expect(
+      t.mutation(internal.competitions.payments.loadCheckoutData, {
+        registrationIds: [regId],
+        callerUserId: bobId,
+      }),
+    ).rejects.toThrow(/paid/i);
   });
 
   it("rejects a caller who does not own every requested registration", async () => {

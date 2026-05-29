@@ -116,6 +116,19 @@ async function markRegistrationsPaid(
   }
 }
 
+async function getRegistrationPaymentTotalCents(
+  ctx: MutationCtx,
+  registrationId: Id<"competitionRegistrations">,
+): Promise<number> {
+  const rows = await ctx.db
+    .query("payments")
+    .withIndex("by_registration", (q) =>
+      q.eq("registrationId", registrationId),
+    )
+    .collect();
+  return rows.reduce((sum, row) => sum + row.amount, 0);
+}
+
 // ── Queries ─────────────────────────────────────────────────────────
 
 /**
@@ -741,7 +754,26 @@ export const loadCheckoutData = internalMutation({
       }
     }
 
-    const totalCents = regs.reduce((sum, r) => sum + r.amountOwed, 0);
+    // Checkout is all-or-nothing: every requested registration must be
+    // active and still have a positive outstanding balance. We reject invalid
+    // selections instead of silently dropping them so the user never pays for
+    // a different subset of registrations than the one they authorized.
+    let totalCents = 0;
+    for (const reg of regs) {
+      if (reg.cancelled) {
+        badRequest("Cancelled registrations cannot be checked out");
+      }
+      if (reg.paidConfirmed) {
+        badRequest("Registration is already paid");
+      }
+
+      const paidCents = await getRegistrationPaymentTotalCents(ctx, reg._id);
+      const outstandingCents = reg.amountOwed - paidCents;
+      if (outstandingCents <= 0) {
+        badRequest("Registration is already paid or has no outstanding balance");
+      }
+      totalCents += outstandingCents;
+    }
     if (totalCents <= 0) badRequest("Nothing to pay");
 
     return {
