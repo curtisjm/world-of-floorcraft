@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:next": "next build",
+    "vercel-build": "convex deploy --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL --cmd 'pnpm build:next'",
     "start": "next start",
     "lint": "next lint",
     "convex:dev": "convex dev",

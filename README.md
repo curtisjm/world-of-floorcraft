@@ -256,10 +256,35 @@ For the deployed website, configure these places:
    mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
    ```
 
-Run `mise exec node@22 -- npx convex deploy` when deploying backend function
-changes. If the website build runs on Vercel, either use the Convex Vercel
-integration or set a Convex deploy key and run Convex deploy as part of the
-build pipeline.
+### GitHub → Vercel automatic deploys
+
+This repo's `vercel.json` uses `pnpm vercel-build`, which runs:
+
+```bash
+convex deploy --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL --cmd 'pnpm build:next'
+```
+
+That makes every Vercel build deploy the Convex backend and build the Next.js
+site against the same production Convex URL. To enable it in Vercel:
+
+1. In Convex Dashboard, open the production deployment and generate a
+   **Production Deploy Key**.
+2. In Vercel, add the environment variable below for **Production**:
+   ```txt
+   CONVEX_DEPLOY_KEY=<your production deploy key>
+   ```
+3. Keep the Clerk website env vars in Vercel:
+   ```txt
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+   CLERK_SECRET_KEY=sk_...
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   ```
+
+You do not need to manually set `NEXT_PUBLIC_CONVEX_URL` in Vercel for this
+path; `convex deploy --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL` injects the
+correct production URL into the build. Add Stripe env values in the Convex
+Dashboard later only when enabling online payments.
 
 ### Data Pipeline
 
