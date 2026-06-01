@@ -16,7 +16,7 @@
  * syllabus data as the Convex test fixture.
  */
 
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -555,6 +555,49 @@ function buildBundles(figures: RawFigure[]): {
 }
 
 // ---------------------------------------------------------------------------
+// Convex import runner
+// ---------------------------------------------------------------------------
+
+const CONVEX_IMPORT_FUNCTION = "syllabus/import:importSyllabus";
+
+function runConvexImport(danceName: string, payload: string): boolean {
+  const args = ["convex", "run", CONVEX_IMPORT_FUNCTION, payload];
+  const result = spawnSync("npx", args, {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+    maxBuffer: 10 * 1024 * 1024,
+  });
+
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+
+  if (result.error) {
+    console.error(`\nERROR: failed to start Convex import for ${danceName}.`);
+    console.error(result.error.message);
+    process.exitCode = 1;
+    return false;
+  }
+
+  if (result.status !== 0) {
+    console.error(
+      `\nERROR: Convex import failed for ${danceName} (exit ${result.status ?? "unknown"}).`,
+    );
+    console.error(`Function: ${CONVEX_IMPORT_FUNCTION}`);
+    console.error(`Payload bytes: ${Buffer.byteLength(payload, "utf8")}`);
+    console.error(
+      "The import is idempotent, so fix the Convex error above and rerun `pnpm seed`.",
+    );
+    console.error(
+      "If this is a production deployment, make sure the latest backend is deployed first: `CONVEX_DEPLOY_KEY=... npx convex deploy`.",
+    );
+    process.exitCode = result.status ?? 1;
+    return false;
+  }
+
+  return true;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -604,11 +647,8 @@ export function main(argv = process.argv) {
       figures: bundle.figures,
       edges: bundle.edges,
     });
-    execFileSync(
-      "npx",
-      ["convex", "run", "syllabus/import:importSyllabus", payload],
-      { cwd: REPO_ROOT, stdio: "inherit" },
-    );
+    console.log(`  ${bundle.dance.name}: importing...`);
+    if (!runConvexImport(bundle.dance.name, payload)) return;
     console.log(`  ${bundle.dance.name}: imported`);
   }
   console.log("\nDone.");
