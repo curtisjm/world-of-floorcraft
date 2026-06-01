@@ -22,6 +22,7 @@ export default function PaymentsPage() {
     api.competitions.payments.getConnectStatusRecord,
     comp ? { competitionId: comp._id } : "skip",
   );
+  const stripeConfig = useQuery(api.competitions.payments.isStripeConfigured);
 
   const createConnectAction = useAction(
     api.competitions.stripeActions.createConnectAccount,
@@ -142,7 +143,24 @@ export default function PaymentsPage() {
           <CardTitle className="text-base">Online Payments (Stripe)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {connectStatus?.connected ? (
+          {stripeConfig?.configured === false ? (
+            <>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="size-5 text-clay" />
+                <span className="text-sm">Online payments are not enabled yet.</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Manual payment recording and financial analytics still work. To
+                enable Stripe Connect later, set the Stripe backend env vars on
+                the Convex deployment.
+              </p>
+              {stripeConfig.missing.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Missing: {stripeConfig.missing.join(", ")}
+                </p>
+              )}
+            </>
+          ) : connectStatus?.connected ? (
             <div className="flex items-center gap-2">
               <CheckCircle2 className="size-5 text-sage" />
               <span className="text-sm">
@@ -158,7 +176,7 @@ export default function PaymentsPage() {
                 <AlertCircle className="size-5 text-clay" />
                 <span className="text-sm">Not connected to Stripe</span>
               </div>
-              <Button onClick={handleConnect} disabled={connecting}>
+              <Button onClick={handleConnect} disabled={connecting || stripeConfig === undefined}>
                 {connecting ? "Connecting..." : "Connect Stripe"}
               </Button>
             </>

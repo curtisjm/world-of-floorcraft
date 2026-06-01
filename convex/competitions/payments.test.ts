@@ -12,6 +12,37 @@ import type { Id } from "../_generated/dataModel";
 // live Stripe sandbox. The internal mutation `fulfillCheckoutSession` is the
 // idempotency boundary and is fully covered.
 
+const STRIPE_ENV_KEYS = [
+  "STRIPE_SECRET_KEY",
+  "STRIPE_CHECKOUT_ALLOWED_ORIGINS",
+  "STRIPE_WEBHOOK_SECRET",
+] as const;
+
+async function withStripeEnv<T>(
+  values: Partial<Record<(typeof STRIPE_ENV_KEYS)[number], string>>,
+  run: () => Promise<T>,
+): Promise<T> {
+  const previous = Object.fromEntries(
+    STRIPE_ENV_KEYS.map((key) => [key, process.env[key]]),
+  ) as Record<(typeof STRIPE_ENV_KEYS)[number], string | undefined>;
+
+  for (const key of STRIPE_ENV_KEYS) {
+    const value = values[key];
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+
+  try {
+    return await run();
+  } finally {
+    for (const key of STRIPE_ENV_KEYS) {
+      const value = previous[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
 const ALICE = {
   tokenIdentifier: "https://clerk.example.com|user_alice",
   subject: "user_alice",
@@ -24,6 +55,43 @@ const BOB = {
 };
 
 type T = TestConvex<typeof schema>;
+
+describe("isStripeConfigured", () => {
+  it("reports Stripe as disabled when optional env values are absent", async () => {
+    const status = await withStripeEnv({}, async () => {
+      const t = convexTest(schema, modules);
+      return await t.query(api.competitions.payments.isStripeConfigured, {});
+    });
+
+    expect(status.configured).toBe(false);
+    expect(status.checkoutConfigured).toBe(false);
+    expect(status.webhookConfigured).toBe(false);
+    expect(status.missing).toEqual([
+      "STRIPE_SECRET_KEY",
+      "STRIPE_CHECKOUT_ALLOWED_ORIGINS",
+      "STRIPE_WEBHOOK_SECRET",
+    ]);
+  });
+
+  it("reports Stripe as enabled only when checkout and webhook env are present", async () => {
+    const status = await withStripeEnv(
+      {
+        STRIPE_SECRET_KEY: "sk_test_123",
+        STRIPE_CHECKOUT_ALLOWED_ORIGINS: "https://example.com",
+        STRIPE_WEBHOOK_SECRET: "whsec_123",
+      },
+      async () => {
+        const t = convexTest(schema, modules);
+        return await t.query(api.competitions.payments.isStripeConfigured, {});
+      },
+    );
+
+    expect(status.configured).toBe(true);
+    expect(status.checkoutConfigured).toBe(true);
+    expect(status.webhookConfigured).toBe(true);
+    expect(status.missing).toEqual([]);
+  });
+});
 
 async function seedUser(
   t: T,

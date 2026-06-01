@@ -132,6 +132,32 @@ async function getRegistrationPaymentTotalCents(
 // ── Queries ─────────────────────────────────────────────────────────
 
 /**
+ * Stripe is optional: manual payment recording and analytics work without
+ * Stripe env values. Expose a tiny configuration status so the UI can avoid
+ * sending admins into a failing Connect onboarding flow before online
+ * payments are intentionally enabled on the Convex deployment.
+ */
+export const isStripeConfigured = query({
+  args: {},
+  handler: async () => {
+    const hasSecretKey = !!process.env.STRIPE_SECRET_KEY;
+    const hasCheckoutOrigins = !!process.env.STRIPE_CHECKOUT_ALLOWED_ORIGINS;
+    const hasWebhookSecret = !!process.env.STRIPE_WEBHOOK_SECRET;
+
+    return {
+      configured: hasSecretKey && hasCheckoutOrigins && hasWebhookSecret,
+      checkoutConfigured: hasSecretKey && hasCheckoutOrigins,
+      webhookConfigured: hasSecretKey && hasWebhookSecret,
+      missing: [
+        !hasSecretKey ? "STRIPE_SECRET_KEY" : null,
+        !hasCheckoutOrigins ? "STRIPE_CHECKOUT_ALLOWED_ORIGINS" : null,
+        !hasWebhookSecret ? "STRIPE_WEBHOOK_SECRET" : null,
+      ].filter((value): value is string => value !== null),
+    };
+  },
+});
+
+/**
  * All payment rows for a registration, newest first. Visible to the
  * registration's owner or registration-desk staff.
  */

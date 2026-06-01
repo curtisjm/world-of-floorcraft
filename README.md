@@ -196,7 +196,6 @@ cp .env.example .env.local
 # Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY from Clerk.
 # NEXT_PUBLIC_CONVEX_URL is written by `npx convex dev`.
 # JUDGE_JWT_SECRET is generated and set on the Convex deployment below.
-# Add STRIPE_WEBHOOK_SECRET locally only if testing the local webhook route.
 
 # Provision/link Convex with a supported Node version.
 # In the Nix shell you can run `npx convex ...` directly; otherwise use mise to force Node 22.
@@ -205,13 +204,14 @@ cp .env.example .env.local
 # are not set yet; continue with the env set commands.
 mise exec node@22 -- npx convex dev --once
 
-# Configure backend environment variables on the Convex deployment.
+# Configure required backend environment variables on the Convex deployment.
 # CLERK_JWT_ISSUER_DOMAIN is Clerk's Frontend API URL / JWT issuer for the Convex template.
 # JUDGE_JWT_SECRET signs judge tablet JWTs and must be a strong 32+ character secret.
-# STRIPE_CHECKOUT_ALLOWED_ORIGINS is a comma-separated list of allowed app origins
-# for Checkout success/cancel redirects, and must be set on the Convex deployment.
 mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
 mise exec node@22 -- npx convex env set JUDGE_JWT_SECRET "$(openssl rand -base64 32)"
+
+# Optional: only if you want online competition registration payments now.
+# Manual payment recording and analytics work without Stripe.
 mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_test_...
 mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-app.example.com,http://localhost:3000
 mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
@@ -225,6 +225,41 @@ pnpm seed
 # Start dev server
 pnpm dev
 ```
+
+### Website backend setup
+
+For the deployed website, configure these places:
+
+1. **Clerk** — create the app, enable the sign-in providers you want, and add a
+   Convex JWT template with audience/application ID `convex`. Copy Clerk's
+   Frontend API URL / JWT issuer into the Convex env var below.
+2. **Convex** — create/deploy the Convex deployment, then set:
+   ```bash
+   mise exec node@22 -- npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-app.clerk.accounts.dev
+   mise exec node@22 -- npx convex env set JUDGE_JWT_SECRET "$(openssl rand -base64 32)"
+   ```
+3. **Vercel / website host** — set:
+   ```bash
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+   CLERK_SECRET_KEY=sk_...
+   NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   ```
+4. **Optional Stripe online payments** — if enabling competition checkout, set
+   these on Convex and configure the Stripe webhook endpoint to the Convex site
+   URL (`https://your-deployment.convex.site/stripe/webhook`) or the Next.js
+   compatibility route (`https://your-site.example.com/api/stripe/webhook`):
+   ```bash
+   mise exec node@22 -- npx convex env set STRIPE_SECRET_KEY sk_...
+   mise exec node@22 -- npx convex env set STRIPE_CHECKOUT_ALLOWED_ORIGINS https://your-site.example.com
+   mise exec node@22 -- npx convex env set STRIPE_WEBHOOK_SECRET whsec_...
+   ```
+
+Run `mise exec node@22 -- npx convex deploy` when deploying backend function
+changes. If the website build runs on Vercel, either use the Convex Vercel
+integration or set a Convex deploy key and run Convex deploy as part of the
+build pipeline.
 
 ### Data Pipeline
 
