@@ -46,7 +46,10 @@ const selectClassName =
 export function ProfileSettings() {
   const me = useQuery(api.users.me, {});
   const isLoading = me === undefined;
-  const partnerSearch = useQuery(api.social.partnerSearch.me, {});
+  const partnerSearch = useQuery(
+    api.social.partnerSearch.me,
+    me ? {} : "skip",
+  );
 
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
