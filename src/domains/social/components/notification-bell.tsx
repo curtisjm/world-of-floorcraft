@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Bell } from "lucide-react";
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { Button } from "@shared/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@shared/ui/popover";
 import { cn } from "@shared/lib/utils";
@@ -11,10 +11,15 @@ import { api } from "../../../../convex/_generated/api";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const { isAuthenticated } = useConvexAuth();
 
   // Reactive: the unread count refreshes whenever a notification changes,
   // so no polling interval is needed.
-  const unreadCount = useQuery(api.social.notifications.unreadCount, {}) ?? 0;
+  const unreadCount =
+    useQuery(
+      api.social.notifications.unreadCount,
+      isAuthenticated ? {} : "skip",
+    ) ?? 0;
 
   const displayCount = unreadCount > 99 ? "99+" : unreadCount > 0 ? String(unreadCount) : null;
 

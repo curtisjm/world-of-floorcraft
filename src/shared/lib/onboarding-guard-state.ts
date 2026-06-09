@@ -12,8 +12,10 @@ export type OnboardingGuardDecision = {
 };
 
 type OnboardingGuardInput = {
-  isAuthLoading: boolean;
-  isAuthenticated: boolean;
+  isClerkLoaded: boolean;
+  isClerkSignedIn: boolean;
+  isConvexAuthLoading: boolean;
+  isConvexAuthenticated: boolean;
   materializationState: OnboardingMaterializationState;
   needsOnboarding: boolean | undefined;
   pathname: string;
@@ -28,18 +30,28 @@ type OnboardingGuardInput = {
  * onboarding check has re-read the materialized profile.
  */
 export function getOnboardingGuardDecision({
-  isAuthLoading,
-  isAuthenticated,
+  isClerkLoaded,
+  isClerkSignedIn,
+  isConvexAuthLoading,
+  isConvexAuthenticated,
   materializationState,
   needsOnboarding,
   pathname,
 }: OnboardingGuardInput): OnboardingGuardDecision {
-  if (isAuthLoading) {
+  if (!isClerkLoaded || (isClerkSignedIn && isConvexAuthLoading)) {
     return { renderChildren: false, showLoading: true };
   }
 
-  if (!isAuthenticated) {
+  if (!isClerkSignedIn) {
     return { renderChildren: true, showLoading: false };
+  }
+
+  if (!isConvexAuthenticated) {
+    return {
+      renderChildren: false,
+      showLoading: false,
+      errorMessage: "We couldn't verify your session. Refresh to try again.",
+    };
   }
 
   if (materializationState === "error") {

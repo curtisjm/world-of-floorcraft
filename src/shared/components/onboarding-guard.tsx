@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth as useClerkAuth } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -26,16 +27,25 @@ function OnboardingGuardLoading() {
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const { isLoaded: isClerkLoaded, isSignedIn } = useClerkAuth();
+  const {
+    isAuthenticated: isConvexAuthenticated,
+    isLoading: isConvexAuthLoading,
+  } = useConvexAuth();
   const [materializationState, setMaterializationState] =
     useState<OnboardingMaterializationState>("idle");
 
   const ensureCurrentUser = useMutation(api.users.ensureCurrentUser);
 
   useEffect(() => {
-    if (isAuthLoading) return;
+    if (!isClerkLoaded) return;
 
-    if (!isAuthenticated) {
+    if (!isSignedIn) {
+      setMaterializationState("idle");
+      return;
+    }
+
+    if (isConvexAuthLoading || !isConvexAuthenticated) {
       setMaterializationState("idle");
       return;
     }
@@ -56,16 +66,29 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isAuthLoading, isAuthenticated, ensureCurrentUser]);
+  }, [
+    isClerkLoaded,
+    isSignedIn,
+    isConvexAuthLoading,
+    isConvexAuthenticated,
+    ensureCurrentUser,
+  ]);
 
   const needsOnboarding = useQuery(
     api.users.needsOnboarding,
-    isAuthenticated && materializationState === "ready" ? {} : "skip",
+    isClerkLoaded &&
+      isSignedIn &&
+      isConvexAuthenticated &&
+      materializationState === "ready"
+      ? {}
+      : "skip",
   );
 
   const decision = getOnboardingGuardDecision({
-    isAuthLoading,
-    isAuthenticated,
+    isClerkLoaded,
+    isClerkSignedIn: isSignedIn === true,
+    isConvexAuthLoading,
+    isConvexAuthenticated,
     materializationState,
     needsOnboarding: needsOnboarding?.needsOnboarding,
     pathname,
