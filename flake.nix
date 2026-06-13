@@ -19,9 +19,6 @@
             nodePackages.npm
             pnpm
 
-            # Database (for integration tests)
-            postgresql
-
             # Python (for data pipeline)
             (python3.withPackages (ps: with ps; [
               pyyaml

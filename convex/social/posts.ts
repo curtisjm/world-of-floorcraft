@@ -97,8 +97,8 @@ function clampLimit(limit: number | undefined): number {
 
 /**
  * Cursor encodes `(publishedAt, _id)` so paginated feeds break ties on the
- * Convex doc id deterministically — the same lexical ordering Postgres
- * `desc(publishedAt, id)` produced.
+ * Convex doc id deterministically — the same lexical ordering the old
+ * `desc(publishedAt, id)` query produced.
  */
 function isBefore(
   post: Doc<"posts">,

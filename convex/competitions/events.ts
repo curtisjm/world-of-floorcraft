@@ -11,9 +11,8 @@ import { generateDefaultEvents, type DanceStyle } from "./defaultEvents";
  * `src/domains/competitions/routers/event.ts` for Task 9 of the Convex
  * migration (docs/superpowers/plans/2026-05-22-convex-migration.md).
  *
- * `generateDefaults` reuses the pure-data style/level/dance configuration
- * from `src/domains/competitions/lib/default-events.ts` so the migration
- * doesn't duplicate competition product knowledge.
+ * `generateDefaults` reuses the pure-data style/level/dance configuration so
+ * the migration doesn't duplicate competition product knowledge.
  */
 
 // ── Queries ─────────────────────────────────────────────────────────

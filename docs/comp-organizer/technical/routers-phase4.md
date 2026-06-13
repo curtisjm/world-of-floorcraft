@@ -75,7 +75,7 @@ Compute final round results using the skating system.
 
 ## Scoring Engine Library
 
-Located at `src/domains/competitions/lib/scoring/`:
+Located at `convex/competitions/lib/scoring/`:
 
 | File | Purpose |
 |------|---------|

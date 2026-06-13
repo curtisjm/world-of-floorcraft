@@ -55,7 +55,7 @@
 - **updateDances** (protected) — replace the dances in an event (for changing groupings).
 
 ### Default Event Generation Logic
-Defined in `src/domains/competitions/lib/default-events.ts` as application config:
+Defined in `convex/competitions/defaultEvents.ts` as application config:
 - Input: list of styles to include
 - Output: events + dances for all levels in those styles, following the grouping rules from the design doc
 - Organizer calls generateDefaults, then prunes events they don't want

@@ -136,8 +136,8 @@ async function getMembership(
 /**
  * Public org index for the `/orgs` discovery page. Returns the most recently
  * created orgs first with a member count for the card, paginated through
- * Convex `paginate`. Replaces the Postgres serial-id cursor used by the
- * tRPC `org.discover`.
+ * Convex `paginate`. Replaces the legacy serial-id cursor used by the tRPC
+ * `org.discover`.
  */
 export const discover = query({
   args: { paginationOpts: paginationOptsValidator },
@@ -575,8 +575,8 @@ async function organizationDeletionBlockers(
 
 /**
  * Delete an org. Owner only. Removes memberships, invites, join requests,
- * org channels and their member rows so the storage matches the Postgres
- * `ON DELETE CASCADE` behavior. Competitions and posts must be removed or
+ * org channels and their member rows so the storage matches the legacy
+ * cascading-delete behavior. Competitions and posts must be removed or
  * archived first so deletion cannot strand public/user-owned records.
  */
 export const remove = mutation({
@@ -1081,4 +1081,3 @@ export const rejectJoinRequest = mutation({
     return await ctx.db.get(args.requestId);
   },
 });
-

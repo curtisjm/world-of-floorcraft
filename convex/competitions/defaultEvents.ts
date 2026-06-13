@@ -1,7 +1,6 @@
 /**
- * Default event generation config. Convex-side copy of the data table in
- * `src/domains/competitions/lib/default-events.ts` so the Convex bundle
- * stays self-contained. Task 12 of the migration removes the old copy.
+ * Default event generation config. Convex-side data table for generating
+ * competition events without importing frontend code.
  *
  * For each style, defines which dances exist and how they group at each
  * level. "grouped" dances form a single multi-dance event; remaining dances

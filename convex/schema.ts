@@ -4,21 +4,21 @@ import { v } from "convex/values";
 /**
  * World of Floorcraft — Convex schema.
  *
- * Ported from the Drizzle/Postgres schema during the Convex migration
+ * Ported from the legacy SQL schema during the Convex migration
  * (docs/superpowers/plans/2026-05-22-convex-migration.md, Task 2). Every
  * current domain table is represented here so domain workers can implement
  * functions without editing this shared file.
  *
  * Conventions:
- * - Postgres `serial` ids are dropped; the Convex document `_id` replaces
+ * - Legacy serial ids are dropped; the Convex document `_id` replaces
  *   them. Foreign keys become `v.id("targetTable")`.
  * - SQL enums become `v.union(v.literal(...))` validators, exported below
  *   for reuse by domain functions and tests.
- * - Postgres `timestamp` columns become epoch-millisecond `v.number()`.
+ * - Legacy timestamp columns become epoch-millisecond `v.number()`.
  *   Calendar `date` columns become `"YYYY-MM-DD"` strings.
  * - Money columns are stored as integer cents (`v.number()`); convert with
  *   the helpers in `convex/lib/money.ts`.
- * - Postgres unique indexes become regular Convex indexes — uniqueness is
+ * - Legacy unique indexes become regular Convex indexes — uniqueness is
  *   enforced in application code.
  */
 

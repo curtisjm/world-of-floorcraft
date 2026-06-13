@@ -1,6 +1,5 @@
 /**
- * Skating system scoring types — ported from
- * src/domains/competitions/lib/scoring/types.ts.
+ * Skating system scoring types.
  *
  * Marks map couple IDs (string-keyed) to arrays of judge placements.
  * Results map couple IDs to their computed placements and tabulation data.

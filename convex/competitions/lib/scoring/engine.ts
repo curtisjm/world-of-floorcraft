@@ -1,7 +1,5 @@
 /**
- * Skating system scoring engine — verbatim port of
- * src/domains/competitions/lib/scoring/engine.ts so Task 10 can run the
- * existing placement logic from Convex without crossing the convex/ boundary.
+ * Skating system scoring engine for running the placement logic inside Convex.
  *
  * Rules 5-8: single dance placement (majority system).
  * Rules 9-11: multi-dance event scoring (sum placements, tiebreak).

@@ -22,7 +22,7 @@ Competition CRUD, schedule builder, and event management.
 - [x] Judge tablet auth setup: setCompCode, setMasterPassword (bcrypt hashed)
 - [x] Schedule builder: applyDefaultTemplate (6 sessions), addDay/updateDay/removeDay, addBlock/updateBlock/removeBlock, reorderDays/reorderBlocks
 - [x] Event management: generateDefaults from style/level grouping config, create/update/delete, reorderInSession, updateDances
-- [x] Default event generation config: `src/domains/competitions/lib/default-events.ts` — grouping rules for Standard, Smooth, Latin, Rhythm across all 7 levels
+- [x] Default event generation config: `convex/competitions/defaultEvents.ts` — grouping rules for Standard, Smooth, Latin, Rhythm across all 7 levels
 - [x] Staff assignment router: assign/remove platform users to roles
 - [x] Judge directory + competition assignments: global judge CRUD, search, assignToCompetition/removeFromCompetition
 - [x] Integration tests: 40 tests across 5 test files (competition, schedule, event, staff, judge)
@@ -135,7 +135,7 @@ Port skating system to TypeScript. Scoring router for mark submission and result
 **Backend** (implemented):
 - [x] Database schema: callback_marks, final_marks, judge_submissions, callback_results, final_results, tabulation_tables, round_results_meta
 - [x] New enums: mark_status (pending, submitted, confirmed), result_status (computed, reviewed, published)
-- [x] Scoring engine library (`src/domains/competitions/lib/scoring/`):
+- [x] Scoring engine library (`convex/competitions/lib/scoring/`):
   - [x] `placeCouples()` — Rules 5-8: recursive majority-based single dance placement
   - [x] `singleDance()` — Score a single dance, compute point values for ties
   - [x] `multiDance()` — Rules 9-11: multi-dance event scoring (sum point values, tiebreak with place counts, Rule 11 smushed marks)

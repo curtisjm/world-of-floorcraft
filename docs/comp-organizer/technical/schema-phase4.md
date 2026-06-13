@@ -132,7 +132,7 @@ Metadata about computed results for a round.
 ### Scoring Engine Function Signatures (Implemented)
 
 ```typescript
-// Types (src/domains/competitions/lib/scoring/types.ts)
+// Types (convex/competitions/lib/scoring/types.ts)
 type Marks = Record<string, number[]>;  // coupleId -> array of judge placements
 
 interface TabulationCell { label: string; value: number | null; majority: boolean; }
@@ -146,7 +146,7 @@ interface MultiDanceResult {
 }
 interface CallbackTally { coupleId: string; totalMarks: number; }
 
-// Core functions (src/domains/competitions/lib/scoring/engine.ts)
+// Core functions (convex/competitions/lib/scoring/engine.ts)
 function placeCouples(marks: Marks, currentMark: number, placesToAward: number): string[];
 function singleDance(marks: Marks): SingleDanceResult;
 function multiDance(perDanceResults: SingleDanceResult[], allMarks: Marks[]): MultiDanceResult;

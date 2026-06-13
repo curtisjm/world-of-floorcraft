@@ -187,7 +187,7 @@ export const removeDay = mutation({
  * Two-pass reorder of days within a competition. The first pass writes
  * negative positions to release the unique slot, the second pass writes the
  * final positions. Convex doesn't enforce uniqueness, but the pattern
- * matches the Postgres source so future schema changes are safe.
+ * matches the original source so future schema changes are safe.
  */
 export const reorderDays = mutation({
   args: {
