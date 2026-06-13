@@ -12,9 +12,9 @@
 
 ## Approval Gate
 
-Do not create implementation beads, do not sling work, and do not resume the
-`world-of-floorcraft` rig until the human approves this plan. After approval,
-file beads from the task list below and set dependencies before dispatching.
+Do not create implementation issues or dispatch work until the human approves
+this plan. After approval, file GitHub issues from the task list below and set
+dependencies before dispatching.
 
 ## Source Documents
 
@@ -50,10 +50,10 @@ Expected:
 
 - Branch is `convex-migration`.
 - Pre-existing local project config files may still be dirty or untracked:
-  `.gitignore`, `.agents/`, `.beads/`, `.codex/`, `skills-lock.json`.
-- Workers must not stage or revert those files unless their bead explicitly owns them.
+  `.gitignore`, `.agents/`, `.codex/`, `skills-lock.json`.
+- Workers must not stage or revert those files unless their issue explicitly owns them.
 
-Each bead should commit only files it owns.
+Each issue should commit only files it owns.
 
 ## Parallelization Map
 
@@ -105,7 +105,7 @@ After every domain is migrated and verified:
 
 - Task 12: Remove Neon/Drizzle/tRPC/Ably remnants, update docs, run full gates.
 
-## Bead Dependency Graph
+## Work Item Dependency Graph
 
 Use requirement-style dependencies: child needs parent.
 
@@ -123,13 +123,8 @@ Task 11 needs Task 9
 Task 12 needs Tasks 3, 4, 7, 8, 10, 11
 ```
 
-When filing beads later, translate this as:
-
-```bash
-gc bd dep add <task-2-id> <task-1-id>
-```
-
-meaning Task 2 requires Task 1.
+When filing issues later, record these dependencies in each issue body. For
+example, Task 2 should state that it requires Task 1.
 
 ## Shared File Ownership
 
@@ -170,7 +165,7 @@ apply to every domain task:
   paths, large payload reductions, or measured read amplification.
 - After the first deployable Convex preview exists, run
   `npx convex insights --details` on high-traffic candidate screens and feed any
-  findings back into the relevant domain bead before final cleanup.
+  findings back into the relevant domain issue before final cleanup.
 
 ---
 
@@ -1507,17 +1502,17 @@ git commit -m "Remove Neon tRPC and Ably remnants"
 
 ## Plan Approval Checklist
 
-Before filing or dispatching beads, confirm:
+Before filing or dispatching issues, confirm:
 
 - [ ] Human has approved this plan.
 - [ ] Branch is `convex-migration`.
 - [ ] Foundation tasks are filed before dependent domain tasks.
-- [ ] Bead dependencies match the dependency graph in this plan.
-- [ ] No bead is slung before dependencies are set.
-- [ ] Domain beads include file ownership notes to avoid staging unrelated files.
+- [ ] Issue dependencies match the dependency graph in this plan.
+- [ ] No issue is dispatched before dependencies are set.
+- [ ] Domain issues include file ownership notes to avoid staging unrelated files.
 - [ ] `wof-c7p` remains future work and is not part of this migration dispatch.
 
-## Recommended Bead Titles
+## Recommended Issue Titles
 
 Use these titles when converting the plan to work items after approval:
 
@@ -1544,5 +1539,5 @@ Each polecat should:
   Convex functions, auth, or migrations.
 - Start with tests for the owned domain.
 - Run the domain-specific validation command before committing.
-- Commit only files owned by its bead.
+- Commit only files owned by its issue.
 - Avoid broad formatting and unrelated cleanup.

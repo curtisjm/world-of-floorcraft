@@ -53,6 +53,20 @@ See `docs/testing.md` for the full test guide.
 means editing that one file, then `npx convex dev --once` to regenerate
 `convex/_generated/*` and validate the schema.
 
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues for `curtisjm/world-of-floorcraft`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the canonical triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repo: use root `CONTEXT.md` and `docs/adr/` if they exist. See `docs/agents/domain.md`.
+
 ## Common Commands
 
 ```bash

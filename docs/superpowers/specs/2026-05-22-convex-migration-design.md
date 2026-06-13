@@ -24,7 +24,7 @@ is out of scope and will happen after this migration.
 - Replace competition live event-bus invalidation with Convex reactive data.
 - Add reliable Stripe webhook fulfillment as part of the payments migration.
 - Keep the migration organized so later implementation work can be dispatched as
-  domain-level beads.
+  domain-level GitHub issues.
 
 ## Non-Goals
 
@@ -312,7 +312,7 @@ Convex cost control is part of the design:
 ## Dispatch Plan
 
 After this design is accepted and an implementation plan is written, create
-domain beads in dependency order:
+domain issues in dependency order:
 
 1. Convex foundation and Clerk auth.
 2. Syllabus schema/functions/import.
@@ -327,7 +327,7 @@ domain beads in dependency order:
 
 Foundation should be completed first. Syllabus, routines, social, orgs, and
 messaging can then be parallelized where dependencies allow. Competitions should
-be split into multiple smaller beads because the current competition surface is
+be split into multiple smaller issues because the current competition surface is
 too large for one worker. Cleanup must remain last.
 
 ## Acceptance Criteria
@@ -342,4 +342,4 @@ too large for one worker. Cleanup must remain last.
 - Stripe payments are fulfilled via verified webhooks and idempotent Convex
   mutations.
 - Tests cover each migrated domain and critical end-to-end flows.
-- Migration work is split into dispatchable domain beads.
+- Migration work is split into dispatchable domain issues.
